@@ -1,543 +1,77 @@
 <!doctype html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#1e66ff" />
-  <meta name="description" content="Window Quote Pro - offline-friendly window cleaning quote app" />
-  <title>Window Quote Pro</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <style>
-    :root{
-      --blue:#1e66ff;--blue-dark:#1247bd;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--bg:#f3f6fb;
-      --card:#ffffff;--good:#065f46;--good-bg:#ecfdf5;--shadow:0 10px 30px rgba(0,0,0,.08);
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:1100px;margin:0 auto;padding:18px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
-    .brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Window Quote Pro</title>
 
-.logo{
-  width:56px;
-  height:56px;
-  flex:0 0 56px;
-  border-radius:14px;
-  overflow:hidden;
-  background:#fff;
-  box-shadow:0 4px 14px rgba(0,0,0,.08);
-}
+<style>
+body {font-family: Arial; background:#f3f6fb; margin:0; padding:20px;}
+.card {background:#fff; padding:20px; border-radius:12px; margin-bottom:20px;}
+input, select {width:100%; padding:10px; margin:5px 0;}
+button {padding:10px 15px; border:none; border-radius:8px; cursor:pointer;}
+.primary {background:#1e66ff; color:white;}
+</style>
 
-.logo img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-.brand h1{
-  font-size:22px;
-  line-height:1.1;
-  margin:0;
-}
-
-.brand p{
-  margin:4px 0 0;
-  color:var(--muted);
-  font-size:13px;
-}
-    .installBtn,.tabBtn,.btn{border:0;border-radius:14px;padding:13px 16px;font-weight:800;cursor:pointer;font-size:15px}
-    .installBtn,.btn.primary{background:var(--blue);color:#fff}
-    .btn.secondary,.tabBtn{background:#eaf1ff;color:#163d96}
-    .installBtn[hidden]{display:none!important}
-    .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
-    .tabBtn.active{background:var(--blue);color:#fff}
-    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-    .card h2{margin:0 0 4px;font-size:20px}
-    .sub{margin:0 0 16px;color:var(--muted);font-size:14px}
-    .sectionTitle{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 10px}
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-    label{display:block;font-weight:700;font-size:14px;margin:0 0 6px}
-    input,select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff;font-size:16px}
-    textarea{min-height:90px;resize:vertical}
-    input:focus,select:focus,textarea:focus{outline:2px solid rgba(30,102,255,.18);border-color:rgba(30,102,255,.5)}
-    .inline{display:flex;align-items:center;gap:10px}
-    .inline input[type="checkbox"]{width:auto;transform:scale(1.2)}
-    .priceBox{border-radius:18px;background:linear-gradient(180deg,#f8fbff,#eef4ff);border:1px solid #dce8ff;padding:16px;margin-bottom:14px}
-    .priceBox .label{color:var(--muted);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
-    .price{font-size:42px;font-weight:900;margin:6px 0 0}
-    .muted{color:var(--muted)}
-    .quotePreview{white-space:pre-wrap;background:#fafafa;border:1px solid var(--border);padding:16px;border-radius:14px;font-size:14px;line-height:1.45;min-height:260px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    .note{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--good-bg);color:var(--good);font-weight:700;font-size:14px}
-    .hidden{display:none!important}
-    .footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
-    @media (max-width: 860px){
-      .grid{grid-template-columns:1fr}
-      .two,.three{grid-template-columns:1fr}
-      .topbar{align-items:flex-start;flex-direction:column}
-.brand{flex-direction:row;align-items:center}
-    }
-  </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-  <div class="logo">
-    <img src="logo.png" alt="Window Quote Pro" />
-  </div>
-  <div>
-    <h1>Window Quote Pro</h1>
-    <p>Offline-friendly quoting app for window cleaners</p>
-  </div>
+
+<h1>Window Quote Pro</h1>
+
+<div class="card">
+<h2>Create Quote</h2>
+
+<input id="name" placeholder="Customer Name">
+<input id="email" placeholder="Customer Email">
+
+<input id="windows" type="number" placeholder="Windows">
+<input id="tracks" type="number" placeholder="Tracks">
+
+<button class="primary" onclick="calculate()">Calculate</button>
+
+<h2 id="price">$0</h2>
+
+<button onclick="emailQuote()">Open Email</button> <button onclick="saveJob()">Save Team Job (Pro)</button>
+
 </div>
-      <button id="installBtn" class="installBtn" hidden>Install App</button>
-    </div>
 
-    <div class="tabs">
-      <button class="tabBtn active" data-tab="quote">Create Quote</button>
-      <button class="tabBtn" data-tab="settings">Business Settings</button>
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <section id="quoteTab">
-      <div class="grid">
-        <div class="card">
-          <h2>Create Quote</h2>
-          <p class="sub">Enter customer details and job quantities. Pricing updates instantly.</p>
+<script>
 
-          <div class="sectionTitle">Customer</div>
-          <div class="two">
-            <div>
-              <label for="customerName">Customer Name</label>
-              <input id="customerName" type="text" placeholder="John Smith" />
-            </div>
-            <div>
-              <label for="customerEmail">Customer Email</label>
-              <input id="customerEmail" type="email" placeholder="john@email.com" />
-            </div>
-          </div>
-          <div class="two">
-            <div>
-              <label for="customerPhone">Phone</label>
-              <input id="customerPhone" type="text" placeholder="0400 000 000" />
-            </div>
-            <div>
-              <label for="customerAddress">Address</label>
-              <input id="customerAddress" type="text" placeholder="12 Example St" />
-            </div>
-          </div>
+// 🔥 PUT YOUR KEYS HERE
+const SUPABASE_URL = "https://cwrlnfcgryhmohopdwrs.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM";
+function calculate(){
+  let w = Number(document.getElementById("windows").value || 0);
+  let t = Number(document.getElementById("tracks").value || 0);
+  let price = w * 20 + t * 5;
+  document.getElementById("price").innerText = "$" + price;
+}
 
-          <div class="sectionTitle">Job Details</div>
-          <div class="three">
-            <div><label for="windows">Windows</label><input id="windows" type="number" min="0" value="0" /></div>
-            <div><label for="tracks">Tracks</label><input id="tracks" type="number" min="0" value="0" /></div>
-            <div><label for="flyscreens">Flyscreens</label><input id="flyscreens" type="number" min="0" value="0" /></div>
-            <div><label for="balustrades">Balustrades</label><input id="balustrades" type="number" min="0" value="0" /></div>
-            <div><label for="solarPanels">Solar Panels</label><input id="solarPanels" type="number" min="0" value="0" /></div>
-            <div><label for="gutterMetres">Gutters (metres)</label><input id="gutterMetres" type="number" min="0" step="0.1" value="0" /></div>
-          </div>
+function emailQuote(){
+  let body = "Window Quote Pro\nPrice: " + document.getElementById("price").innerText;
+  window.location.href = "mailto:?body=" + encodeURIComponent(body);
+}
 
-          <div class="two" style="margin-top:12px">
-            <div>
-              <label for="serviceType">Service Type</label>
-              <select id="serviceType">
-                <option value="full">Internal + External</option>
-                <option value="external">External Only</option>
-              </select>
-            </div>
-            <div>
-              <label for="storeys">Storeys</label>
-              <select id="storeys">
-                <option value="single">Single Storey</option>
-                <option value="two">Two Storey</option>
-              </select>
-            </div>
-          </div>
+// 🔥 PRO FEATURE
+async function saveJob(){
+  const { data, error } = await supabase
+    .from('jobs')
+    .insert([{ 
+      customer_name: document.getElementById("name").value,
+      price: document.getElementById("price").innerText
+    }]);
 
-          <div class="inline" style="margin-top:14px">
-            <input id="buildersClean" type="checkbox" />
-            <label for="buildersClean" style="margin:0">Builder's Clean</label>
-          </div>
+  if(error){
+    alert("Error: " + error.message);
+  } else {
+    alert("Saved to team!");
+  }
+}
 
-          <div style="margin-top:12px">
-            <label for="notes">Job Notes</label>
-            <textarea id="notes" placeholder="Anything special for this job?"></textarea>
-          </div>
-        </div>
+</script>
 
-        <div class="card">
-          <div class="priceBox">
-            <div class="label">Quote Total</div>
-            <div class="price" id="priceDisplay">$165</div>
-            <div class="muted" id="priceMeta">Including GST</div>
-          </div>
-
-          <h2>Quote Preview</h2>
-          <p class="sub">This is what opens in their email app.</p>
-          <div id="quotePreview" class="quotePreview"></div>
-
-          <div class="actions">
-            <button id="emailBtn" class="btn primary">Open Email Quote</button>
-            <button id="copyBtn" class="btn secondary">Copy Quote</button>
-            <button id="clearBtn" class="btn secondary">Clear Job</button>
-          </div>
-
-          <div class="note">Sent using Window Quote Pro</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="settingsTab" class="hidden">
-      <div class="grid">
-        <div class="card">
-          <h2>Business Details</h2>
-          <p class="sub">These details appear in the quote and stay saved on this device.</p>
-          <div class="two">
-            <div><label for="bizName">Business Name</label><input id="bizName" type="text" placeholder="Crystal Clear Windows" /></div>
-            <div><label for="contactName">Contact Name</label><input id="contactName" type="text" placeholder="Mike" /></div>
-          </div>
-          <div class="two">
-            <div><label for="bizPhone">Phone</label><input id="bizPhone" type="text" placeholder="0412 345 678" /></div>
-            <div><label for="bizEmail">Reply-To Email</label><input id="bizEmail" type="email" placeholder="quotes@business.com.au" /></div>
-          </div>
-          <div>
-            <label for="customMessage">Custom Intro Line</label>
-            <textarea id="customMessage" placeholder="Thanks for your enquiry."></textarea>
-          </div>
-          <div>
-            <label for="terms">Closing / Terms</label>
-            <textarea id="terms" placeholder="Please let us know if you'd like to go ahead and we'll get you booked in."></textarea>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>Pricing Setup</h2>
-          <p class="sub">Choose how this business quotes.</p>
-          <div class="two">
-            <div>
-              <label for="pricingMode">Pricing Mode</label>
-              <select id="pricingMode">
-                <option value="perItem">Price Per Item</option>
-                <option value="timeBased">Time-Based (minutes × hourly rate)</option>
-              </select>
-            </div>
-            <div>
-              <label for="hourlyRate">Hourly Rate</label>
-              <input id="hourlyRate" type="number" min="0" step="1" value="135" />
-            </div>
-          </div>
-
-          <div class="sectionTitle">Per Item Prices</div>
-          <div class="three">
-            <div><label for="priceWindow">Per Window</label><input id="priceWindow" type="number" min="0" step="0.1" value="12" /></div>
-            <div><label for="priceTrack">Per Track</label><input id="priceTrack" type="number" min="0" step="0.1" value="4" /></div>
-            <div><label for="priceFlyscreen">Per Flyscreen</label><input id="priceFlyscreen" type="number" min="0" step="0.1" value="3" /></div>
-            <div><label for="priceBalustrade">Per Balustrade</label><input id="priceBalustrade" type="number" min="0" step="0.1" value="35" /></div>
-            <div><label for="priceSolar">Per Solar Panel</label><input id="priceSolar" type="number" min="0" step="0.1" value="8" /></div>
-            <div><label for="priceGutter">Per Gutter Metre</label><input id="priceGutter" type="number" min="0" step="0.1" value="6" /></div>
-          </div>
-
-          <div class="sectionTitle">Time-Based Minutes</div>
-          <div class="three">
-            <div><label for="minsWindow">Minutes / Window</label><input id="minsWindow" type="number" min="0" step="0.1" value="8" /></div>
-            <div><label for="minsTrack">Minutes / Track</label><input id="minsTrack" type="number" min="0" step="0.1" value="7" /></div>
-            <div><label for="minsFlyscreen">Minutes / Flyscreen</label><input id="minsFlyscreen" type="number" min="0" step="0.1" value="1.5" /></div>
-            <div><label for="minsBalustrade">Minutes / Balustrade</label><input id="minsBalustrade" type="number" min="0" step="0.1" value="6" /></div>
-            <div><label for="minsSolar">Minutes / Solar Panel</label><input id="minsSolar" type="number" min="0" step="0.1" value="1.2" /></div>
-            <div><label for="minsGutter">Minutes / Gutter Metre</label><input id="minsGutter" type="number" min="0" step="0.1" value="0.8" /></div>
-          </div>
-
-          <div class="sectionTitle">Modifiers</div>
-          <div class="three">
-            <div><label for="externalFactor">External Only Factor</label><input id="externalFactor" type="number" min="0" step="0.01" value="0.52" /></div>
-            <div><label for="twoStoreyPct">Two Storey Surcharge %</label><input id="twoStoreyPct" type="number" min="0" step="0.1" value="15" /></div>
-            <div><label for="buildersPct">Builder's Clean Surcharge %</label><input id="buildersPct" type="number" min="0" step="0.1" value="100" /></div>
-            <div><label for="minimumFee">Minimum Fee</label><input id="minimumFee" type="number" min="0" step="1" value="165" /></div>
-            <div><label for="roundTo">Round Up To</label><input id="roundTo" type="number" min="1" step="1" value="10" /></div>
-            <div><label for="overHours">Extra Fee After Hours</label><input id="overHours" type="number" min="0" step="0.1" value="6" /></div>
-          </div>
-          <div class="two">
-            <div><label for="overHoursFee">Extra Fee Amount</label><input id="overHoursFee" type="number" min="0" step="1" value="100" /></div>
-            <div class="inline" style="padding-top:32px"><input id="gstOn" type="checkbox" checked /><label for="gstOn" style="margin:0">Prices include GST</label></div>
-          </div>
-
-          <div class="actions">
-            <button id="saveSettingsBtn" class="btn primary">Save Settings</button>
-            <button id="resetSettingsBtn" class="btn secondary">Reset Defaults</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="footer">Window Quote Pro · Built for simple, fast quoting</div>
-  </div>
-
-  <script>
-    const DEFAULTS = {
-      bizName: '', contactName: '', bizPhone: '', bizEmail: '',
-      customMessage: 'Thanks for your enquiry.',
-      terms: "Please let us know if you'd like to go ahead and we'll get you booked in.",
-      pricingMode: 'perItem', hourlyRate: 135,
-      priceWindow: 12, priceTrack: 4, priceFlyscreen: 3, priceBalustrade: 35, priceSolar: 8, priceGutter: 6,
-      minsWindow: 8, minsTrack: 7, minsFlyscreen: 1.5, minsBalustrade: 6, minsSolar: 1.2, minsGutter: 0.8,
-      externalFactor: 0.52, twoStoreyPct: 15, buildersPct: 100, minimumFee: 165, roundTo: 10, overHours: 6, overHoursFee: 100,
-      gstOn: true
-    };
-
-    const QUOTE_DEFAULTS = {
-      customerName:'', customerEmail:'', customerPhone:'', customerAddress:'',
-      windows:0, tracks:0, flyscreens:0, balustrades:0, solarPanels:0, gutterMetres:0,
-      serviceType:'full', storeys:'single', buildersClean:false, notes:''
-    };
-
-    const $ = (id) => document.getElementById(id);
-    const num = (v) => {
-      const x = Number(v);
-      return Number.isFinite(x) ? x : 0;
-    };
-    const esc = (v) => String(v ?? '').trim();
-
-    function saveLocal(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
-    function loadLocal(key, fallback){
-      try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-      catch { return fallback; }
-    }
-
-    function fillFields(obj){
-      Object.entries(obj).forEach(([id, value]) => {
-        const el = $(id);
-        if(!el) return;
-        if(el.type === 'checkbox') el.checked = Boolean(value);
-        else el.value = value;
-      });
-    }
-
-    function collect(ids){
-      const out = {};
-      ids.forEach(id => {
-        const el = $(id);
-        if(!el) return;
-        out[id] = el.type === 'checkbox' ? el.checked : el.value;
-      });
-      return out;
-    }
-
-    const settingIds = Object.keys(DEFAULTS);
-    const quoteIds = Object.keys(QUOTE_DEFAULTS);
-
-    function roundUp(value, step){
-      const s = Math.max(1, num(step));
-      return Math.ceil(value / s) * s;
-    }
-
-    function getSettings(){
-      const raw = collect(settingIds);
-      return {
-        bizName: esc(raw.bizName),
-        contactName: esc(raw.contactName),
-        bizPhone: esc(raw.bizPhone),
-        bizEmail: esc(raw.bizEmail),
-        customMessage: esc(raw.customMessage),
-        terms: esc(raw.terms),
-        pricingMode: raw.pricingMode,
-        hourlyRate: num(raw.hourlyRate),
-        priceWindow: num(raw.priceWindow),
-        priceTrack: num(raw.priceTrack),
-        priceFlyscreen: num(raw.priceFlyscreen),
-        priceBalustrade: num(raw.priceBalustrade),
-        priceSolar: num(raw.priceSolar),
-        priceGutter: num(raw.priceGutter),
-        minsWindow: num(raw.minsWindow),
-        minsTrack: num(raw.minsTrack),
-        minsFlyscreen: num(raw.minsFlyscreen),
-        minsBalustrade: num(raw.minsBalustrade),
-        minsSolar: num(raw.minsSolar),
-        minsGutter: num(raw.minsGutter),
-        externalFactor: num(raw.externalFactor),
-        twoStoreyPct: num(raw.twoStoreyPct),
-        buildersPct: num(raw.buildersPct),
-        minimumFee: num(raw.minimumFee),
-        roundTo: num(raw.roundTo),
-        overHours: num(raw.overHours),
-        overHoursFee: num(raw.overHoursFee),
-        gstOn: Boolean(raw.gstOn)
-      };
-    }
-
-    function getQuoteInput(){
-      const raw = collect(quoteIds);
-      return {
-        customerName: esc(raw.customerName), customerEmail: esc(raw.customerEmail), customerPhone: esc(raw.customerPhone), customerAddress: esc(raw.customerAddress),
-        windows: num(raw.windows), tracks: num(raw.tracks), flyscreens: num(raw.flyscreens), balustrades: num(raw.balustrades), solarPanels: num(raw.solarPanels), gutterMetres: num(raw.gutterMetres),
-        serviceType: raw.serviceType, storeys: raw.storeys, buildersClean: Boolean(raw.buildersClean), notes: esc(raw.notes)
-      };
-    }
-
-    function calculatePrice(settings, q){
-      let base = 0;
-      let hours = 0;
-
-      if(settings.pricingMode === 'timeBased'){
-        const mins =
-          q.windows * settings.minsWindow +
-          q.tracks * settings.minsTrack +
-          q.flyscreens * settings.minsFlyscreen +
-          q.balustrades * settings.minsBalustrade +
-          q.solarPanels * settings.minsSolar +
-          q.gutterMetres * settings.minsGutter;
-        hours = mins / 60;
-        base = hours * settings.hourlyRate;
-      } else {
-        base =
-          q.windows * settings.priceWindow +
-          q.tracks * settings.priceTrack +
-          q.flyscreens * settings.priceFlyscreen +
-          q.balustrades * settings.priceBalustrade +
-          q.solarPanels * settings.priceSolar +
-          q.gutterMetres * settings.priceGutter;
-      }
-
-      if(q.serviceType === 'external') base *= settings.externalFactor || 1;
-      if(q.storeys === 'two') base *= (1 + (settings.twoStoreyPct / 100));
-      if(q.buildersClean) base *= (1 + (settings.buildersPct / 100));
-      if(hours > settings.overHours) base += settings.overHoursFee;
-
-      if(base < settings.minimumFee) base = settings.minimumFee;
-      base = roundUp(base, settings.roundTo || 10);
-
-      return { price: base, hours };
-    }
-
-    function money(v){ return `$${Number(v || 0).toFixed(0)}`; }
-
-    function makeQuoteText(settings, q, calc){
-      const lines = [];
-      const customer = q.customerName || 'there';
-      lines.push(`Hi ${customer},`);
-      lines.push('');
-      if(settings.customMessage) lines.push(settings.customMessage, '');
-      lines.push('Here is your window cleaning quote:', '');
-      if(q.customerAddress) lines.push(`Address: ${q.customerAddress}`);
-      if(q.customerPhone) lines.push(`Phone: ${q.customerPhone}`);
-      if(q.customerAddress || q.customerPhone) lines.push('');
-      lines.push(`Windows: ${q.windows}`);
-      lines.push(`Tracks: ${q.tracks}`);
-      lines.push(`Flyscreens: ${q.flyscreens}`);
-      lines.push(`Balustrades: ${q.balustrades}`);
-      lines.push(`Solar Panels: ${q.solarPanels}`);
-      lines.push(`Gutters (metres): ${q.gutterMetres}`);
-      lines.push('');
-      lines.push(`Service: ${q.serviceType === 'external' ? 'External Only' : 'Internal + External'}`);
-      lines.push(`Storeys: ${q.storeys === 'two' ? 'Two Storey' : 'Single Storey'}`);
-      lines.push(`Builder's Clean: ${q.buildersClean ? 'Yes' : 'No'}`);
-      if(calc.hours > 0) lines.push(`Estimated Hours: ${calc.hours.toFixed(2)}`);
-      lines.push('');
-      lines.push(`Total Price: ${money(calc.price)}${settings.gstOn ? ' (inc GST)' : ''}`);
-      if(q.notes) lines.push('', `Notes: ${q.notes}`);
-      lines.push('');
-      if(settings.terms) lines.push(settings.terms, '');
-      lines.push('Kind regards,');
-      if(settings.contactName) lines.push(settings.contactName);
-      if(settings.bizName) lines.push(settings.bizName);
-      if(settings.bizPhone) lines.push(settings.bizPhone);
-      if(settings.bizEmail) lines.push(settings.bizEmail);
-      lines.push('', 'Sent using Window Quote Pro');
-      return lines.join('\n');
-    }
-
-    function refresh(){
-      const settings = getSettings();
-      const q = getQuoteInput();
-      const calc = calculatePrice(settings, q);
-      $("priceDisplay").textContent = money(calc.price);
-      $("priceMeta").textContent = settings.gstOn ? 'Including GST' : 'GST not included';
-      $("quotePreview").textContent = makeQuoteText(settings, q, calc);
-      saveLocal('wqp_settings', settings);
-      saveLocal('wqp_last_quote', q);
-      return { settings, q, calc };
-    }
-
-    function openEmail(){
-      const { settings, q, calc } = refresh();
-      const to = encodeURIComponent(q.customerEmail || '');
-      const subject = encodeURIComponent(`Window Cleaning Quote${settings.bizName ? ' - ' + settings.bizName : ''}`);
-      const body = encodeURIComponent(makeQuoteText(settings, q, calc));
-      window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-    }
-
-    function copyQuote(){
-      const text = $("quotePreview").textContent;
-      navigator.clipboard.writeText(text).then(() => alert('Quote copied.'));
-    }
-
-    function clearJob(){
-      fillFields(QUOTE_DEFAULTS);
-      refresh();
-    }
-
-    function resetSettings(){
-      fillFields(DEFAULTS);
-      refresh();
-    }
-
-    function setTab(tab){
-      const quote = $('quoteTab');
-      const settings = $('settingsTab');
-      document.querySelectorAll('.tabBtn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
-      quote.classList.toggle('hidden', tab !== 'quote');
-      settings.classList.toggle('hidden', tab !== 'settings');
-    }
-
-    function initInstall(){
-      let deferredPrompt;
-      const btn = $('installBtn');
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        btn.hidden = false;
-      });
-      btn.addEventListener('click', async () => {
-        if(!deferredPrompt) return;
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-        btn.hidden = true;
-      });
-    }
-
-    function init(){
-      fillFields({ ...DEFAULTS, ...loadLocal('wqp_settings', {}) });
-      fillFields({ ...QUOTE_DEFAULTS, ...loadLocal('wqp_last_quote', {}) });
-      refresh();
-
-      [...settingIds, ...quoteIds].forEach(id => {
-        const el = $(id);
-        if(!el) return;
-        el.addEventListener('input', refresh);
-        el.addEventListener('change', refresh);
-      });
-
-      $('saveSettingsBtn').addEventListener('click', () => { refresh(); alert('Settings saved on this device.'); });
-      $('resetSettingsBtn').addEventListener('click', resetSettings);
-      $('emailBtn').addEventListener('click', openEmail);
-      $('copyBtn').addEventListener('click', copyQuote);
-      $('clearBtn').addEventListener('click', clearJob);
-      document.querySelectorAll('.tabBtn').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
-      initInstall();
-
-      if('serviceWorker' in navigator){
-        window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
-      }
-    }
-    init();
-  </script>
 </body>
 </html>
