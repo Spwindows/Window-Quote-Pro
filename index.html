@@ -17,10 +17,40 @@
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
     .wrap{max-width:1100px;margin:0 auto;padding:18px}
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--blue),#4f8cff);display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:var(--shadow)}
-    .brand h1{font-size:24px;line-height:1.1;margin:0}
-    .brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+    .brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  width:56px;
+  height:56px;
+  flex:0 0 56px;
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+}
+
+.logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.brand h1{
+  font-size:22px;
+  line-height:1.1;
+  margin:0;
+}
+
+.brand p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
     .installBtn,.tabBtn,.btn{border:0;border-radius:14px;padding:13px 16px;font-weight:800;cursor:pointer;font-size:15px}
     .installBtn,.btn.primary{background:var(--blue);color:#fff}
     .btn.secondary,.tabBtn{background:#eaf1ff;color:#163d96}
@@ -53,6 +83,7 @@
       .grid{grid-template-columns:1fr}
       .two,.three{grid-template-columns:1fr}
       .topbar{align-items:flex-start;flex-direction:column}
+.brand{flex-direction:row;align-items:center}
     }
   </style>
 </head>
