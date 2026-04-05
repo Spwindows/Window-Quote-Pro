@@ -1,1649 +1,1953 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
   <title>Window Quote Pro</title>
-  <meta name="theme-color" content="#1e66ff" />
-  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet" />
   <style>
-    :root{
-      --blue:#1e66ff;
-      --blue-dark:#1247bd;
-      --text:#111827;
-      --muted:#6b7280;
-      --border:#e5e7eb;
-      --bg:#f3f6fb;
-      --card:#ffffff;
-      --shadow:0 10px 30px rgba(0,0,0,.08);
-      --radius:18px;
-      --ok:#16a34a;
-      --warn:#d97706;
-      --danger:#dc2626;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 100vh;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
+    input, textarea, select, button { font-family: inherit; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+
+    /* ── Layout ── */
+    #app { min-height: 100vh; }
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky; top: 0; z-index: 30;
+      padding: 0 1rem;
     }
-    .wrap{max-width:760px;margin:0 auto;padding:14px 14px 110px}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-    .brand{display:flex;align-items:center;gap:12px;min-width:0}
-    .logo{width:52px;height:52px;flex:0 0 52px;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.08)}
-    .logo img{width:100%;height:100%;object-fit:cover;display:block}
-    .brand h1{margin:0;font-size:24px;line-height:1.1}
-    .brand p{margin:4px 0 0;color:var(--muted);font-size:13px}
-    .mode-pill{border:1px solid var(--border);background:#fff;border-radius:999px;padding:8px 10px;font-size:12px;font-weight:800;white-space:nowrap}
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:16px;
+    .header-inner {
+      max-width: 680px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 0;
+    }
+    .header-brand { display: flex; align-items: center; gap: 0.625rem; }
+    .header-logo {
+      width: 2.25rem; height: 2.25rem; border-radius: 0.75rem;
+      background: #2563eb; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+    }
+    .header-logo svg { color: #fff; }
+    .header-title { font-weight: 900; font-size: 1rem; line-height: 1; color: #111827; }
+    .header-sub { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; font-weight: 500; }
+    .badge-free {
+      font-size: 0.7rem; font-weight: 700; background: #f3f4f6;
+      color: #6b7280; padding: 0.25rem 0.625rem; border-radius: 9999px;
+      border: 1px solid #e5e7eb;
+    }
+    .badge-pro {
+      font-size: 0.7rem; font-weight: 700; background: #2563eb;
+      color: #fff; padding: 0.25rem 0.625rem; border-radius: 9999px;
     }
 
-    .tabs{
-      position:sticky;
-      top:0;
-      z-index:20;
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:8px;
-      background:var(--bg);
-      padding:8px 0 12px;
-      margin-bottom:12px;
+    .main-content {
+      max-width: 680px; margin: 0 auto;
+      padding: 1rem 1rem 6rem;
     }
-    .tab{
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--text);
-      border-radius:14px;
-      padding:12px 10px;
-      font-size:14px;
-      font-weight:800;
-      cursor:pointer;
+
+    /* ── Tab Bar ── */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+      background: #fff; border-top: 1px solid #e5e7eb;
+      padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
     }
-    .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-    .panel{display:none}
-    .panel.active{display:block}
-
-    .subtabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
-    .subtab{
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--text);
-      border-radius:14px;
-      padding:11px 10px;
-      font-size:14px;
-      font-weight:800;
-      cursor:pointer;
+    .tab-bar-inner {
+      max-width: 680px; margin: 0 auto;
+      display: flex; align-items: center; padding: 0.5rem 1rem; gap: 0.25rem;
     }
-    .subtab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-    .subpanel{display:none}
-    .subpanel.active{display:block}
-
-    label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
-    input,select,textarea{
-      width:100%;
-      padding:13px 14px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      background:#fff;
-      font-size:16px;
-      font-family:inherit;
+    .tab-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+      padding: 0.5rem; border-radius: 0.75rem; border: none; background: none;
+      cursor: pointer; transition: all 0.15s; color: #9ca3af;
     }
-    textarea{min-height:92px;resize:vertical}
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-    .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
-    h2{margin:0 0 6px;font-size:18px}
-    h3{margin:0 0 8px;font-size:16px}
-    .sub{color:var(--muted);font-size:13px;margin:0 0 8px}
-    .mini{font-size:12px;color:var(--muted)}
-    .divider{height:1px;background:var(--border);margin:14px 0}
-
-    .btn,button{
-      border:0;
-      border-radius:14px;
-      padding:13px 14px;
-      font-size:15px;
-      font-weight:800;
-      cursor:pointer;
+    .tab-btn.active { color: #2563eb; }
+    .tab-btn-icon {
+      width: 2.5rem; height: 2rem; display: flex; align-items: center; justify-content: center;
+      border-radius: 0.75rem; transition: all 0.15s; position: relative;
     }
-    .btn.primary{background:var(--blue);color:#fff}
-    .btn.primary:hover{background:var(--blue-dark)}
-    .btn.secondary{background:#eaf1ff;color:#173b96}
-    .btn.ghost{background:#fff;color:var(--text);border:1px solid var(--border)}
-    .btn.good{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}
-    .btn.warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
-    .btn.danger{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
-    .btn-row{display:flex;gap:8px;flex-wrap:wrap}
-
-    .quote-box{background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:14px}
-    .quote-total{font-size:40px;font-weight:900;line-height:1;margin:0}
-    .quote-note{margin-top:6px;color:var(--muted);font-size:13px}
-    .preview{white-space:pre-wrap;background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;font-size:14px;line-height:1.5}
-
-    .auth-box,.team-box,.jobs-box,.feed-box{margin-top:12px}
-    .pill{display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:800}
-    .status{display:inline-flex;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid var(--border)}
-    .status.quote_sent{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
-    .status.accepted{background:#fffbeb;color:#b45309;border-color:#fde68a}
-    .status.in_progress{background:#eef2ff;color:#4338ca;border-color:#c7d2fe}
-    .status.completed{background:#ecfdf5;color:#15803d;border-color:#bbf7d0}
-    .status.cancelled{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
-
-    .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .kpi{border:1px solid var(--border);background:#fff;border-radius:16px;padding:12px}
-    .kpi .label{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase}
-    .kpi .value{font-size:28px;font-weight:900;margin-top:6px}
-
-    .job-card,.feed-row{
-      border:1px solid var(--border);
-      background:#fff;
-      border-radius:16px;
-      padding:14px;
+    .tab-btn.active .tab-btn-icon { background: #eff6ff; }
+    .tab-btn-label { font-size: 0.6875rem; font-weight: 700; line-height: 1; }
+    .tab-badge {
+      position: absolute; top: 0.125rem; right: 0;
+      width: 1rem; height: 1rem; background: #ef4444; color: #fff;
+      font-size: 0.625rem; font-weight: 900; border-radius: 9999px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .job-list,.feed-list{display:grid;gap:10px;margin-top:10px}
-    .job-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-    .job-title{font-weight:900;font-size:17px;margin:0 0 4px}
-    .job-sub{margin:0;color:var(--muted);font-size:13px}
-    .job-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;font-size:13px}
-    .feed-row p{margin:0 0 4px}
-    .feed-row small{color:var(--muted)}
 
-    .banner{
-      margin:0 0 12px;
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:13px;
-      font-weight:700;
-      display:none;
+    /* ── Cards ── */
+    .card {
+      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 1rem; margin-bottom: 0.75rem;
     }
-    .banner.show{display:block}
-    .banner.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
-    .banner.error{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
-    .banner.success{background:#ecfdf5;color:#15803d;border:1px solid #bbf7d0}
+    .card-title {
+      font-weight: 700; font-size: 0.9375rem; color: #1f2937;
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;
+    }
+    .card-title svg { color: #3b82f6; }
 
-    .hidden{display:none !important}
+    /* ── Form fields ── */
+    .field-label {
+      display: block; font-size: 0.6875rem; font-weight: 600; color: #6b7280;
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;
+    }
+    .field-input {
+      width: 100%; padding: 0.625rem 0.75rem; border-radius: 0.75rem;
+      border: 1px solid #e5e7eb; background: #f9fafb;
+      font-size: 0.875rem; font-weight: 500; color: #111827;
+      outline: none; transition: all 0.15s;
+    }
+    .field-input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .field-input-icon { position: relative; }
+    .field-input-icon svg {
+      position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+      color: #9ca3af; pointer-events: none;
+    }
+    .field-input-icon .field-input { padding-left: 2rem; }
+    .field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .field-full { grid-column: 1 / -1; }
 
-    .sticky-actions{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      z-index:30;
-      padding:10px 14px calc(10px + env(safe-area-inset-bottom));
-      background:linear-gradient(180deg,rgba(243,246,251,0),rgba(243,246,251,1) 28%);
+    /* ── Stepper ── */
+    .stepper-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #e5e7eb;
+      background: #fff; transition: all 0.15s; margin-bottom: 0.5rem;
     }
-    .sticky-inner{
-      max-width:760px;
-      margin:0 auto;
-      background:#fff;
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-      border-radius:18px;
-      padding:10px 12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
+    .stepper-row.active { background: #eff6ff; border-color: #bfdbfe; }
+    .stepper-label {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.875rem; font-weight: 600; color: #4b5563; min-width: 0;
     }
-    .sticky-price{font-size:28px;font-weight:900;line-height:1}
-    .sticky-note{font-size:12px;color:var(--muted);margin-top:4px}
-    .footer-note{text-align:center;color:var(--muted);font-size:12px;margin-top:12px}
+    .stepper-row.active .stepper-label { color: #1e3a8a; }
+    .stepper-label svg { color: #9ca3af; flex-shrink: 0; }
+    .stepper-row.active .stepper-label svg { color: #2563eb; }
+    .stepper-controls { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .stepper-val {
+      width: 2rem; text-align: center; font-weight: 700; font-size: 1rem;
+      color: #9ca3af; font-variant-numeric: tabular-nums;
+    }
+    .stepper-row.active .stepper-val { color: #1d4ed8; }
+    .btn-stepper {
+      width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; border: none;
+      font-size: 1.125rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.1s; background: #f3f4f6; color: #374151;
+      user-select: none;
+    }
+    .btn-stepper:active { transform: scale(0.9); }
+    .btn-stepper.minus:disabled { opacity: 0.35; cursor: default; }
+    .btn-stepper.plus { background: #2563eb; color: #fff; }
+    .btn-stepper.plus:active { background: #1d4ed8; }
 
-    @media (max-width:640px){
-      .two,.three,.job-meta,.kpis{grid-template-columns:1fr}
-      .brand h1{font-size:22px}
-      .wrap{padding:12px 12px 116px}
-      .sticky-inner{align-items:stretch;flex-direction:column}
-      .sticky-inner .btn-row{width:100%}
-      .sticky-inner .btn{flex:1}
+    /* ── Toggle buttons ── */
+    .toggle-group { display: grid; gap: 0.375rem; }
+    .toggle-btn {
+      padding: 0.5rem 0.5rem; border-radius: 0.75rem; border: 2px solid #e5e7eb;
+      background: #f9fafb; font-size: 0.75rem; font-weight: 700; color: #4b5563;
+      cursor: pointer; transition: all 0.15s; text-align: center;
     }
+    .toggle-btn.active { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+    .toggle-btn.active-amber { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
+      padding: 0.625rem 1rem; border-radius: 0.75rem; border: none;
+      font-size: 0.875rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:disabled { opacity: 0.5; cursor: default; }
+    .btn-secondary { background: #f3f4f6; color: #374151; }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .btn-dark { background: #1f2937; color: #fff; }
+    .btn-dark:hover { background: #111827; }
+    .btn-danger-soft { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .btn-danger-soft:hover { background: #fee2e2; }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-success:hover { background: #047857; }
+    .btn-amber { background: #f59e0b; color: #fff; }
+    .btn-amber:hover { background: #d97706; }
+    .btn-purple { background: #7c3aed; color: #fff; }
+    .btn-purple:hover { background: #6d28d9; }
+    .btn-full { width: 100%; }
+    .btn-sm { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
+    .btn-lg { padding: 0.875rem 1.25rem; font-size: 0.9375rem; }
+
+    /* ── Quote Footer ── */
+    .quote-footer {
+      position: fixed; bottom: 4.5rem; left: 0; right: 0; z-index: 40;
+    }
+    .quote-footer-inner {
+      max-width: 680px; margin: 0 auto; padding: 0.5rem 0.75rem;
+    }
+    .quote-footer-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 0.75rem 1rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    }
+    .quote-price {
+      font-size: 1.875rem; font-weight: 900; color: #111827;
+      font-variant-numeric: tabular-nums; line-height: 1;
+      transition: transform 0.25s ease;
+    }
+    .quote-price.pulse { animation: pricePulse 0.25s ease-out; }
+    @keyframes pricePulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .quote-price-sub { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; font-weight: 500; }
+    .quote-footer-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+    /* ── Summary chips ── */
+    .chip-strip { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;
+    }
+    .chip-blue { background: #dbeafe; color: #1d4ed8; }
+    .chip-indigo { background: #e0e7ff; color: #3730a3; }
+    .chip-sky { background: #e0f2fe; color: #0369a1; }
+    .chip-violet { background: #ede9fe; color: #5b21b6; }
+    .chip-amber { background: #fef3c7; color: #92400e; }
+    .chip-teal { background: #ccfbf1; color: #0f766e; }
+
+    /* ── Collapsible ── */
+    .collapsible-header {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 0.875rem 1rem; background: none; border: none; cursor: pointer;
+      font-size: 0.875rem; font-weight: 700; color: #1f2937; text-align: left;
+    }
+    .collapsible-header svg { color: #9ca3af; transition: transform 0.2s; }
+    .collapsible-header.open svg { transform: rotate(180deg); }
+    .collapsible-body { padding: 0 1rem 1rem; }
+
+    /* ── Rate cards ── */
+    .rate-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .rate-card {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 0.75rem;
+    }
+    .rate-card-label { font-size: 0.75rem; font-weight: 600; color: #6b7280; margin-bottom: 0.25rem; }
+    .rate-card-input-row { display: flex; align-items: baseline; gap: 0.125rem; }
+    .rate-card-prefix { color: #9ca3af; font-size: 0.875rem; font-weight: 600; }
+    .rate-card input {
+      flex: 1; background: transparent; border: none; outline: none;
+      font-size: 1.125rem; font-weight: 900; color: #111827; width: 100%; text-align: right;
+    }
+    .rate-card-unit { font-size: 0.6875rem; color: #9ca3af; text-align: right; margin-top: 0.125rem; }
+
+    /* ── KPI cards ── */
+    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .kpi-card { border-radius: 0.75rem; padding: 0.75rem; border: 1px solid; }
+    .kpi-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
+    .kpi-label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
+    .kpi-value { font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .kpi-blue { background: #eff6ff; border-color: #bfdbfe; color: #1e3a8a; }
+    .kpi-amber { background: #fffbeb; border-color: #fde68a; color: #78350f; }
+    .kpi-purple { background: #f5f3ff; border-color: #ddd6fe; color: #4c1d95; }
+    .kpi-green { background: #ecfdf5; border-color: #a7f3d0; color: #064e3b; }
+
+    /* ── Revenue banner ── */
+    .revenue-banner {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      border-radius: 1rem; padding: 1rem; color: #fff; margin-bottom: 0.75rem;
+    }
+    .revenue-banner-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; opacity: 0.85; font-size: 0.875rem; font-weight: 700; }
+    .revenue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .revenue-label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; margin-bottom: 0.25rem; }
+    .revenue-value { font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+
+    /* ── Job cards ── */
+    .job-card {
+      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
+      border-left: 4px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 0.5rem; overflow: hidden;
+    }
+    .job-card[data-status="quote_sent"] { border-left-color: #3b82f6; }
+    .job-card[data-status="accepted"] { border-left-color: #f59e0b; }
+    .job-card[data-status="in_progress"] { border-left-color: #8b5cf6; }
+    .job-card[data-status="completed"] { border-left-color: #10b981; }
+    .job-card[data-status="cancelled"] { border-left-color: #ef4444; }
+    .job-card-header { padding: 1rem; cursor: pointer; width: 100%; background: none; border: none; text-align: left; }
+    .job-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+    .job-card-name { font-weight: 700; font-size: 1rem; color: #111827; }
+    .job-card-addr { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
+    .job-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.375rem; flex-shrink: 0; }
+    .job-card-price { font-size: 1.125rem; font-weight: 900; color: #111827; font-variant-numeric: tabular-nums; }
+    .job-card-meta { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+    .job-card-date { font-size: 0.75rem; color: #9ca3af; }
+    .job-card-items { font-size: 0.75rem; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .job-card-body { padding: 0 1rem 1rem; border-top: 1px solid #f3f4f6; padding-top: 0.75rem; }
+    .job-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem; margin-bottom: 0.75rem; }
+    .job-detail-label { color: #9ca3af; font-weight: 600; }
+    .job-detail-val { color: #374151; font-weight: 600; margin-top: 0.125rem; }
+    .job-notes { background: #f9fafb; border-radius: 0.75rem; padding: 0.625rem 0.75rem; font-size: 0.75rem; color: #4b5563; margin-bottom: 0.75rem; }
+    .job-notes-label { font-weight: 600; color: #9ca3af; display: block; margin-bottom: 0.25rem; }
+    .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+    .paid-box { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.75rem; padding: 0.75rem; }
+    .paid-box-label { font-size: 0.75rem; font-weight: 600; color: #059669; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.25rem; }
+    .paid-input-row { display: flex; gap: 0.5rem; }
+    .paid-input-wrap { position: relative; flex: 1; }
+    .paid-input-wrap span { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #059669; font-weight: 700; font-size: 0.875rem; }
+    .paid-input-wrap input {
+      width: 100%; padding: 0.5rem 0.75rem 0.5rem 1.5rem; border-radius: 0.75rem;
+      border: 1px solid #a7f3d0; background: #fff; font-size: 0.875rem; font-weight: 700;
+      outline: none; color: #111827;
+    }
+    .paid-input-wrap input:focus { border-color: #34d399; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+    .paid-current { font-size: 0.75rem; color: #059669; font-weight: 600; margin-top: 0.375rem; }
+
+    /* ── Status badges ── */
+    .status-badge {
+      font-size: 0.6875rem; font-weight: 700; padding: 0.25rem 0.5rem;
+      border-radius: 9999px; border: 1px solid; white-space: nowrap;
+    }
+    .status-quote_sent { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+    .status-accepted { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .status-in_progress { background: #ede9fe; color: #4c1d95; border-color: #ddd6fe; }
+    .status-completed { background: #d1fae5; color: #064e3b; border-color: #a7f3d0; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+
+    /* ── Filter chips ── */
+    .filter-strip { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; margin-bottom: 0.75rem; -webkit-overflow-scrolling: touch; }
+    .filter-strip::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      flex-shrink: 0; padding: 0.375rem 0.75rem; border-radius: 9999px;
+      font-size: 0.75rem; font-weight: 700; border: 1px solid #e5e7eb;
+      background: #fff; color: #4b5563; cursor: pointer; transition: all 0.15s;
+    }
+    .filter-chip.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+    /* ── Auth / Team ── */
+    .mode-toggle { display: flex; background: #f3f4f6; border-radius: 0.75rem; padding: 0.25rem; margin-bottom: 1rem; }
+    .mode-btn {
+      flex: 1; padding: 0.5rem; border-radius: 0.625rem; border: none; background: none;
+      font-size: 0.875rem; font-weight: 700; cursor: pointer; transition: all 0.15s; color: #6b7280;
+    }
+    .mode-btn.active { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* ── Sub tabs ── */
+    .sub-tabs { display: flex; background: #f3f4f6; border-radius: 0.75rem; padding: 0.25rem; margin-bottom: 0.75rem; }
+    .sub-tab {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.375rem;
+      padding: 0.5rem; border-radius: 0.625rem; border: none; background: none;
+      font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.15s; color: #6b7280;
+    }
+    .sub-tab.active { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* ── Team header ── */
+    .team-header {
+      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
+      padding: 1rem; margin-bottom: 0.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .team-logo {
+      width: 2rem; height: 2rem; border-radius: 0.625rem; background: #2563eb;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .team-info { min-width: 0; margin-left: 0.625rem; }
+    .team-name { font-weight: 700; font-size: 0.875rem; color: #111827; }
+    .team-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; }
+    .role-badge {
+      font-size: 0.6875rem; font-weight: 700; padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+    }
+    .role-owner { background: #dbeafe; color: #1d4ed8; }
+    .role-staff { background: #f3f4f6; color: #4b5563; }
+    .team-email { font-size: 0.75rem; color: #9ca3af; }
+
+    /* ── Activity feed ── */
+    .activity-item {
+      background: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb;
+      padding: 0.75rem 1rem; display: flex; align-items: flex-start; gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .activity-icon {
+      width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; background: #f9fafb;
+      border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 0.125rem;
+    }
+    .activity-action { font-weight: 700; font-size: 0.875rem; color: #111827; }
+    .activity-details { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
+    .activity-time { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
+      padding: 3rem 1rem; text-align: center;
+    }
+    .empty-state svg { color: #d1d5db; margin: 0 auto 0.75rem; display: block; }
+    .empty-title { font-weight: 600; color: #6b7280; font-size: 0.875rem; }
+    .empty-sub { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; }
+
+    /* ── Info box ── */
+    .info-box {
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 1rem;
+      padding: 1rem; display: flex; gap: 0.75rem; margin-top: 1rem;
+    }
+    .info-box svg { color: #3b82f6; flex-shrink: 0; margin-top: 0.125rem; }
+    .info-box-title { font-size: 0.875rem; font-weight: 700; color: #1e3a8a; }
+    .info-box ul { font-size: 0.75rem; color: #1d4ed8; margin-top: 0.25rem; list-style: none; }
+    .info-box li::before { content: '· '; }
+
+    /* ── Quote preview ── */
+    .quote-preview-pre {
+      font-family: 'Courier New', monospace; font-size: 0.75rem; color: #374151;
+      line-height: 1.6; white-space: pre-wrap; background: #f9fafb;
+      border-radius: 0.75rem; padding: 0.75rem;
+    }
+
+    /* ── Invite code ── */
+    .invite-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem;
+      padding: 0.625rem 0.75rem; margin-top: 0.5rem;
+    }
+    .invite-code { flex: 1; font-family: monospace; font-weight: 700; font-size: 0.875rem; color: #111827; letter-spacing: 0.15em; }
+    .copy-btn { background: none; border: none; cursor: pointer; color: #9ca3af; transition: color 0.15s; }
+    .copy-btn:hover { color: #374151; }
+    .copy-btn.copied { color: #10b981; }
+
+    /* ── Toast ── */
+    #toast-container {
+      position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
+      z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
+      pointer-events: none; width: min(calc(100vw - 2rem), 360px);
+    }
+    .toast {
+      background: #1f2937; color: #fff; padding: 0.75rem 1rem; border-radius: 0.75rem;
+      font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      animation: toastIn 0.25s ease-out; pointer-events: auto;
+    }
+    .toast.success { background: #059669; }
+    .toast.error { background: #dc2626; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-0.5rem); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Misc ── */
+    .divider { height: 1px; background: #f3f4f6; margin: 0.75rem 0; }
+    .text-muted { color: #6b7280; font-size: 0.75rem; }
+    .section-label { font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .flex-row { display: flex; align-items: center; gap: 0.5rem; }
+    .ml-auto { margin-left: auto; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .w-full { width: 100%; }
+    .hidden { display: none !important; }
+    textarea.field-input { resize: none; }
+    .pricing-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+    .pricing-mode-btn {
+      padding: 0.75rem; border-radius: 0.75rem; border: 2px solid #e5e7eb;
+      background: #f9fafb; cursor: pointer; transition: all 0.15s; text-align: left;
+    }
+    .pricing-mode-btn.active { border-color: #3b82f6; background: #eff6ff; }
+    .pricing-mode-btn .mode-title { font-weight: 700; font-size: 0.875rem; color: #374151; }
+    .pricing-mode-btn.active .mode-title { color: #1d4ed8; }
+    .pricing-mode-btn .mode-desc { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
+    .num-input-wrap { position: relative; }
+    .num-input-wrap .prefix { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.875rem; font-weight: 600; }
+    .num-input-wrap .suffix { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.875rem; }
+    .num-input-wrap input { width: 100%; padding: 0.625rem 0.75rem; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #f9fafb; font-size: 0.875rem; font-weight: 700; color: #111827; outline: none; transition: all 0.15s; text-align: right; }
+    .num-input-wrap.has-prefix input { padding-left: 1.75rem; }
+    .num-input-wrap.has-suffix input { padding-right: 1.75rem; }
+    .num-input-wrap input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .save-action-row { display: flex; align-items: center; gap: 0.5rem; }
+    .save-note { font-size: 0.75rem; color: #9ca3af; margin-top: 0.75rem; display: flex; align-items: flex-start; gap: 0.375rem; }
+    .save-note svg { flex-shrink: 0; margin-top: 0.125rem; }
+    .gst-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .round-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .modifier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .modifier-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 0.75rem; }
+    .modifier-card.amber { background: #fffbeb; border-color: #fde68a; }
+    .modifier-label { font-size: 0.75rem; font-weight: 600; color: #6b7280; margin-bottom: 0.25rem; }
+    .modifier-card.amber .modifier-label { color: #92400e; }
+    .modifier-input-row { display: flex; align-items: baseline; }
+    .modifier-input { flex: 1; background: transparent; border: none; outline: none; font-size: 1.125rem; font-weight: 900; color: #111827; width: 100%; text-align: right; }
+    .modifier-card.amber .modifier-input { color: #92400e; }
+    .modifier-unit { font-size: 0.6875rem; color: #9ca3af; text-align: right; margin-top: 0.125rem; }
+    .modifier-card.amber .modifier-unit { color: #d97706; }
+    .hourly-card { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.75rem; padding: 0.75rem; margin-bottom: 1rem; }
+    .hourly-input-row { display: flex; align-items: baseline; gap: 0.25rem; }
+    .hourly-prefix { color: #93c5fd; font-size: 0.875rem; font-weight: 600; }
+    .hourly-input { flex: 1; background: transparent; border: none; outline: none; font-size: 1.5rem; font-weight: 900; color: #1d4ed8; width: 100%; }
+    .hourly-suffix { color: #93c5fd; font-size: 0.875rem; }
+    .save-quote-row {
+      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
+      padding: 0.875rem 1rem; display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: background 0.15s; margin-bottom: 0.75rem;
+    }
+    .save-quote-row:hover { background: #f9fafb; }
+    .save-quote-row-left { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 700; color: #374151; }
+    .save-quote-row-left svg { color: #3b82f6; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo"><img src="logo.png" alt="Window Quote Pro" /></div>
+<div id="toast-container"></div>
+<div id="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="header-logo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 0 1-9.95-9H3a9 9 0 0 0 9 9Z"/><path d="M2.05 13A10 10 0 0 1 12 2c5.52 0 10 4.48 10 10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
         <div>
-          <h1>Window Quote Pro</h1>
-          <p>Fast quoting for window cleaners</p>
+          <div class="header-title">Window Quote Pro</div>
+          <div class="header-sub" id="header-sub">Fast quoting for window cleaners</div>
         </div>
       </div>
-      <div class="mode-pill" id="modePill">Free Mode</div>
+      <span class="badge-free" id="pro-badge">FREE</span>
     </div>
+  </header>
 
-    <div class="banner info" id="topBanner"></div>
-
-    <div class="tabs">
-      <button class="tab active" data-tab="quote" type="button">Quote</button>
-      <button class="tab" data-tab="pricing" type="button">Pricing</button>
-      <button class="tab" data-tab="pro" type="button">Pro</button>
-    </div>
-
-    <section class="panel active" id="quotePanel">
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Quote Tab -->
+    <div id="tab-quote">
+      <div class="chip-strip" id="service-chips"></div>
+      <!-- Customer Details -->
       <div class="card">
-        <div class="section-title">
-          <div>
-            <h2>Create Quote</h2>
-            <p class="sub">Use this screen on the job. Pricing updates instantly.</p>
-          </div>
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+          Customer Details
         </div>
-
-        <div class="two">
-          <div>
-            <label for="customerName">Customer Name</label>
-            <input id="customerName" type="text" placeholder="John Smith" />
+        <div class="field-grid-2">
+          <div class="field-full">
+            <label class="field-label">Name</label>
+            <input type="text" class="field-input" id="q-name" placeholder="John Smith" />
           </div>
           <div>
-            <label for="customerPhone">Phone</label>
-            <input id="customerPhone" type="text" placeholder="0400 000 000" />
-          </div>
-        </div>
-
-        <label for="customerEmail">Customer Email</label>
-        <input id="customerEmail" type="email" placeholder="john@email.com" />
-
-        <label for="serviceAddress">Address</label>
-        <input id="serviceAddress" type="text" placeholder="12 Smith St, Melbourne" />
-
-        <div class="divider"></div>
-
-        <div class="three">
-          <div><label for="windows">Windows</label><input id="windows" type="number" min="0" value="0" /></div>
-          <div><label for="tracks">Tracks</label><input id="tracks" type="number" min="0" value="0" /></div>
-          <div><label for="flyscreens">Flyscreens</label><input id="flyscreens" type="number" min="0" value="0" /></div>
-        </div>
-
-        <div class="three">
-          <div><label for="balustrades">Balustrades</label><input id="balustrades" type="number" min="0" value="0" /></div>
-          <div><label for="solarPanels">Solar Panels</label><input id="solarPanels" type="number" min="0" value="0" /></div>
-          <div><label for="gutterMetres">Gutter Metres</label><input id="gutterMetres" type="number" min="0" step="0.1" value="0" /></div>
-        </div>
-
-        <div class="three">
-          <div>
-            <label for="serviceType">Service Type</label>
-            <select id="serviceType">
-              <option value="full">Internal + External</option>
-              <option value="external">External Only</option>
-            </select>
+            <label class="field-label">Phone</label>
+            <div class="field-input-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92Z"/></svg>
+              <input type="tel" class="field-input" id="q-phone" placeholder="0400 000 000" />
+            </div>
           </div>
           <div>
-            <label for="storeys">Storeys</label>
-            <select id="storeys">
-              <option value="single">Single Storey</option>
-              <option value="two">Two Storey</option>
-            </select>
+            <label class="field-label">Email</label>
+            <div class="field-input-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input type="email" class="field-input" id="q-email" placeholder="john@email.com" />
+            </div>
           </div>
-          <div>
-            <label for="buildersClean">Builder's Clean</label>
-            <select id="buildersClean">
-              <option value="false">No</option>
-              <option value="true">Yes</option>
-            </select>
+          <div class="field-full">
+            <label class="field-label">Address</label>
+            <div class="field-input-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <input type="text" class="field-input" id="q-address" placeholder="12 Smith St, Melbourne" />
+            </div>
           </div>
         </div>
-
-        <label for="jobNotes">Notes</label>
-        <textarea id="jobNotes" placeholder="Access notes, scope notes, exclusions, etc."></textarea>
-
-        <div class="divider"></div>
-
-        <div class="quote-box">
-          <div class="quote-total" id="priceDisplay">$165.00</div>
-          <div class="quote-note" id="priceNote">Final price shown includes GST</div>
-        </div>
-
-        <div class="divider"></div>
-
-        <h3>Quote Preview</h3>
-        <div class="preview" id="quotePreview"></div>
-        <div class="footer-note">Sent using Window Quote Pro</div>
       </div>
-    </section>
 
-    <section class="panel" id="pricingPanel">
+      <!-- Services -->
       <div class="card">
-        <div class="section-title">
-          <div>
-            <h2>Business & Pricing</h2>
-            <p class="sub">Set this once. Keep it out of the way on jobs.</p>
-          </div>
-          <button class="btn secondary" id="saveLocalBtn" type="button">Save Settings</button>
+        <div class="card-title" style="justify-content:space-between">
+          <span>Services</span>
+          <span id="items-badge" class="hidden" style="font-size:0.75rem;font-weight:700;background:#dbeafe;color:#1d4ed8;padding:0.25rem 0.5rem;border-radius:9999px;"></span>
         </div>
-
-        <label for="businessName">Business Name</label>
-        <input id="businessName" type="text" placeholder="Crystal Clear Windows" />
-
-        <div class="two">
-          <div>
-            <label for="contactName">Contact Name</label>
-            <input id="contactName" type="text" placeholder="Mike" />
-          </div>
-          <div>
-            <label for="businessPhone">Phone</label>
-            <input id="businessPhone" type="text" placeholder="0412 345 678" />
-          </div>
-        </div>
-
-        <label for="businessEmail">Email</label>
-        <input id="businessEmail" type="email" placeholder="quotes@yourbusiness.com.au" />
-
-        <label for="customMessage">Quote Message</label>
-        <textarea id="customMessage" placeholder="Hi, thanks for your enquiry 😊
-
-This quote includes the selected services as discussed.
-
-Additional items such as tracks, flyscreens, or detailing can be added if required.
-
-Let me know if you'd like to proceed or make any changes.
-
-Thanks,"></textarea>
-
-        <div class="divider"></div>
-
-        <div class="two">
-          <div>
-            <label for="pricingMode">Pricing Mode</label>
-            <select id="pricingMode">
-              <option value="per_item">Per Item</option>
-              <option value="time_based">Time Based</option>
-            </select>
-          </div>
-          <div>
-            <label for="roundingRule">Rounding</label>
-            <select id="roundingRule">
-              <option value="none">No rounding</option>
-              <option value="10" selected>Round up to nearest $10</option>
-              <option value="5">Round up to nearest $5</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="perItemFields">
-          <div class="three">
-            <div><label for="rateWindow">Window Price</label><input id="rateWindow" type="number" step="0.01" value="18" /></div>
-            <div><label for="rateTrack">Track Price</label><input id="rateTrack" type="number" step="0.01" value="6" /></div>
-            <div><label for="rateFlyscreen">Flyscreen Price</label><input id="rateFlyscreen" type="number" step="0.01" value="4" /></div>
-          </div>
-          <div class="three">
-            <div><label for="rateBalustrade">Balustrade Price</label><input id="rateBalustrade" type="number" step="0.01" value="35" /></div>
-            <div><label for="rateSolar">Solar Panel Price</label><input id="rateSolar" type="number" step="0.01" value="12" /></div>
-            <div><label for="rateGutter">Gutter / metre</label><input id="rateGutter" type="number" step="0.01" value="6" /></div>
-          </div>
-        </div>
-
-        <div id="timeBasedFields" class="hidden">
-          <div class="three">
-            <div><label for="hourlyRate">Hourly Rate</label><input id="hourlyRate" type="number" step="0.01" value="135" /></div>
-            <div><label for="minsPerWindow">Mins / Window</label><input id="minsPerWindow" type="number" step="0.1" value="8" /></div>
-            <div><label for="minsPerTrack">Mins / Track</label><input id="minsPerTrack" type="number" step="0.1" value="7" /></div>
-          </div>
-          <div class="three">
-            <div><label for="minsPerFlyscreen">Mins / Flyscreen</label><input id="minsPerFlyscreen" type="number" step="0.1" value="1.5" /></div>
-            <div><label for="minsPerBalustrade">Mins / Balustrade</label><input id="minsPerBalustrade" type="number" step="0.1" value="6" /></div>
-            <div><label for="minsPerSolar">Mins / Solar Panel</label><input id="minsPerSolar" type="number" step="0.1" value="2" /></div>
-          </div>
-          <div class="three">
-            <div><label for="minsPerGutterMetre">Mins / Gutter metre</label><input id="minsPerGutterMetre" type="number" step="0.1" value="0.8" /></div>
-            <div><label for="over6HoursFee">Extra over 6 hrs</label><input id="over6HoursFee" type="number" step="0.01" value="100" /></div>
-            <div></div>
-          </div>
-        </div>
-
-        <div class="three">
-          <div><label for="externalOnlyFactor">External Only %</label><input id="externalOnlyFactor" type="number" step="0.01" value="0.52" /></div>
-          <div><label for="twoStoreyFactor">Two Storey %</label><input id="twoStoreyFactor" type="number" step="0.01" value="0.15" /></div>
-          <div><label for="buildersCleanFactor">Builder's Clean %</label><input id="buildersCleanFactor" type="number" step="0.01" value="1" /></div>
-        </div>
-
-        <div class="three">
-          <div><label for="minimumFee">Minimum Fee</label><input id="minimumFee" type="number" step="0.01" value="165" /></div>
-          <div><label for="gstRate">GST Rate</label><input id="gstRate" type="number" step="0.01" value="0.10" /></div>
-          <div>
-            <label for="gstIncluded">GST Handling</label>
-            <select id="gstIncluded">
-              <option value="true">Price includes GST</option>
-              <option value="false">Add GST on top</option>
-            </select>
-          </div>
+        <div id="stepper-list">
+          <!-- Steppers injected by JS -->
         </div>
       </div>
-    </section>
-    <section class="panel" id="proPanel">
+
+      <!-- Job Options -->
       <div class="card">
-        <div class="section-title">
+        <div class="card-title">Job Options</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
           <div>
-            <h2>Pro Teams</h2>
-            <p class="sub" id="proStatusText">Not signed in</p>
-          </div>
-          <button class="btn ghost hidden" id="logoutBtn" type="button">Sign Out</button>
-        </div>
-
-        <div id="authView" class="auth-box">
-          <div class="btn-row" style="margin-bottom:10px">
-            <button class="btn secondary authTab active" data-auth-tab="signin" type="button">Sign In</button>
-            <button class="btn ghost authTab" data-auth-tab="signup" type="button">Sign Up</button>
-          </div>
-
-          <div id="signinPanel">
-            <label for="signinEmail">Email</label>
-            <input id="signinEmail" type="email" placeholder="you@email.com" />
-            <label for="signinPassword">Password</label>
-            <input id="signinPassword" type="password" placeholder="Password" />
-            <div class="btn-row" style="margin-top:12px">
-              <button class="btn primary" id="signinBtn" type="button">Sign In</button>
+            <div class="section-label">Service</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-group="service" data-val="full">Int + Ext</button>
+              <button class="toggle-btn" data-group="service" data-val="external">Ext Only</button>
             </div>
           </div>
-
-          <div id="signupPanel" class="hidden">
-            <label for="signupName">Full Name</label>
-            <input id="signupName" type="text" placeholder="Your name" />
-            <label for="signupEmail">Email</label>
-            <input id="signupEmail" type="email" placeholder="you@email.com" />
-            <label for="signupPassword">Password</label>
-            <input id="signupPassword" type="password" placeholder="Password" />
-            <div class="btn-row" style="margin-top:12px">
-              <button class="btn primary" id="signupBtn" type="button">Create Account</button>
+          <div>
+            <div class="section-label">Storeys</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-group="storeys" data-val="single">1 Storey</button>
+              <button class="toggle-btn" data-group="storeys" data-val="two">2 Storey</button>
+            </div>
+          </div>
+          <div>
+            <div class="section-label">Builder's</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-group="builders" data-val="no">No</button>
+              <button class="toggle-btn" data-group="builders" data-val="yes" id="builders-yes-btn">Yes</button>
             </div>
           </div>
         </div>
-
-        <div id="teamSetupView" class="team-box hidden">
-          <div class="divider"></div>
-          <h3>Set Up Team</h3>
-          <label for="teamBusinessName">Create Team</label>
-          <input id="teamBusinessName" type="text" placeholder="Business name" />
-          <div class="btn-row" style="margin-top:12px">
-            <button class="btn primary" id="createTeamBtn" type="button">Create Team</button>
-          </div>
-
-          <div class="divider"></div>
-
-          <label for="inviteCode">Join With Invite Code</label>
-          <input id="inviteCode" type="text" placeholder="ABCD1234" />
-          <div class="btn-row" style="margin-top:12px">
-            <button class="btn secondary" id="joinTeamBtn" type="button">Join Team</button>
-          </div>
-        </div>
-
-        <div id="teamView" class="team-box hidden">
-          <div class="divider"></div>
-          <div class="section-title">
-            <h3 id="teamName">Your Team</h3>
-            <button class="btn secondary" id="makeInviteBtn" type="button">Create Invite Code</button>
-          </div>
-          <div class="btn-row">
-            <span class="pill" id="memberRolePill">Worker</span>
-            <span class="pill" id="teamCountPill">0 members</span>
-          </div>
-          <p class="sub" id="inviteOutput" style="margin-top:10px"></p>
-
-          <div class="divider"></div>
-
-          <div class="subtabs">
-            <button class="subtab active" data-subtab="dashboard" type="button">Dashboard</button>
-            <button class="subtab" data-subtab="jobs" type="button">Jobs</button>
-            <button class="subtab" data-subtab="activity" type="button">Activity</button>
-          </div>
-
-          <div class="subpanel active" id="dashboardSubpanel">
-            <div class="section-title">
-              <h3>Live Dashboard</h3>
-              <button class="btn good" id="saveTeamJobBtn" type="button">Save Current Quote as Team Job</button>
-            </div>
-
-            <div class="kpis">
-              <div class="kpi"><div class="label">Quote Sent</div><div class="value" id="kpiQuoteSent">0</div></div>
-              <div class="kpi"><div class="label">Accepted</div><div class="value" id="kpiAccepted">0</div></div>
-              <div class="kpi"><div class="label">In Progress</div><div class="value" id="kpiInProgress">0</div></div>
-              <div class="kpi"><div class="label">Completed</div><div class="value" id="kpiCompleted">0</div></div>
-              <div class="kpi"><div class="label">Cancelled</div><div class="value" id="kpiCancelled">0</div></div>
-              <div class="kpi"><div class="label">Paid Total</div><div class="value" id="kpiPaidTotal">$0.00</div></div>
-            </div>
-          </div>
-
-          <div class="subpanel" id="jobsSubpanel">
-            <div class="btn-row" style="margin-top:12px">
-              <button class="btn secondary jobFilter active" data-job-filter="all" type="button">All</button>
-              <button class="btn ghost jobFilter" data-job-filter="quote_sent" type="button">Quote Sent</button>
-              <button class="btn ghost jobFilter" data-job-filter="accepted" type="button">Accepted</button>
-              <button class="btn ghost jobFilter" data-job-filter="in_progress" type="button">In Progress</button>
-              <button class="btn ghost jobFilter" data-job-filter="completed" type="button">Completed</button>
-              <button class="btn ghost jobFilter" data-job-filter="cancelled" type="button">Cancelled</button>
-            </div>
-
-            <div class="jobs-box">
-              <div class="job-list" id="jobsList"></div>
-            </div>
-          </div>
-
-          <div class="subpanel" id="activitySubpanel">
-            <h3>Activity Feed</h3>
-            <div class="feed-box">
-              <div class="feed-list" id="activityFeed"></div>
-            </div>
-          </div>
+        <div>
+          <label class="field-label">Notes</label>
+          <textarea class="field-input" id="q-notes" rows="2" placeholder="Access notes, scope, exclusions..."></textarea>
         </div>
       </div>
-    </section>
-  </div>
 
-  <div class="sticky-actions">
-    <div class="sticky-inner">
-      <div>
-        <div class="sticky-price" id="stickyPrice">$165.00</div>
-        <div class="sticky-note">Quick actions for quoting on-site</div>
+      <!-- Quote Preview -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <button class="collapsible-header" id="preview-toggle">
+          <span style="display:flex;align-items:center;gap:0.5rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#9ca3af"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Quote Preview
+          </span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="preview-body" class="hidden" style="padding:0 1rem 1rem;">
+          <pre class="quote-preview-pre" id="preview-text"></pre>
+        </div>
       </div>
-      <div class="btn-row">
-        <button class="btn secondary" id="stickySaveBtn" type="button">Save</button>
-        <button class="btn primary" id="stickyEmailBtn" type="button">Open Email</button>
-      </div>
-    </div>
-  </div>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-    const SUPABASE_URL = "https://cwrlnfcgryhmohopdwrs.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM";
-    const hasSupabaseKeys = !!SUPABASE_URL && !!SUPABASE_ANON_KEY;
-    const supabase = hasSupabaseKeys ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
-    const $ = (id) => document.getElementById(id);
-    const n = (v) => {
-      const x = Number(v);
-      return Number.isFinite(x) ? x : 0;
-    };
-    const money = (v) => `$${Number(v || 0).toFixed(2)}`;
-
-    const SETTINGS_KEY = "wqp_settings_v4";
-
-    const appState = {
-      proEnabled: false,
-      user: null,
-      teamId: null,
-      teamName: "",
-      teamRole: "",
-      jobs: [],
-      feed: [],
-      jobFilter: "all",
-      jobsChannel: null,
-      authListener: null,
-      saveBusy: false
-    };
-
-    function showBanner(message, type = "info"){
-      const el = $("topBanner");
-      if (!el) return;
-      el.textContent = message;
-      el.className = `banner show ${type}`;
-      clearTimeout(showBanner._timer);
-      showBanner._timer = setTimeout(() => {
-        el.className = "banner info";
-        el.textContent = "";
-      }, 3500);
-    }
-
-    function getFriendlyError(err, fallback = "Something went wrong."){
-      if (!err) return fallback;
-      if (typeof err === "string") return err;
-      if (err.message) return err.message;
-      if (err.error_description) return err.error_description;
-      return fallback;
-    }
-
-    function escapeHtml(str){
-      return String(str ?? "").replace(/[&<>"']/g, m => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
-      }[m]));
-    }
-
-    function prettyDate(ts){
-      try{
-        return ts ? new Date(ts).toLocaleString() : "";
-      } catch {
-        return "";
-      }
-    }
-
-    function statusLabel(status){
-      return ({
-        quote_sent:"Quote Sent",
-        accepted:"Accepted",
-        in_progress:"In Progress",
-        completed:"Completed",
-        cancelled:"Cancelled"
-      })[status] || status || "";
-    }
-
-    function defaultSettings(){
-      return {
-        businessName:"",
-        contactName:"",
-        businessPhone:"",
-        businessEmail:"",
-        customMessage:`Hi, thanks for your enquiry 😊
-
-This quote includes the selected services as discussed.
-
-Additional items such as tracks, flyscreens, or detailing can be added if required.
-
-Let me know if you'd like to proceed or make any changes.
-
-Thanks,`,
-        pricingMode:"per_item",
-        roundingRule:"10",
-        rateWindow:18,
-        rateTrack:6,
-        rateFlyscreen:4,
-        rateBalustrade:35,
-        rateSolar:12,
-        rateGutter:6,
-        hourlyRate:135,
-        minsPerWindow:8,
-        minsPerTrack:7,
-        minsPerFlyscreen:1.5,
-        minsPerBalustrade:6,
-        minsPerSolar:2,
-        minsPerGutterMetre:0.8,
-        over6HoursFee:100,
-        externalOnlyFactor:0.52,
-        twoStoreyFactor:0.15,
-        buildersCleanFactor:1,
-        minimumFee:165,
-        gstRate:0.10,
-        gstIncluded:"true"
-      };
-    }
-
-    function roundUp(value, step){
-      if (!step || step <= 0 || Number.isNaN(step)) return value;
-      return Math.ceil(value / step) * step;
-    }
-
-    function loadSettings(){
-      try{
-        const raw = localStorage.getItem(SETTINGS_KEY);
-        const data = raw ? JSON.parse(raw) : {};
-        const settings = { ...defaultSettings(), ...data };
-
-        Object.entries(settings).forEach(([key, val]) => {
-          const el = $(key);
-          if (el) el.value = val;
-        });
-      } catch {
-        const settings = defaultSettings();
-        Object.entries(settings).forEach(([key, val]) => {
-          const el = $(key);
-          if (el) el.value = val;
-        });
-      }
-
-      updatePricingModeUI();
-    }
-
-    function saveSettings(){
-      try{
-        const data = {};
-        Object.keys(defaultSettings()).forEach(key => {
-          const el = $(key);
-          if (el) data[key] = el.value;
-        });
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
-        showBanner("Settings saved on this device.", "success");
-      } catch (err){
-        showBanner(getFriendlyError(err, "Could not save settings."), "error");
-      }
-    }
-
-    function getSettings(){
-      const s = {};
-      Object.keys(defaultSettings()).forEach(key => {
-        const el = $(key);
-        s[key] = el ? el.value : defaultSettings()[key];
-      });
-      return s;
-    }
-
-    function getQuoteInput(){
-      return {
-        customerName: $("customerName")?.value.trim() || "",
-        customerEmail: $("customerEmail")?.value.trim() || "",
-        customerPhone: $("customerPhone")?.value.trim() || "",
-        serviceAddress: $("serviceAddress")?.value.trim() || "",
-        windows: n($("windows")?.value),
-        tracks: n($("tracks")?.value),
-        flyscreens: n($("flyscreens")?.value),
-        balustrades: n($("balustrades")?.value),
-        solarPanels: n($("solarPanels")?.value),
-        gutterMetres: n($("gutterMetres")?.value),
-        serviceType: $("serviceType")?.value || "full",
-        storeys: $("storeys")?.value || "single",
-        buildersClean: $("buildersClean")?.value === "true",
-        notes: $("jobNotes")?.value.trim() || ""
-      };
-    }
-
-    function calculateQuote(){
-      const q = getQuoteInput();
-      const s = getSettings();
-
-      let base = 0;
-      let hours = 0;
-
-      if (s.pricingMode === "per_item"){
-        base =
-          q.windows * n(s.rateWindow) +
-          q.tracks * n(s.rateTrack) +
-          q.flyscreens * n(s.rateFlyscreen) +
-          q.balustrades * n(s.rateBalustrade) +
-          q.solarPanels * n(s.rateSolar) +
-          q.gutterMetres * n(s.rateGutter);
-      } else {
-        const mins =
-          q.windows * n(s.minsPerWindow) +
-          q.tracks * n(s.minsPerTrack) +
-          q.flyscreens * n(s.minsPerFlyscreen) +
-          q.balustrades * n(s.minsPerBalustrade) +
-          q.solarPanels * n(s.minsPerSolar) +
-          q.gutterMetres * n(s.minsPerGutterMetre);
-
-        hours = mins / 60;
-        base = hours * n(s.hourlyRate);
-
-        if (hours > 6){
-          base += n(s.over6HoursFee);
-        }
-      }
-
-      if (q.serviceType === "external"){
-        base *= n(s.externalOnlyFactor);
-      }
-
-      if (q.storeys === "two"){
-        base *= (1 + n(s.twoStoreyFactor));
-      }
-
-      if (q.buildersClean){
-        base *= (1 + n(s.buildersCleanFactor));
-      }
-
-      let finalPrice = Math.max(base, n(s.minimumFee));
-
-      if (s.gstIncluded === "false"){
-        finalPrice *= (1 + n(s.gstRate));
-      }
-
-      const roundingRule = s.roundingRule === "none" ? 0 : n(s.roundingRule);
-      if (roundingRule > 0){
-        finalPrice = roundUp(finalPrice, roundingRule);
-      }
-
-      const gstText = s.gstIncluded === "true"
-        ? "includes GST"
-        : "includes GST added on top";
-
-      return { ...q, ...s, hours, finalPrice, gstText };
-    }
-
-    function buildQuotePreview(){
-      const d = calculateQuote();
-
-      if ($("priceDisplay")) $("priceDisplay").textContent = money(d.finalPrice);
-      if ($("stickyPrice")) $("stickyPrice").textContent = money(d.finalPrice);
-      if ($("priceNote")) $("priceNote").textContent = `Final price shown ${d.gstText}`;
-
-      const serviceLabel = d.serviceType === "external" ? "External Only" : "Internal + External";
-      const storeysLabel = d.storeys === "two" ? "Two Storey" : "Single Storey";
-
-      const body = `Hi ${d.customerName || "there"},
-
-Thanks for your enquiry.
-
-Here is your window cleaning quote:
-
-Windows: ${d.windows}
-Tracks: ${d.tracks}
-Flyscreens: ${d.flyscreens}
-Balustrades: ${d.balustrades}
-Solar Panels: ${d.solarPanels}
-Gutter Metres: ${d.gutterMetres}
-
-Service: ${serviceLabel}
-Storeys: ${storeysLabel}
-Builder's Clean: ${d.buildersClean ? "Yes" : "No"}
-
-Total Price: ${money(d.finalPrice)} (${d.gstText})
-
-${d.customMessage || ""}
-
-${d.notes ? "Notes: " + d.notes + "\n\n" : ""}Please let us know if you'd like to go ahead.
-
-Kind regards,
-${d.contactName || ""}
-${d.businessName || ""}
-${d.businessPhone || ""}
-${d.businessEmail || ""}
-
-Sent using Window Quote Pro`;
-
-      if ($("quotePreview")) $("quotePreview").textContent = body;
-      return body;
-    }
-
-    function updatePricingModeUI(){
-      const mode = $("pricingMode")?.value || "per_item";
-      $("perItemFields")?.classList.toggle("hidden", mode !== "per_item");
-      $("timeBasedFields")?.classList.toggle("hidden", mode !== "time_based");
-      buildQuotePreview();
-    }
-
-    function setActiveTab(name){
-      document.querySelectorAll(".tab").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tab === name);
-      });
-
-      document.querySelectorAll(".panel").forEach(panel => {
-        panel.classList.remove("active");
-      });
-
-      const panel = document.getElementById(name + "Panel");
-      if (panel) panel.classList.add("active");
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function showProJobsAll(){
-      setActiveTab("pro");
-
-      document.querySelectorAll(".subtab").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".subpanel").forEach(panel => panel.classList.remove("active"));
-
-      const jobsTab = document.querySelector('.subtab[data-subtab="jobs"]');
-      const jobsPanel = document.getElementById("jobsSubpanel");
-
-      if (jobsTab) jobsTab.classList.add("active");
-      if (jobsPanel) jobsPanel.classList.add("active");
-
-      document.querySelectorAll(".jobFilter").forEach(b => {
-        b.classList.remove("active", "secondary");
-        b.classList.add("ghost");
-      });
-
-      const allBtn = document.querySelector('.jobFilter[data-job-filter="all"]');
-      if (allBtn){
-        allBtn.classList.add("active", "secondary");
-        allBtn.classList.remove("ghost");
-      }
-
-      appState.jobFilter = "all";
-      renderJobs();
-    }
-
-    function openEmailQuote(){
-      const d = calculateQuote();
-      const subject = encodeURIComponent(`Window Cleaning Quote - ${d.businessName || "Window Quote Pro"}`);
-      const body = encodeURIComponent(buildQuotePreview());
-      const to = encodeURIComponent(d.customerEmail || "");
-      window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-    }
-
-    function setModeUI(){
-      $("modePill").textContent = appState.proEnabled ? "Pro Mode" : "Free Mode";
-      $("logoutBtn")?.classList.toggle("hidden", !appState.user);
-      $("saveTeamJobBtn")?.classList.toggle("hidden", !appState.proEnabled || !appState.teamId);
-    }
-
-    function renderAuthState(){
-      $("proStatusText").textContent = appState.user ? appState.user.email : "Not signed in";
-      $("authView")?.classList.toggle("hidden", !!appState.user);
-      $("teamSetupView")?.classList.toggle("hidden", !appState.user || !!appState.teamId);
-      $("teamView")?.classList.toggle("hidden", !appState.teamId);
-
-      if (appState.teamId){
-        $("teamName").textContent = appState.teamName || "Your Team";
-        $("memberRolePill").textContent = appState.teamRole
-          ? appState.teamRole.charAt(0).toUpperCase() + appState.teamRole.slice(1)
-          : "Worker";
-      }
-
-      setModeUI();
-    }
-
-    function renderFeed(){
-      const feed = $("activityFeed");
-      if (!feed) return;
-
-      feed.innerHTML = "";
-
-      if (!appState.feed.length){
-        feed.innerHTML = `<div class="mini">No activity yet.</div>`;
-        return;
-      }
-
-      appState.feed.forEach(item => {
-        const row = document.createElement("div");
-        row.className = "feed-row";
-        row.innerHTML = `
-          <p><strong>${escapeHtml(item.action || "Activity")}</strong></p>
-          ${item.details ? `<p class="mini">${escapeHtml(item.details)}</p>` : ""}
-          <small>${prettyDate(item.created_at)}</small>
-        `;
-        feed.appendChild(row);
-      });
-      }
-      function renderJobs(){
-      const list = $("jobsList");
-      if (!list) return;
-
-      list.innerHTML = "";
-
-      const jobs = appState.jobs.filter(job =>
-        appState.jobFilter === "all" ? true : job.status === appState.jobFilter
-      );
-
-      if (!jobs.length){
-        list.innerHTML = `<div class="mini">No jobs yet.</div>`;
-      }
-
-      jobs.forEach(job => {
-        const card = document.createElement("div");
-        card.className = "job-card";
-
-        const serviceLabel = job.service_type === "external" ? "External Only" : "Internal + External";
-        const storeysLabel = job.storeys === "two" ? "Two Storey" : "Single Storey";
-        const buildersLabel = job.builders_clean ? "Yes" : "No";
-        const paidAmount = job.paid_amount == null ? "" : money(job.paid_amount);
-
-        card.innerHTML = `
-          <div class="job-top">
+      <!-- Quote Footer -->
+      <div class="quote-footer">
+        <div class="quote-footer-inner">
+          <div class="quote-footer-card">
             <div>
-              <div class="job-title">${escapeHtml(job.customer_name || "Unnamed Customer")}</div>
-              <p class="job-sub">${escapeHtml(job.service_address || "No address added")}</p>
+              <div class="quote-price" id="quote-price-display">$170</div>
+              <div class="quote-price-sub" id="quote-price-sub">Includes GST · Int + Ext · 1 Storey</div>
             </div>
-            <span class="status ${escapeHtml(job.status || "")}">${statusLabel(job.status)}</span>
-          </div>
-
-          <div class="job-meta">
-            <div><strong>Quoted Price</strong><br>${money(job.quoted_price || 0)}</div>
-            <div><strong>Paid Amount</strong><br>${paidAmount || "Not entered"}</div>
-          </div>
-
-          <div class="mini" style="margin-bottom:10px;line-height:1.5">
-            ${job.customer_phone ? `<strong>Phone:</strong> ${escapeHtml(job.customer_phone)}<br>` : ""}
-            ${job.customer_email ? `<strong>Email:</strong> ${escapeHtml(job.customer_email)}<br>` : ""}
-            <strong>Quoted:</strong> ${prettyDate(job.quoted_at || job.created_at)}<br>
-            <strong>Service:</strong> ${serviceLabel}<br>
-            <strong>Storeys:</strong> ${storeysLabel}<br>
-            <strong>Builder's Clean:</strong> ${buildersLabel}<br>
-            <strong>Windows:</strong> ${job.windows || 0},
-            <strong>Tracks:</strong> ${job.tracks || 0},
-            <strong>Flyscreens:</strong> ${job.flyscreens || 0},
-            <strong>Balustrades:</strong> ${job.balustrades || 0},
-            <strong>Solar Panels:</strong> ${job.solar_panels || 0},
-            <strong>Gutter Metres:</strong> ${job.gutter_metres || 0}
-            ${job.notes ? `<br><strong>Notes:</strong> ${escapeHtml(job.notes)}` : ""}
-          </div>
-
-          <div class="btn-row" style="margin-bottom:8px">
-            ${job.status === "quote_sent" ? `<button class="btn secondary" type="button" data-action="accept" data-id="${job.id}">Mark Accepted</button>` : ""}
-            ${job.status === "accepted" ? `<button class="btn warn" type="button" data-action="start" data-id="${job.id}">Start Job</button>` : ""}
-            ${job.status === "in_progress" ? `<button class="btn good" type="button" data-action="complete" data-id="${job.id}">Complete Job</button>` : ""}
-            ${job.status !== "completed" && job.status !== "cancelled" ? `<button class="btn danger" type="button" data-action="cancel" data-id="${job.id}">Cancel Job</button>` : ""}
-          </div>
-
-          ${job.status === "completed" ? `
-            <div class="btn-row">
-              <input type="number" step="0.01" min="0" placeholder="Enter paid amount" value="${job.paid_amount ?? ""}" data-paid-input="${job.id}" />
-              <button class="btn secondary" type="button" data-action="save-paid" data-id="${job.id}">Save Paid</button>
+            <div class="quote-footer-actions">
+              <button class="btn btn-secondary btn-sm" id="save-job-btn" style="display:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save
+              </button>
+              <button class="btn btn-primary" id="send-quote-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                Send Quote
+              </button>
             </div>
-          ` : ""}
-        `;
+          </div>
+        </div>
+      </div>
+    </div>
 
-        list.appendChild(card);
-      });
+    <!-- Pricing Tab -->
+    <div id="tab-pricing" class="hidden">
+      <!-- Business Details -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+          Business Details
+          <span style="font-size:0.75rem;color:#6b7280;font-weight:400;margin-left:0.25rem;">Appears on your quotes</span>
+        </div>
+        <div class="field-grid-2">
+          <div class="field-full">
+            <label class="field-label">Business Name</label>
+            <input type="text" class="field-input" id="s-bizname" placeholder="Crystal Clear Windows" />
+          </div>
+          <div>
+            <label class="field-label">Contact Name</label>
+            <input type="text" class="field-input" id="s-contact" placeholder="Mike" />
+          </div>
+          <div>
+            <label class="field-label">Phone</label>
+            <div class="field-input-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92Z"/></svg>
+              <input type="tel" class="field-input" id="s-phone" placeholder="0412 345 678" />
+            </div>
+          </div>
+          <div class="field-full">
+            <label class="field-label">Email</label>
+            <div class="field-input-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input type="email" class="field-input" id="s-email" placeholder="quotes@yourbusiness.com.au" />
+            </div>
+          </div>
+          <div class="field-full">
+            <label class="field-label">Quote Message</label>
+            <textarea class="field-input" id="s-message" rows="4"></textarea>
+          </div>
+        </div>
+      </div>
 
-      list.querySelectorAll("button[data-action]").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-          const action = btn.dataset.action;
+      <!-- Pricing Mode -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Pricing Mode
+          <span style="font-size:0.75rem;color:#6b7280;font-weight:400;margin-left:0.25rem;">How your quotes are calculated</span>
+        </div>
+        <div class="pricing-mode-grid">
+          <button class="pricing-mode-btn active" data-mode="per_item">
+            <div class="mode-title">Per Item</div>
+            <div class="mode-desc">Fixed price per service</div>
+          </button>
+          <button class="pricing-mode-btn" data-mode="time_based">
+            <div class="mode-title">Time Based</div>
+            <div class="mode-desc">Hourly rate × time</div>
+          </button>
+        </div>
 
-          try{
-            if (action === "accept") await markJobAccepted(id);
-            if (action === "start") await markJobStarted(id);
-            if (action === "complete") await markJobCompleted(id);
-            if (action === "cancel") await cancelJob(id);
+        <!-- Per Item Rates -->
+        <div id="per-item-section">
+          <div class="section-label">Rates per item</div>
+          <div class="rate-grid">
+            <div class="rate-card">
+              <div class="rate-card-label">Window</div>
+              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-window" value="18" min="0" step="0.01" /></div>
+              <div class="rate-card-unit">/item</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Track</div>
+              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-track" value="6" min="0" step="0.01" /></div>
+              <div class="rate-card-unit">/item</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Flyscreen</div>
+              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-fly" value="4" min="0" step="0.01" /></div>
+              <div class="rate-card-unit">/item</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Balustrade</div>
+              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-bal" value="35" min="0" step="0.01" /></div>
+              <div class="rate-card-unit">/item</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Solar Panel</div>
+              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-solar" value="12" min="0" step="0.01" /></div>
+              <div class="rate-card-unit">/item</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Gutter</div>
+              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-gutter" value="6" min="0" step="0.01" /></div>
+              <div class="rate-card-unit">/metre</div>
+            </div>
+          </div>
+        </div>
 
-            if (action === "save-paid"){
-              const input = list.querySelector(`[data-paid-input="${id}"]`);
-              const paid = Number(input?.value || 0);
-              await savePaidAmount(id, paid);
-            }
+        <!-- Time Based -->
+        <div id="time-based-section" class="hidden">
+          <div class="section-label">Hourly Rate</div>
+          <div class="hourly-card">
+            <div class="hourly-input-row">
+              <span class="hourly-prefix">$</span>
+              <input type="number" class="hourly-input" id="r-hourly" value="135" min="0" step="1" />
+              <span class="hourly-suffix">/hr</span>
+            </div>
+          </div>
+          <div class="section-label">Minutes per item</div>
+          <div class="rate-grid">
+            <div class="rate-card">
+              <div class="rate-card-label">Window</div>
+              <div class="rate-card-input-row"><input type="number" id="m-window" value="8" min="0" step="0.5" /></div>
+              <div class="rate-card-unit">mins</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Track</div>
+              <div class="rate-card-input-row"><input type="number" id="m-track" value="7" min="0" step="0.5" /></div>
+              <div class="rate-card-unit">mins</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Flyscreen</div>
+              <div class="rate-card-input-row"><input type="number" id="m-fly" value="1.5" min="0" step="0.5" /></div>
+              <div class="rate-card-unit">mins</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Balustrade</div>
+              <div class="rate-card-input-row"><input type="number" id="m-bal" value="6" min="0" step="0.5" /></div>
+              <div class="rate-card-unit">mins</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Solar Panel</div>
+              <div class="rate-card-input-row"><input type="number" id="m-solar" value="2" min="0" step="0.5" /></div>
+              <div class="rate-card-unit">mins</div>
+            </div>
+            <div class="rate-card">
+              <div class="rate-card-label">Gutter/m</div>
+              <div class="rate-card-input-row"><input type="number" id="m-gutter" value="0.8" min="0" step="0.1" /></div>
+              <div class="rate-card-unit">mins</div>
+            </div>
+          </div>
+          <div style="margin-top:0.75rem;">
+            <label class="field-label">Over 6hrs surcharge</label>
+            <div class="num-input-wrap has-prefix" style="max-width:160px;">
+              <span class="prefix">$</span>
+              <input type="number" id="r-over6" value="100" min="0" step="1" />
+            </div>
+          </div>
+        </div>
+      </div>
 
-            await getJobs();
-            await loadActivity();
-          } catch(err){
-            showBanner(getFriendlyError(err, "Job action failed."), "error");
-          }
-        });
-      });
+      <!-- Modifiers -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <button class="collapsible-header open" id="mod-toggle">
+          Price Modifiers
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="mod-body" class="collapsible-body">
+          <div class="modifier-grid">
+            <div class="modifier-card">
+              <div class="modifier-label">Ext Only</div>
+              <div class="modifier-input-row"><input type="number" class="modifier-input" id="mod-ext" value="0.52" min="0" max="1" step="0.01" /></div>
+              <div class="modifier-unit">multiplier</div>
+            </div>
+            <div class="modifier-card">
+              <div class="modifier-label">2 Storey</div>
+              <div class="modifier-input-row"><input type="number" class="modifier-input" id="mod-2s" value="0.15" min="0" step="0.01" /></div>
+              <div class="modifier-unit">add-on</div>
+            </div>
+            <div class="modifier-card amber">
+              <div class="modifier-label">Builder's</div>
+              <div class="modifier-input-row"><input type="number" class="modifier-input" id="mod-bc" value="1" min="0" step="0.01" /></div>
+              <div class="modifier-unit">add-on</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      $("kpiQuoteSent").textContent = appState.jobs.filter(j => j.status === "quote_sent").length;
-      $("kpiAccepted").textContent = appState.jobs.filter(j => j.status === "accepted").length;
-      $("kpiInProgress").textContent = appState.jobs.filter(j => j.status === "in_progress").length;
-      $("kpiCompleted").textContent = appState.jobs.filter(j => j.status === "completed").length;
-      $("kpiCancelled").textContent = appState.jobs.filter(j => j.status === "cancelled").length;
+      <!-- GST & Minimums -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <button class="collapsible-header open" id="gst-toggle">
+          GST &amp; Minimum Fee
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="gst-body" class="collapsible-body">
+          <div class="field-grid-2 mb-3">
+            <div>
+              <label class="field-label">Minimum Fee</label>
+              <div class="num-input-wrap has-prefix">
+                <span class="prefix">$</span>
+                <input type="number" id="s-minfee" value="165" min="0" step="1" />
+              </div>
+            </div>
+            <div>
+              <label class="field-label">GST Rate</label>
+              <div class="num-input-wrap has-suffix">
+                <span class="suffix">%</span>
+                <input type="number" id="s-gstrate" value="10" min="0" step="0.1" />
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="field-label">GST Handling</label>
+            <div class="gst-grid">
+              <button class="toggle-btn active" data-group="gst" data-val="included">Price includes GST</button>
+              <button class="toggle-btn" data-group="gst" data-val="added">Add GST on top</button>
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Price Rounding</label>
+            <div class="round-grid">
+              <button class="toggle-btn" data-group="round" data-val="none">None</button>
+              <button class="toggle-btn" data-group="round" data-val="5">$5</button>
+              <button class="toggle-btn active" data-group="round" data-val="10">$10</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      const paidTotal = appState.jobs
-        .filter(j => j.status === "completed" && j.paid_amount != null)
-        .reduce((sum, j) => sum + Number(j.paid_amount || 0), 0);
+      <!-- Save -->
+      <button class="btn btn-primary btn-full btn-lg" id="save-settings-btn" style="border-radius:1rem;box-shadow:0 4px 12px rgba(37,99,235,0.25);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Settings to This Device
+      </button>
+      <div class="save-note">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Settings are saved locally on this device. Pro users can sync settings across the team.
+      </div>
+    </div>
 
-      $("kpiPaidTotal").textContent = money(paidTotal);
+    <!-- Pro Tab -->
+    <div id="tab-pro" class="hidden">
+      <!-- Auth Panel -->
+      <div id="pro-auth-panel">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+            <div style="width:2.5rem;height:2.5rem;border-radius:0.75rem;background:#2563eb;display:flex;align-items:center;justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:700;color:#111827;">Pro Access</div>
+              <div style="font-size:0.75rem;color:#6b7280;">Real-time job management for your team</div>
+            </div>
+          </div>
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="auth-signin-tab">Sign In</button>
+            <button class="mode-btn" id="auth-signup-tab">Create Account</button>
+          </div>
+          <div id="auth-name-field" class="hidden mb-2">
+            <label class="field-label">Full Name</label>
+            <input type="text" class="field-input" id="auth-name" placeholder="Your name" />
+          </div>
+          <div class="mb-2">
+            <label class="field-label">Email</label>
+            <input type="email" class="field-input" id="auth-email" placeholder="you@email.com" />
+          </div>
+          <div class="mb-3">
+            <label class="field-label">Password</label>
+            <input type="password" class="field-input" id="auth-password" placeholder="Password" />
+          </div>
+          <button class="btn btn-primary btn-full" id="auth-submit-btn">Sign In</button>
+        </div>
+        <div class="info-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <div>
+            <div class="info-box-title">What's included in Pro?</div>
+            <ul>
+              <li>Real-time job board for your whole team</li>
+              <li>Staff can accept and start jobs instantly</li>
+              <li>Owner sees revenue dashboard and activity feed</li>
+              <li>Invite staff with a simple code</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Setup (after login, no team) -->
+      <div id="pro-team-setup" class="hidden">
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:700;font-size:0.875rem;color:#111827;" id="setup-email-display"></div>
+              <div style="font-size:0.75rem;color:#6b7280;margin-top:0.25rem;">Signed in · No team yet</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="setup-signout-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+              Sign Out
+            </button>
+          </div>
+        </div>
+        <div class="card mb-3">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+            <span style="font-weight:700;font-size:0.875rem;color:#111827;">Create Your Team</span>
+          </div>
+          <input type="text" class="field-input mb-3" id="team-name-input" placeholder="Business name" />
+          <button class="btn btn-primary btn-full" id="create-team-btn">Create Team</button>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+            <span style="font-weight:700;font-size:0.875rem;color:#111827;">Join with Invite Code</span>
+          </div>
+          <input type="text" class="field-input mb-3" id="invite-code-input" placeholder="ABCD1234" style="font-family:monospace;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;" />
+          <button class="btn btn-dark btn-full" id="join-team-btn">Join Team</button>
+        </div>
+      </div>
+
+      <!-- Pro Dashboard (logged in + team) -->
+      <div id="pro-dashboard" class="hidden">
+        <!-- Team Header -->
+        <div class="team-header">
+          <div style="display:flex;align-items:center;min-width:0;">
+            <div class="team-logo">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg>
+            </div>
+            <div class="team-info">
+              <div class="team-name" id="team-name-display"></div>
+              <div class="team-meta">
+                <span class="role-badge role-owner" id="team-role-badge">Owner</span>
+                <span class="team-email" id="team-email-display"></span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="pro-signout-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+            Out
+          </button>
+        </div>
+
+        <!-- Sub Tabs -->
+        <div class="sub-tabs">
+          <button class="sub-tab active" data-subtab="dashboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            Dashboard
+          </button>
+          <button class="sub-tab" data-subtab="jobs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Jobs
+          </button>
+          <button class="sub-tab" data-subtab="activity">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Activity
+          </button>
+        </div>
+
+        <!-- Dashboard Sub-panel -->
+        <div id="subtab-dashboard">
+          <div class="kpi-grid">
+            <div class="kpi-card kpi-blue">
+              <div class="kpi-card-header"><span class="kpi-label">Quoted</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+              <div class="kpi-value" id="kpi-quoted">0</div>
+            </div>
+            <div class="kpi-card kpi-amber">
+              <div class="kpi-card-header"><span class="kpi-label">Accepted</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              <div class="kpi-value" id="kpi-accepted">0</div>
+            </div>
+            <div class="kpi-card kpi-purple">
+              <div class="kpi-card-header"><span class="kpi-label">In Progress</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
+              <div class="kpi-value" id="kpi-progress">0</div>
+            </div>
+            <div class="kpi-card kpi-green">
+              <div class="kpi-card-header"><span class="kpi-label">Completed</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              <div class="kpi-value" id="kpi-completed">0</div>
+            </div>
+          </div>
+          <div class="revenue-banner" id="revenue-banner">
+            <div class="revenue-banner-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              Revenue Overview
+            </div>
+            <div class="revenue-grid">
+              <div><div class="revenue-label">Paid Total</div><div class="revenue-value" id="rev-paid">$0</div></div>
+              <div><div class="revenue-label">Quoted Total</div><div class="revenue-value" id="rev-quoted">$0</div></div>
+            </div>
+          </div>
+          <button class="save-quote-row" id="dash-save-job-btn">
+            <span class="save-quote-row-left">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              Save Current Quote as Team Job
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <div class="card" id="invite-panel">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+              <span style="font-weight:700;font-size:0.875rem;color:#111827;">Invite Staff</span>
+            </div>
+            <button class="btn btn-secondary btn-full mb-2" id="gen-invite-btn">Generate Invite Code</button>
+            <div class="invite-row hidden" id="invite-row">
+              <span class="invite-code" id="invite-code-display"></span>
+              <button class="copy-btn" id="copy-invite-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jobs Sub-panel -->
+        <div id="subtab-jobs" class="hidden">
+          <div class="filter-strip" id="job-filters"></div>
+          <div id="jobs-list"></div>
+        </div>
+
+        <!-- Activity Sub-panel -->
+        <div id="subtab-activity" class="hidden">
+          <div id="activity-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <nav class="tab-bar">
+    <div class="tab-bar-inner">
+      <button class="tab-btn active" data-tab="quote">
+        <div class="tab-btn-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <span class="tab-btn-label">Quote</span>
+      </button>
+      <button class="tab-btn" data-tab="pricing">
+        <div class="tab-btn-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <span class="tab-btn-label">Pricing</span>
+      </button>
+      <button class="tab-btn" data-tab="pro">
+        <div class="tab-btn-icon" id="pro-tab-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <span class="tab-btn-label">Pro</span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// WINDOW QUOTE PRO — Full App Logic
+// ═══════════════════════════════════════════════════════════
+
+const SETTINGS_KEY = 'wqp_settings_v4';
+const SUPABASE_URL = "https://cwrlnfcgryhmohopdwrs.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM";
+
+// ── Default Settings ──────────────────────────────────────
+const DEFAULT_SETTINGS = {
+  businessName: '', contactName: '', businessPhone: '', businessEmail: '',
+  customMessage: `Hi, thanks for your enquiry!\n\nThis quote includes the selected services as discussed.\n\nAdditional items such as tracks, flyscreens, or detailing can be added if required.\n\nLet me know if you'd like to proceed or make any changes.\n\nThanks,`,
+  pricingMode: 'per_item', roundingRule: '10',
+  rateWindow: 18, rateTrack: 6, rateFlyscreen: 4, rateBalustrade: 35, rateSolar: 12, rateGutter: 6,
+  hourlyRate: 135, minsPerWindow: 8, minsPerTrack: 7, minsPerFlyscreen: 1.5,
+  minsPerBalustrade: 6, minsPerSolar: 2, minsPerGutterMetre: 0.8, over6HoursFee: 100,
+  externalOnlyFactor: 0.52, twoStoreyFactor: 0.15, buildersCleanFactor: 1,
+  minimumFee: 165, gstRate: 0.10, gstIncluded: 'true',
+};
+
+// ── State ─────────────────────────────────────────────────
+let settings = loadSettings();
+let quoteInput = {
+  customerName: '', customerEmail: '', customerPhone: '', serviceAddress: '',
+  windows: 0, tracks: 0, flyscreens: 0, balustrades: 0, solarPanels: 0, gutterMetres: 0,
+  serviceType: 'full', storeys: 'single', buildersClean: false, notes: '',
+};
+let activeTab = 'quote';
+let activeSubTab = 'dashboard';
+let jobFilter = 'all';
+let authMode = 'signin';
+let proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
+let supabaseClient = null;
+let saveBusy = false;
+let lastPrice = 0;
+
+// ── Helpers ───────────────────────────────────────────────
+function n(v) { const x = Number(v); return isFinite(x) ? x : 0; }
+function money(v) {
+  const val = n(v);
+  return val === Math.floor(val) ? `$${val.toFixed(0)}` : `$${val.toFixed(2)}`;
+}
+function roundUp(val, step) {
+  if (!step || step <= 0) return val;
+  return Math.ceil(val / step) * step;
+}
+function prettyDate(ts) {
+  try { return ts ? new Date(ts).toLocaleString('en-AU', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : ''; } catch { return ''; }
+}
+function prettyDateShort(ts) {
+  try { return ts ? new Date(ts).toLocaleDateString('en-AU', { day:'numeric', month:'short' }) : ''; } catch { return ''; }
+}
+function loadSettings() {
+  try { const raw = localStorage.getItem(SETTINGS_KEY); return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS }; }
+  catch { return { ...DEFAULT_SETTINGS }; }
+}
+function saveSettingsToStorage() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+function getFriendlyError(err, fallback = 'Something went wrong.') {
+  if (!err) return fallback;
+  if (typeof err === 'string') return err;
+  if (err.message) return err.message;
+  if (err.error_description) return err.error_description;
+  return fallback;
+}
+
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg, type = 'default') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ── Quote Calculation ─────────────────────────────────────
+function calculateQuote() {
+  const s = settings;
+  const q = quoteInput;
+  let base = 0, hours = 0;
+
+  if (s.pricingMode === 'per_item') {
+    base = q.windows * n(s.rateWindow) + q.tracks * n(s.rateTrack) +
+           q.flyscreens * n(s.rateFlyscreen) + q.balustrades * n(s.rateBalustrade) +
+           q.solarPanels * n(s.rateSolar) + q.gutterMetres * n(s.rateGutter);
+  } else {
+    const mins = q.windows * n(s.minsPerWindow) + q.tracks * n(s.minsPerTrack) +
+                 q.flyscreens * n(s.minsPerFlyscreen) + q.balustrades * n(s.minsPerBalustrade) +
+                 q.solarPanels * n(s.minsPerSolar) + q.gutterMetres * n(s.minsPerGutterMetre);
+    hours = mins / 60;
+    base = hours * n(s.hourlyRate);
+    if (hours > 6) base += n(s.over6HoursFee);
+  }
+
+  if (q.serviceType === 'external') base *= n(s.externalOnlyFactor);
+  if (q.storeys === 'two') base *= (1 + n(s.twoStoreyFactor));
+  if (q.buildersClean) base *= (1 + n(s.buildersCleanFactor));
+
+  let finalPrice = Math.max(base, n(s.minimumFee));
+  if (s.gstIncluded === 'false') finalPrice *= (1 + n(s.gstRate));
+
+  const roundingRule = s.roundingRule === 'none' ? 0 : n(s.roundingRule);
+  if (roundingRule > 0) finalPrice = roundUp(finalPrice, roundingRule);
+
+  const gstText = s.gstIncluded === 'true' ? 'Includes GST' : 'GST added on top';
+  return { finalPrice, hours, gstText };
+}
+
+// ── Update Quote Display ──────────────────────────────────
+function updateQuoteDisplay() {
+  const result = calculateQuote();
+  const priceEl = document.getElementById('quote-price-display');
+  const subEl = document.getElementById('quote-price-sub');
+
+  if (result.finalPrice !== lastPrice) {
+    priceEl.classList.remove('pulse');
+    void priceEl.offsetWidth;
+    priceEl.classList.add('pulse');
+    lastPrice = result.finalPrice;
+  }
+  priceEl.textContent = money(result.finalPrice);
+
+  const svcLabel = quoteInput.serviceType === 'external' ? 'Ext Only' : 'Int + Ext';
+  const stLabel = quoteInput.storeys === 'two' ? '2 Storey' : '1 Storey';
+  subEl.textContent = `${result.gstText} · ${svcLabel} · ${stLabel}`;
+
+  // Update chips
+  const chipDefs = [
+    { key: 'windows', label: 'Win', cls: 'chip-blue' },
+    { key: 'tracks', label: 'Trk', cls: 'chip-indigo' },
+    { key: 'flyscreens', label: 'Fly', cls: 'chip-sky' },
+    { key: 'balustrades', label: 'Bal', cls: 'chip-violet' },
+    { key: 'solarPanels', label: 'Sol', cls: 'chip-amber' },
+    { key: 'gutterMetres', label: 'Gut', cls: 'chip-teal' },
+  ];
+  const strip = document.getElementById('service-chips');
+  strip.innerHTML = '';
+  chipDefs.forEach(({ key, label, cls }) => {
+    const val = quoteInput[key];
+    if (val > 0) {
+      const chip = document.createElement('span');
+      chip.className = `chip ${cls}`;
+      chip.textContent = `${val}× ${label}`;
+      strip.appendChild(chip);
     }
+  });
 
-    async function signUp(email, password, fullName){
-      if (!supabase) throw new Error("Supabase is not configured.");
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName || "" } }
-      });
-      if (error) throw error;
-      return data;
+  // Items badge
+  const total = quoteInput.windows + quoteInput.tracks + quoteInput.flyscreens +
+                quoteInput.balustrades + quoteInput.solarPanels + quoteInput.gutterMetres;
+  const badge = document.getElementById('items-badge');
+  if (total > 0) { badge.textContent = `${total} items`; badge.classList.remove('hidden'); }
+  else { badge.classList.add('hidden'); }
+
+  // Update stepper row highlight
+  const KEYS = ['windows','tracks','flyscreens','balustrades','solarPanels','gutterMetres'];
+  KEYS.forEach(k => {
+    const row = document.querySelector(`[data-stepper="${k}"]`);
+    if (row) {
+      if (quoteInput[k] > 0) row.classList.add('active');
+      else row.classList.remove('active');
+      const valEl = row.querySelector('.stepper-val');
+      const isFloat = k === 'gutterMetres';
+      if (valEl) valEl.textContent = isFloat ? (quoteInput[k] % 1 === 0 ? quoteInput[k].toFixed(0) : quoteInput[k].toFixed(1)) : quoteInput[k];
+      const minusBtn = row.querySelector('.btn-stepper.minus');
+      if (minusBtn) minusBtn.disabled = quoteInput[k] === 0;
     }
+  });
 
-    async function signIn(email, password){
-      if (!supabase) throw new Error("Supabase is not configured.");
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      return data;
-    }
+  // Update quote preview
+  updatePreview(result);
+}
 
-    async function signOutUser(){
-      if (!supabase) return;
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    }
+function updatePreview(result) {
+  const q = quoteInput; const s = settings;
+  const svcLabel = q.serviceType === 'external' ? 'External Only' : 'Internal + External';
+  const stLabel = q.storeys === 'two' ? 'Two Storey' : 'Single Storey';
+  const lines = [];
+  if (q.windows > 0) lines.push(`Windows: ${q.windows}`);
+  if (q.tracks > 0) lines.push(`Tracks: ${q.tracks}`);
+  if (q.flyscreens > 0) lines.push(`Flyscreens: ${q.flyscreens}`);
+  if (q.balustrades > 0) lines.push(`Balustrades: ${q.balustrades}`);
+  if (q.solarPanels > 0) lines.push(`Solar Panels: ${q.solarPanels}`);
+  if (q.gutterMetres > 0) lines.push(`Gutter Cleaning: ${q.gutterMetres}m`);
+  const text = `Hi ${q.customerName || 'there'},\n\n${s.customMessage}\n\n${s.contactName || s.businessName}\n\n---\nQUOTE DETAILS\nAddress: ${q.serviceAddress || 'Not specified'}\nService: ${svcLabel} | ${stLabel}${q.buildersClean ? " | Builder's Clean" : ''}\n\n${lines.join('\n') || 'No items selected'}\n\nTOTAL: ${money(result.finalPrice)} (${result.gstText})\n---\n\n${s.businessName}${s.businessPhone ? ' | ' + s.businessPhone : ''}${s.businessEmail ? ' | ' + s.businessEmail : ''}`;
+  const pre = document.getElementById('preview-text');
+  if (pre) pre.textContent = text;
+}
 
-    async function getCurrentUser(){
-      if (!supabase) return null;
-      const { data, error } = await supabase.auth.getUser();
-      if (error) throw error;
-      return data.user;
-    }
+// ── Build Steppers ────────────────────────────────────────
+const STEPPERS = [
+  { key: 'windows', label: 'Windows', icon: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>' },
+  { key: 'tracks', label: 'Tracks', icon: '<line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/>' },
+  { key: 'flyscreens', label: 'Flyscreens', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
+  { key: 'balustrades', label: 'Balustrades', icon: '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>' },
+  { key: 'solarPanels', label: 'Solar Panels', icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>' },
+  { key: 'gutterMetres', label: 'Gutter (m)', isFloat: true, step: 0.5, icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>' },
+];
 
-    async function getMyTeams(){
-      const { data, error } = await supabase
-        .from("team_members")
-        .select("id, role, status, team_id, team:teams(id, business_name)")
-        .eq("user_id", appState.user.id)
-        .eq("status", "active");
+function buildSteppers() {
+  const list = document.getElementById('stepper-list');
+  list.innerHTML = '';
+  STEPPERS.forEach(({ key, label, icon, isFloat, step = 1 }) => {
+    const row = document.createElement('div');
+    row.className = 'stepper-row';
+    row.setAttribute('data-stepper', key);
+    row.innerHTML = `
+      <div class="stepper-label">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
+        ${label}
+      </div>
+      <div class="stepper-controls">
+        <button class="btn-stepper minus" data-key="${key}" data-step="${step}" data-float="${isFloat ? '1' : '0'}" disabled>−</button>
+        <span class="stepper-val">0</span>
+        <button class="btn-stepper plus" data-key="${key}" data-step="${step}" data-float="${isFloat ? '1' : '0'}">+</button>
+      </div>`;
+    list.appendChild(row);
+  });
 
-      if (error) throw error;
-      return data || [];
-    }
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('.btn-stepper');
+    if (!btn) return;
+    const key = btn.dataset.key;
+    const step = parseFloat(btn.dataset.step);
+    const isFloat = btn.dataset.float === '1';
+    const isPlus = btn.classList.contains('plus');
+    let val = quoteInput[key];
+    if (isPlus) val = isFloat ? Math.round((val + step) * 10) / 10 : val + 1;
+    else val = Math.max(0, isFloat ? Math.round((val - step) * 10) / 10 : val - 1);
+    quoteInput[key] = val;
+    updateQuoteDisplay();
+  });
+}
 
-    async function getTeamMembersCount(teamId){
-      const { count, error } = await supabase
-        .from("team_members")
-        .select("*", { count: "exact", head: true })
-        .eq("team_id", teamId)
-        .eq("status", "active");
+// ── Tab Navigation ────────────────────────────────────────
+function switchTab(tab) {
+  activeTab = tab;
+  ['quote', 'pricing', 'pro'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+  });
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  if (tab === 'pricing') syncSettingsToForm();
+}
 
-      if (error) throw error;
-      return count || 0;
-    }
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
 
-    async function createTeamAndMakeOwner(name){
-      const { data, error } = await supabase.rpc("create_team_and_make_owner", { p_business_name: name });
-      if (error) throw error;
-      return data;
-    }
+// ── Toggle Buttons ────────────────────────────────────────
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.toggle-btn[data-group]');
+  if (!btn) return;
+  const group = btn.dataset.group;
+  const val = btn.dataset.val;
+  document.querySelectorAll(`.toggle-btn[data-group="${group}"]`).forEach(b => {
+    b.classList.remove('active', 'active-amber');
+  });
+  if (group === 'builders' && val === 'yes') btn.classList.add('active-amber');
+  else btn.classList.add('active');
 
-    async function joinTeamWithInvite(code){
-      const { data, error } = await supabase.rpc("join_team_with_invite", { p_invite_code: code });
-      if (error) throw error;
-      return data;
-    }
+  if (group === 'service') quoteInput.serviceType = val;
+  else if (group === 'storeys') quoteInput.storeys = val;
+  else if (group === 'builders') quoteInput.buildersClean = val === 'yes';
+  else if (group === 'gst') settings.gstIncluded = val === 'included' ? 'true' : 'false';
+  else if (group === 'round') settings.roundingRule = val;
 
-    async function createTeamInvite(teamId, role = "worker"){
-      const { data, error } = await supabase.rpc("create_team_invite", { p_team_id: teamId, p_role: role });
-      if (error) throw error;
-      return data;
-    }
+  updateQuoteDisplay();
+});
 
-    async function logActivity(action, details = ""){
-      if (!appState.teamId || !appState.user || !supabase) return;
+// ── Pricing Mode ──────────────────────────────────────────
+document.querySelectorAll('.pricing-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pricing-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    settings.pricingMode = btn.dataset.mode;
+    document.getElementById('per-item-section').classList.toggle('hidden', settings.pricingMode !== 'per_item');
+    document.getElementById('time-based-section').classList.toggle('hidden', settings.pricingMode !== 'time_based');
+    updateQuoteDisplay();
+  });
+});
 
-      try{
-        await supabase.from("activity_logs").insert({
-          team_id: appState.teamId,
-          user_id: appState.user.id,
-          action,
-          details
-        });
-      } catch {
+// ── Collapsibles ──────────────────────────────────────────
+['mod', 'gst', 'preview'].forEach(id => {
+  const toggle = document.getElementById(`${id}-toggle`);
+  const body = document.getElementById(`${id}-body`);
+  if (!toggle || !body) return;
+  toggle.addEventListener('click', () => {
+    const isOpen = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', isOpen);
+    toggle.classList.toggle('open', !isOpen);
+  });
+});
+
+// ── Customer Inputs ───────────────────────────────────────
+['name','phone','email','address','notes'].forEach(field => {
+  const el = document.getElementById(`q-${field}`);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    const map = { name:'customerName', phone:'customerPhone', email:'customerEmail', address:'serviceAddress', notes:'notes' };
+    quoteInput[map[field]] = el.value;
+    updateQuoteDisplay();
+  });
+});
+
+// ── Settings Form Sync ────────────────────────────────────
+function syncSettingsToForm() {
+  const s = settings;
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  set('s-bizname', s.businessName); set('s-contact', s.contactName);
+  set('s-phone', s.businessPhone); set('s-email', s.businessEmail);
+  set('s-message', s.customMessage);
+  set('r-window', s.rateWindow); set('r-track', s.rateTrack); set('r-fly', s.rateFlyscreen);
+  set('r-bal', s.rateBalustrade); set('r-solar', s.rateSolar); set('r-gutter', s.rateGutter);
+  set('r-hourly', s.hourlyRate); set('r-over6', s.over6HoursFee);
+  set('m-window', s.minsPerWindow); set('m-track', s.minsPerTrack); set('m-fly', s.minsPerFlyscreen);
+  set('m-bal', s.minsPerBalustrade); set('m-solar', s.minsPerSolar); set('m-gutter', s.minsPerGutterMetre);
+  set('mod-ext', s.externalOnlyFactor); set('mod-2s', s.twoStoreyFactor); set('mod-bc', s.buildersCleanFactor);
+  set('s-minfee', s.minimumFee); set('s-gstrate', (s.gstRate * 100).toFixed(1));
+
+  // Pricing mode buttons
+  document.querySelectorAll('.pricing-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === s.pricingMode));
+  document.getElementById('per-item-section').classList.toggle('hidden', s.pricingMode !== 'per_item');
+  document.getElementById('time-based-section').classList.toggle('hidden', s.pricingMode !== 'time_based');
+
+  // GST toggle
+  document.querySelectorAll('.toggle-btn[data-group="gst"]').forEach(b => {
+    b.classList.toggle('active', (b.dataset.val === 'included' && s.gstIncluded === 'true') || (b.dataset.val === 'added' && s.gstIncluded === 'false'));
+  });
+  // Round toggle
+  document.querySelectorAll('.toggle-btn[data-group="round"]').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === s.roundingRule);
+  });
+}
+
+function readSettingsFromForm() {
+  const g = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const gn = id => n(g(id));
+  settings.businessName = g('s-bizname'); settings.contactName = g('s-contact');
+  settings.businessPhone = g('s-phone'); settings.businessEmail = g('s-email');
+  settings.customMessage = g('s-message');
+  settings.rateWindow = gn('r-window'); settings.rateTrack = gn('r-track');
+  settings.rateFlyscreen = gn('r-fly'); settings.rateBalustrade = gn('r-bal');
+  settings.rateSolar = gn('r-solar'); settings.rateGutter = gn('r-gutter');
+  settings.hourlyRate = gn('r-hourly'); settings.over6HoursFee = gn('r-over6');
+  settings.minsPerWindow = gn('m-window'); settings.minsPerTrack = gn('m-track');
+  settings.minsPerFlyscreen = gn('m-fly'); settings.minsPerBalustrade = gn('m-bal');
+  settings.minsPerSolar = gn('m-solar'); settings.minsPerGutterMetre = gn('m-gutter');
+  settings.externalOnlyFactor = gn('mod-ext'); settings.twoStoreyFactor = gn('mod-2s');
+  settings.buildersCleanFactor = gn('mod-bc');
+  settings.minimumFee = gn('s-minfee'); settings.gstRate = gn('s-gstrate') / 100;
+  updateQuoteDisplay();
+}
+
+// Live update pricing as user types
+['r-window','r-track','r-fly','r-bal','r-solar','r-gutter','r-hourly','r-over6',
+ 'm-window','m-track','m-fly','m-bal','m-solar','m-gutter',
+ 'mod-ext','mod-2s','mod-bc','s-minfee','s-gstrate'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', readSettingsFromForm);
+});
+['s-bizname','s-contact','s-phone','s-email','s-message'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => { settings[{
+    's-bizname':'businessName','s-contact':'contactName','s-phone':'businessPhone',
+    's-email':'businessEmail','s-message':'customMessage'
+  }[id]] = el.value; });
+});
+
+document.getElementById('save-settings-btn').addEventListener('click', () => {
+  readSettingsFromForm();
+  saveSettingsToStorage();
+  showToast('Settings saved.', 'success');
+});
+
+// ── Send Quote ────────────────────────────────────────────
+document.getElementById('send-quote-btn').addEventListener('click', async () => {
+  const result = calculateQuote();
+  const q = quoteInput; const s = settings;
+  const svcLabel = q.serviceType === 'external' ? 'External Only' : 'Internal + External';
+  const stLabel = q.storeys === 'two' ? 'Two Storey' : 'Single Storey';
+  const lines = [];
+  if (q.windows > 0) lines.push(`Windows: ${q.windows}`);
+  if (q.tracks > 0) lines.push(`Tracks: ${q.tracks}`);
+  if (q.flyscreens > 0) lines.push(`Flyscreens: ${q.flyscreens}`);
+  if (q.balustrades > 0) lines.push(`Balustrades: ${q.balustrades}`);
+  if (q.solarPanels > 0) lines.push(`Solar Panels: ${q.solarPanels}`);
+  if (q.gutterMetres > 0) lines.push(`Gutter Cleaning: ${q.gutterMetres}m`);
+  const body = `Hi ${q.customerName || 'there'},\n\n${s.customMessage}\n\n${s.contactName || s.businessName}\n\n---\nQUOTE DETAILS\nAddress: ${q.serviceAddress || 'Not specified'}\nService: ${svcLabel} | ${stLabel}${q.buildersClean ? " | Builder's Clean" : ''}\n\n${lines.join('\n') || 'No items selected'}\n\nTOTAL: ${money(result.finalPrice)} (${result.gstText})\n---\n\n${s.businessName}${s.businessPhone ? ' | ' + s.businessPhone : ''}${s.businessEmail ? ' | ' + s.businessEmail : ''}`;
+  const subject = encodeURIComponent(`Window Cleaning Quote — ${q.serviceAddress || q.customerName || 'Your Property'}`);
+  window.open(`mailto:${encodeURIComponent(q.customerEmail || '')}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank');
+  if (proState.teamId) { await saveJobToTeam(); }
+});
+
+// ── Supabase ──────────────────────────────────────────────
+async function getSb() {
+  if (supabaseClient) return supabaseClient;
+  try {
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return supabaseClient;
+  } catch { return null; }
+}
+
+async function sbSignIn(email, password) {
+  const sb = await getSb(); if (!sb) throw new Error('Not connected.');
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) throw error; return data;
+}
+async function sbSignUp(email, password, name) {
+  const sb = await getSb(); if (!sb) throw new Error('Not connected.');
+  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
+  if (error) throw error; return data;
+}
+async function sbSignOut() {
+  const sb = await getSb(); if (!sb) return;
+  await sb.auth.signOut();
+}
+async function getCurrentUser() {
+  const sb = await getSb(); if (!sb) return null;
+  const { data } = await sb.auth.getUser();
+  return data?.user || null;
+}
+async function getMyTeams(userId) {
+  const sb = await getSb();
+  const { data, error } = await sb.from('team_members').select('id,role,status,team_id,team:teams(id,business_name)').eq('user_id', userId).eq('status', 'active');
+  if (error) throw error; return data || [];
+}
+async function fetchJobs(teamId) {
+  const sb = await getSb(); if (!sb || !teamId) return [];
+  const { data, error } = await sb.from('jobs').select('*').eq('team_id', teamId).order('created_at', { ascending: false });
+  if (error) throw error; return data || [];
+}
+async function fetchActivity(teamId) {
+  const sb = await getSb(); if (!sb || !teamId) return [];
+  const { data, error } = await sb.from('activity_logs').select('*').eq('team_id', teamId).order('created_at', { ascending: false }).limit(30);
+  if (error) throw error; return data || [];
+}
+async function logActivity(teamId, userId, action, details = '') {
+  const sb = await getSb(); if (!sb || !teamId || !userId) return;
+  try { await sb.from('activity_logs').insert({ team_id: teamId, user_id: userId, action, details }); } catch {}
+}
+async function createTeamAndMakeOwner(name) {
+  const sb = await getSb();
+  const { data, error } = await sb.rpc('create_team_and_make_owner', { p_business_name: name });
+  if (error) throw error; return data;
+}
+async function joinTeamWithInvite(code) {
+  const sb = await getSb();
+  const { data, error } = await sb.rpc('join_team_with_invite', { p_invite_code: code });
+  if (error) throw error; return data;
+}
+async function createTeamInvite(teamId) {
+  const sb = await getSb();
+  const { data, error } = await sb.rpc('create_team_invite', { p_team_id: teamId, p_role: 'worker' });
+  if (error) throw error; return data;
+}
+
+// ── Pro Boot ──────────────────────────────────────────────
+async function bootPro() {
+  try {
+    const user = await getCurrentUser();
+    if (!user) { proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] }; renderProPanel(); return; }
+    const teams = await getMyTeams(user.id);
+    if (teams.length) {
+      const t = teams[0];
+      const teamId = t.team?.id || t.team_id;
+      const teamName = t.team?.business_name || 'Your Team';
+      const teamRole = t.role || 'worker';
+      const [jobs, feed] = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
+      proState = { user, teamId, teamName, teamRole, jobs, feed };
+      // Realtime
+      const sb = await getSb();
+      if (sb) {
+        sb.channel(`jobs-${teamId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `team_id=eq.${teamId}` }, async () => {
+          const [j, f] = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
+          proState.jobs = j; proState.feed = f;
+          renderJobsList(); renderActivity(); updateKPIs();
+        }).subscribe();
       }
+    } else {
+      proState = { user, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
     }
-
-    function buildFingerprintFromQuote(d){
-      return JSON.stringify({
-        customer_name: d.customerName || "",
-        customer_email: d.customerEmail || "",
-        customer_phone: d.customerPhone || "",
-        service_address: d.serviceAddress || "",
-        windows: d.windows || 0,
-        tracks: d.tracks || 0,
-        flyscreens: d.flyscreens || 0,
-        balustrades: d.balustrades || 0,
-        solar_panels: d.solarPanels || 0,
-        gutter_metres: d.gutterMetres || 0,
-        service_type: d.serviceType || "",
-        storeys: d.storeys || "",
-        builders_clean: !!d.buildersClean,
-        notes: d.notes || "",
-        quoted_price: Number(d.finalPrice || 0)
-      });
-    }
-
-    function buildFingerprintFromJob(job){
-      return JSON.stringify({
-        customer_name: job.customer_name || "",
-        customer_email: job.customer_email || "",
-        customer_phone: job.customer_phone || "",
-        service_address: job.service_address || "",
-        windows: job.windows || 0,
-        tracks: job.tracks || 0,
-        flyscreens: job.flyscreens || 0,
-        balustrades: job.balustrades || 0,
-        solar_panels: job.solar_panels || 0,
-        gutter_metres: job.gutter_metres || 0,
-        service_type: job.service_type || "",
-        storeys: job.storeys || "",
-        builders_clean: !!job.builders_clean,
-        notes: job.notes || "",
-        quoted_price: Number(job.quoted_price || 0)
-      });
-    }
-
-    async function findExistingRecentJob(){
-      if (!supabase || !appState.teamId) return null;
-
-      const quote = calculateQuote();
-      const currentFingerprint = buildFingerprintFromQuote(quote);
-
-      const { data, error } = await supabase
-        .from("jobs")
-        .select("*")
-        .eq("team_id", appState.teamId)
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-
-      return (data || []).find(job => {
-        const ageMs = Date.now() - new Date(job.created_at).getTime();
-        return buildFingerprintFromJob(job) === currentFingerprint && ageMs < 120000;
-      }) || null;
-    }
-
-    async function createJob(){
-      if (!supabase) throw new Error("Supabase is not configured.");
-      if (!appState.teamId) throw new Error("Create or join a Pro team first.");
-
-      const existing = await findExistingRecentJob();
-      if (existing) return existing;
-
-      const d = calculateQuote();
-
-      const payload = {
-        team_id: appState.teamId,
-        customer_name: d.customerName,
-        customer_email: d.customerEmail,
-        customer_phone: d.customerPhone,
-        service_address: d.serviceAddress,
-        windows: d.windows,
-        tracks: d.tracks,
-        flyscreens: d.flyscreens,
-        balustrades: d.balustrades,
-        solar_panels: d.solarPanels,
-        gutter_metres: d.gutterMetres,
-        service_type: d.serviceType,
-        storeys: d.storeys,
-        builders_clean: d.buildersClean,
-        notes: d.notes,
-        quoted_price: d.finalPrice,
-        paid_amount: null,
-        status: "quote_sent",
-        quoted_at: new Date().toISOString()
-      };
-
-      const { data, error } = await supabase
-        .from("jobs")
-        .insert([payload])
-        .select()
-        .single();
-
-      if (error){
-        console.error("createJob error:", error);
-        throw new Error(`Could not save job: ${getFriendlyError(error, "Insert failed.")}`);
-      }
-
-      await logActivity("Job Created", `${payload.customer_name || "Unnamed Customer"} - ${money(payload.quoted_price)}`);
-      return data;
-    }
-
-    async function getJobs(){
-      if (!supabase || !appState.teamId){
-        appState.jobs = [];
-        renderJobs();
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("jobs")
-        .select("*")
-        .eq("team_id", appState.teamId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      appState.jobs = data || [];
-      renderJobs();
-    }
-
-    async function loadActivity(){
-      if (!supabase || !appState.teamId){
-        appState.feed = [];
-        renderFeed();
-        return;
-      }
-
-      try{
-        const { data, error } = await supabase
-          .from("activity_logs")
-          .select("*")
-          .eq("team_id", appState.teamId)
-          .order("created_at", { ascending: false })
-          .limit(20);
-
-        if (error) throw error;
-        appState.feed = data || [];
-      } catch {
-        appState.feed = [];
-      }
-
-      renderFeed();
-    }
-
-    async function markJobAccepted(id){
-      const { error } = await supabase.rpc("mark_job_accepted", { p_job_id: id });
-      if (error) throw error;
-      await logActivity("Job Accepted", `Job ID: ${id}`);
-    }
-
-    async function markJobStarted(id){
-      const { error } = await supabase.rpc("mark_job_started", { p_job_id: id });
-      if (error) throw error;
-      await logActivity("Job Started", `Job ID: ${id}`);
-    }
-
-    async function markJobCompleted(id){
-      const { error } = await supabase.rpc("mark_job_completed", { p_job_id: id });
-      if (error) throw error;
-      await logActivity("Job Completed", `Job ID: ${id}`);
-    }
-
-    async function cancelJob(id){
-      const { error } = await supabase
-        .from("jobs")
-        .update({ status: "cancelled" })
-        .eq("id", id);
-
-      if (error) throw error;
-      await logActivity("Job Cancelled", `Job ID: ${id}`);
-    }
-
-    async function savePaidAmount(id, paidAmount){
-      if (!Number.isFinite(paidAmount) || paidAmount < 0){
-        throw new Error("Please enter a valid paid amount.");
-      }
-
-      const { error } = await supabase
-        .from("jobs")
-        .update({ paid_amount: paidAmount })
-        .eq("id", id);
-
-      if (error) throw error;
-      await logActivity("Paid Amount Updated", `Job ID: ${id} - ${money(paidAmount)}`);
-    }
-
-    async function saveCurrentQuoteToTeam(showMessage = true){
-      if (appState.saveBusy) return;
-      appState.saveBusy = true;
-
-      try{
-        await createJob();
-        await getJobs();
-        await loadActivity();
-        showProJobsAll();
-        if (showMessage) showBanner("Quote saved to team jobs.", "success");
-      } finally {
-        appState.saveBusy = false;
-      }
-    }
-
-    async function emailAndSaveQuote(){
-      if (appState.saveBusy) return;
-      appState.saveBusy = true;
-
-      try{
-        await createJob();
-        await getJobs();
-        await loadActivity();
-        showProJobsAll();
-        openEmailQuote();
-      } finally {
-        appState.saveBusy = false;
-      }
-    }
-
-    function unsubscribeRealtime(){
-      if (!supabase || !appState.jobsChannel) return;
-      supabase.removeChannel(appState.jobsChannel);
-      appState.jobsChannel = null;
-    }
-
-    function subscribeRealtime(){
-      if (!supabase || !appState.teamId) return;
-
-      unsubscribeRealtime();
-
-      appState.jobsChannel = supabase
-        .channel(`jobs-${appState.teamId}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "jobs",
-          filter: `team_id=eq.${appState.teamId}`
-        }, async () => {
-          try{
-            await getJobs();
-            await loadActivity();
-          } catch {
-          }
-        })
-        .subscribe();
-    }
-
-    async function bootProMode(){
-      if (!supabase){
-        renderAuthState();
-        renderJobs();
-        renderFeed();
-        return;
-      }
-
-      try{
-        appState.user = await getCurrentUser();
-        appState.proEnabled = !!appState.user;
-
-        if (!appState.user){
-          appState.teamId = null;
-          appState.teamName = "";
-          appState.teamRole = "";
-          appState.jobs = [];
-          appState.feed = [];
-          unsubscribeRealtime();
-          renderAuthState();
-          renderJobs();
-          renderFeed();
-          return;
-        }
-
-        const teams = await getMyTeams();
-
-        if (teams.length){
-          const t = teams[0];
-          appState.teamId = t.team?.id || t.team_id || null;
-          appState.teamName = t.team?.business_name || "Your Team";
-          appState.teamRole = t.role || "worker";
-          $("teamCountPill").textContent = `${await getTeamMembersCount(appState.teamId)} members`;
-          await getJobs();
-          await loadActivity();
-          subscribeRealtime();
-        } else {
-          appState.teamId = null;
-          appState.teamName = "";
-          appState.teamRole = "";
-          appState.jobs = [];
-          appState.feed = [];
-          unsubscribeRealtime();
-          renderJobs();
-          renderFeed();
-        }
-
-        renderAuthState();
-        setModeUI();
-      } catch(err){
-        console.error("bootProMode error:", err);
-        showBanner(getFriendlyError(err, "Could not load Pro mode."), "error");
-      }
-    }
-
-    function bindUI(){
-      document.querySelectorAll(".tab[data-tab]").forEach(btn => {
-        btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
-      });
-
-      document.addEventListener("click", (e) => {
-        const btn = e.target.closest(".subtab");
-        if (!btn) return;
-
-        document.querySelectorAll(".subtab").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        const name = btn.dataset.subtab;
-        document.querySelectorAll(".subpanel").forEach(panel => panel.classList.remove("active"));
-        document.getElementById(name + "Subpanel")?.classList.add("active");
-      });
-
-      document.querySelectorAll(".authTab").forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll(".authTab").forEach(b => {
-            b.classList.remove("active", "secondary");
-            b.classList.add("ghost");
-          });
-
-          btn.classList.add("active", "secondary");
-          btn.classList.remove("ghost");
-
-          const tab = btn.dataset.authTab;
-          $("signinPanel").classList.toggle("hidden", tab !== "signin");
-          $("signupPanel").classList.toggle("hidden", tab !== "signup");
-        });
-      });
-
-      document.addEventListener("click", (e) => {
-        const btn = e.target.closest(".jobFilter");
-        if (!btn) return;
-
-        document.querySelectorAll(".jobFilter").forEach(b => {
-          b.classList.remove("active", "secondary");
-          b.classList.add("ghost");
-        });
-
-        btn.classList.add("active", "secondary");
-        btn.classList.remove("ghost");
-        appState.jobFilter = btn.dataset.jobFilter;
-        renderJobs();
-      });
-
-      $("saveLocalBtn")?.addEventListener("click", saveSettings);
-      $("pricingMode")?.addEventListener("change", updatePricingModeUI);
-
-      $("stickySaveBtn")?.addEventListener("click", async () => {
-        try{
-          await saveCurrentQuoteToTeam(true);
-        } catch(err){
-          showBanner(getFriendlyError(err, "Could not save quote."), "error");
-        }
-      });
-
-      $("stickyEmailBtn")?.addEventListener("click", async () => {
-        try{
-          if (!appState.teamId){
-            openEmailQuote();
-            return;
-          }
-          await emailAndSaveQuote();
-        } catch(err){
-          showBanner(getFriendlyError(err, "Could not save and open email."), "error");
-        }
-      });
-
-      $("signinBtn")?.addEventListener("click", async () => {
-        try{
-          await signIn($("signinEmail").value.trim(), $("signinPassword").value);
-          showBanner("Signed in successfully.", "success");
-          await bootProMode();
-        } catch(err){
-          showBanner(getFriendlyError(err, "Sign in failed."), "error");
-        }
-      });
-
-      $("signupBtn")?.addEventListener("click", async () => {
-        try{
-          await signUp(
-            $("signupEmail").value.trim(),
-            $("signupPassword").value,
-            $("signupName").value.trim()
-          );
-          showBanner("Account created. Check your email if confirmation is enabled.", "success");
-        } catch(err){
-          showBanner(getFriendlyError(err, "Sign up failed."), "error");
-        }
-      });
-
-      $("logoutBtn")?.addEventListener("click", async () => {
-        try{
-          unsubscribeRealtime();
-          await signOutUser();
-          appState.proEnabled = false;
-          appState.user = null;
-          appState.teamId = null;
-          appState.teamName = "";
-          appState.teamRole = "";
-          appState.jobs = [];
-          appState.feed = [];
-          renderAuthState();
-          renderJobs();
-          renderFeed();
-          setModeUI();
-          showBanner("Signed out.", "success");
-        } catch(err){
-          showBanner(getFriendlyError(err, "Sign out failed."), "error");
-        }
-      });
-
-      $("createTeamBtn")?.addEventListener("click", async () => {
-        try{
-          const teamName = $("teamBusinessName").value.trim();
-          if (!teamName) throw new Error("Please enter a business name.");
-          await createTeamAndMakeOwner(teamName);
-          await bootProMode();
-          await logActivity("Team Created", teamName);
-          await loadActivity();
-          showBanner("Team created.", "success");
-        } catch(err){
-          showBanner(getFriendlyError(err, "Could not create team."), "error");
-        }
-      });
-
-      $("joinTeamBtn")?.addEventListener("click", async () => {
-        try{
-          const code = $("inviteCode").value.trim();
-          if (!code) throw new Error("Please enter an invite code.");
-          await joinTeamWithInvite(code);
-          await bootProMode();
-          await logActivity("Joined Team", `Invite code used: ${code}`);
-          await loadActivity();
-          showBanner("Joined team successfully.", "success");
-        } catch(err){
-          showBanner(getFriendlyError(err, "Could not join team."), "error");
-        }
-      });
-
-      $("makeInviteBtn")?.addEventListener("click", async () => {
-        try{
-          const code = await createTeamInvite(appState.teamId, "worker");
-          $("inviteOutput").textContent = `Invite code: ${code}`;
-          await logActivity("Invite Created", `Code: ${code}`);
-          await loadActivity();
-          showBanner("Invite code created.", "success");
-        } catch(err){
-          showBanner(getFriendlyError(err, "Could not create invite code."), "error");
-        }
-      });
-
-      $("saveTeamJobBtn")?.addEventListener("click", async () => {
-        try{
-          await saveCurrentQuoteToTeam(true);
-        } catch(err){
-          showBanner(getFriendlyError(err, "Could not save current quote."), "error");
-        }
-      });
-
-      [
-        "businessName","contactName","businessPhone","businessEmail","customMessage",
-        "pricingMode","roundingRule","rateWindow","rateTrack","rateFlyscreen","rateBalustrade",
-        "rateSolar","rateGutter","hourlyRate","minsPerWindow","minsPerTrack","minsPerFlyscreen",
-        "minsPerBalustrade","minsPerSolar","minsPerGutterMetre","over6HoursFee","externalOnlyFactor",
-        "twoStoreyFactor","buildersCleanFactor","minimumFee","gstRate","gstIncluded",
-        "customerName","customerEmail","customerPhone","serviceAddress","windows","tracks","flyscreens",
-        "balustrades","solarPanels","gutterMetres","serviceType","storeys","buildersClean","jobNotes"
-      ].forEach(id => {
-        const el = $(id);
-        if (!el) return;
-        el.addEventListener("input", buildQuotePreview);
-        el.addEventListener("change", buildQuotePreview);
-      });
-    }
-
-    async function init(){
-      loadSettings();
-      buildQuotePreview();
-      setModeUI();
-      renderJobs();
-      renderFeed();
-      bindUI();
-
-      if (hasSupabaseKeys && supabase){
-        supabase.auth.onAuthStateChange(async () => {
-          await bootProMode();
-        });
-        await bootProMode();
-      }
-
-      if ("serviceWorker" in navigator){
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./sw.js").catch(() => {});
-        });
-      }
-    }
-
-    init();
-  </script>
+    renderProPanel();
+  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+}
+
+// ── Pro Panel Render ──────────────────────────────────────
+function renderProPanel() {
+  const { user, teamId } = proState;
+  document.getElementById('pro-auth-panel').classList.toggle('hidden', !!user);
+  document.getElementById('pro-team-setup').classList.toggle('hidden', !user || !!teamId);
+  document.getElementById('pro-dashboard').classList.toggle('hidden', !user || !teamId);
+
+  // Badge
+  const badge = document.getElementById('pro-badge');
+  badge.className = teamId ? 'badge-pro' : 'badge-free';
+  badge.textContent = teamId ? 'PRO' : 'FREE';
+
+  // Header sub
+  document.getElementById('header-sub').textContent = proState.teamName || 'Fast quoting for window cleaners';
+
+  // Save job button visibility
+  document.getElementById('save-job-btn').style.display = teamId ? '' : 'none';
+
+  if (user && !teamId) {
+    document.getElementById('setup-email-display').textContent = user.email;
+  }
+  if (user && teamId) {
+    document.getElementById('team-name-display').textContent = proState.teamName;
+    document.getElementById('team-email-display').textContent = user.email;
+    const roleBadge = document.getElementById('team-role-badge');
+    roleBadge.textContent = proState.teamRole === 'owner' ? 'Owner' : 'Staff';
+    roleBadge.className = `role-badge ${proState.teamRole === 'owner
+' ? 'role-owner' : 'role-staff'}`;
+    document.getElementById('invite-panel').classList.toggle('hidden', proState.teamRole !== 'owner');
+    document.getElementById('revenue-banner').classList.toggle('hidden', proState.teamRole !== 'owner');
+    renderJobsList(); renderActivity(); updateKPIs();
+    buildJobFilters();
+  }
+}
+
+// ── Auth ──────────────────────────────────────────────────
+document.getElementById('auth-signin-tab').addEventListener('click', () => {
+  authMode = 'signin';
+  document.getElementById('auth-signin-tab').classList.add('active');
+  document.getElementById('auth-signup-tab').classList.remove('active');
+  document.getElementById('auth-name-field').classList.add('hidden');
+  document.getElementById('auth-submit-btn').textContent = 'Sign In';
+});
+document.getElementById('auth-signup-tab').addEventListener('click', () => {
+  authMode = 'signup';
+  document.getElementById('auth-signup-tab').classList.add('active');
+  document.getElementById('auth-signin-tab').classList.remove('active');
+  document.getElementById('auth-name-field').classList.remove('hidden');
+  document.getElementById('auth-submit-btn').textContent = 'Create Account';
+});
+document.getElementById('auth-submit-btn').addEventListener('click', async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const name = document.getElementById('auth-name').value.trim();
+  if (!email || !password) { showToast('Please enter email and password.', 'error'); return; }
+  const btn = document.getElementById('auth-submit-btn');
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    if (authMode === 'signin') await sbSignIn(email, password);
+    else await sbSignUp(email, password, name);
+    await bootPro();
+    showToast(authMode === 'signin' ? 'Signed in!' : 'Account created!', 'success');
+  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  finally { btn.disabled = false; btn.textContent = authMode === 'signin' ? 'Sign In' : 'Create Account'; }
+});
+
+document.getElementById('setup-signout-btn').addEventListener('click', async () => {
+  await sbSignOut(); proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
+  renderProPanel(); showToast('Signed out.');
+});
+document.getElementById('pro-signout-btn').addEventListener('click', async () => {
+  await sbSignOut(); proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
+  renderProPanel(); showToast('Signed out.');
+});
+
+// ── Team Create / Join ────────────────────────────────────
+document.getElementById('create-team-btn').addEventListener('click', async () => {
+  const name = document.getElementById('team-name-input').value.trim();
+  if (!name) { showToast('Enter a business name.', 'error'); return; }
+  const btn = document.getElementById('create-team-btn');
+  btn.disabled = true; btn.textContent = 'Creating...';
+  try {
+    await createTeamAndMakeOwner(name);
+    await bootPro();
+    showToast('Team created!', 'success');
+  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Create Team'; }
+});
+document.getElementById('join-team-btn').addEventListener('click', async () => {
+  const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
+  if (!code) { showToast('Enter an invite code.', 'error'); return; }
+  const btn = document.getElementById('join-team-btn');
+  btn.disabled = true; btn.textContent = 'Joining...';
+  try {
+    await joinTeamWithInvite(code);
+    await bootPro();
+    showToast('Joined team!', 'success');
+  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Join Team'; }
+});
+
+// ── Generate Invite ───────────────────────────────────────
+document.getElementById('gen-invite-btn').addEventListener('click', async () => {
+  if (!proState.teamId) return;
+  try {
+    const code = await createTeamInvite(proState.teamId);
+    document.getElementById('invite-code-display').textContent = code;
+    document.getElementById('invite-row').classList.remove('hidden');
+  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+});
+document.getElementById('copy-invite-btn').addEventListener('click', () => {
+  const code = document.getElementById('invite-code-display').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copy-invite-btn');
+    btn.classList.add('copied');
+    showToast('Code copied!', 'success');
+    setTimeout(() => btn.classList.remove('copied'), 2000);
+  });
+});
+
+// ── Save Job ──────────────────────────────────────────────
+async function saveJobToTeam() {
+  if (!proState.teamId || !proState.user || saveBusy) return;
+  saveBusy = true;
+  try {
+    const result = calculateQuote();
+    const q = quoteInput;
+    const sb = await getSb();
+    const items = [];
+    if (q.windows > 0) items.push(`${q.windows} windows`);
+    if (q.tracks > 0) items.push(`${q.tracks} tracks`);
+    if (q.flyscreens > 0) items.push(`${q.flyscreens} flyscreens`);
+    if (q.balustrades > 0) items.push(`${q.balustrades} balustrades`);
+    if (q.solarPanels > 0) items.push(`${q.solarPanels} solar panels`);
+    if (q.gutterMetres > 0) items.push(`${q.gutterMetres}m gutters`);
+    const { error } = await sb.from('jobs').insert({
+      team_id: proState.teamId,
+      customer_name: q.customerName || 'Unknown',
+      customer_phone: q.customerPhone,
+      customer_email: q.customerEmail,
+      service_address: q.serviceAddress,
+      service_type: q.serviceType,
+      storeys: q.storeys,
+      builders_clean: q.buildersClean,
+      notes: q.notes,
+      windows: q.windows, tracks: q.tracks, flyscreens: q.flyscreens,
+      balustrades: q.balustrades, solar_panels: q.solarPanels, gutter_metres: q.gutterMetres,
+      quoted_price: result.finalPrice,
+      status: 'quote_sent',
+      items_summary: items.join(', '),
+      created_by: proState.user.id,
+    });
+    if (error) throw error;
+    await logActivity(proState.teamId, proState.user.id, 'Quote sent', `${q.customerName || 'Customer'} — ${money(result.finalPrice)}`);
+    const [jobs, feed] = await Promise.all([fetchJobs(proState.teamId), fetchActivity(proState.teamId)]);
+    proState.jobs = jobs; proState.feed = feed;
+    renderJobsList(); renderActivity(); updateKPIs();
+    showToast('Job saved to team board!', 'success');
+  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  finally { saveBusy = false; }
+}
+
+document.getElementById('save-job-btn').addEventListener('click', saveJobToTeam);
+document.getElementById('dash-save-job-btn').addEventListener('click', saveJobToTeam);
+
+// ── Sub Tabs ──────────────────────────────────────────────
+document.querySelectorAll('.sub-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeSubTab = btn.dataset.subtab;
+    document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.dataset.subtab === activeSubTab));
+    ['dashboard','jobs','activity'].forEach(t => {
+      document.getElementById(`subtab-${t}`).classList.toggle('hidden', t !== activeSubTab);
+    });
+  });
+});
+
+// ── Job Filters ───────────────────────────────────────────
+const FILTERS = [
+  { val: 'all', label: 'All' },
+  { val: 'quote_sent', label: 'Quoted' },
+  { val: 'accepted', label: 'Accepted' },
+  { val: 'in_progress', label: 'In Progress' },
+  { val: 'completed', label: 'Completed' },
+  { val: 'cancelled', label: 'Cancelled' },
+];
+function buildJobFilters() {
+  const strip = document.getElementById('job-filters');
+  strip.innerHTML = '';
+  FILTERS.forEach(({ val, label }) => {
+    const chip = document.createElement('button');
+    chip.className = `filter-chip${val === jobFilter ? ' active' : ''}`;
+    chip.textContent = label;
+    chip.addEventListener('click', () => {
+      jobFilter = val;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderJobsList();
+    });
+    strip.appendChild(chip);
+  });
+}
+
+// ── KPIs ──────────────────────────────────────────────────
+function updateKPIs() {
+  const jobs = proState.jobs;
+  const count = s => jobs.filter(j => j.status === s).length;
+  document.getElementById('kpi-quoted').textContent = count('quote_sent');
+  document.getElementById('kpi-accepted').textContent = count('accepted');
+  document.getElementById('kpi-progress').textContent = count('in_progress');
+  document.getElementById('kpi-completed').textContent = count('completed');
+  if (proState.teamRole === 'owner') {
+    const paid = jobs.reduce((s, j) => s + (j.paid_amount || 0), 0);
+    const quoted = jobs.reduce((s, j) => s + (j.quoted_price || 0), 0);
+    document.getElementById('rev-paid').textContent = money(paid);
+    document.getElementById('rev-quoted').textContent = money(quoted);
+  }
+}
+
+// ── Jobs List ─────────────────────────────────────────────
+function statusLabel(s) {
+  const map = { quote_sent:'Quoted', accepted:'Accepted', in_progress:'In Progress', completed:'Completed', cancelled:'Cancelled' };
+  return map[s] || s;
+}
+function nextStatuses(s, role) {
+  if (s === 'quote_sent') return role === 'owner' ? ['accepted','cancelled'] : ['accepted'];
+  if (s === 'accepted') return ['in_progress'];
+  if (s === 'in_progress') return ['completed'];
+  return [];
+}
+function statusBtnLabel(s) {
+  const map = { accepted:'Accept Job', in_progress:'Start Job', completed:'Mark Complete', cancelled:'Cancel' };
+  return map[s] || s;
+}
+function statusBtnClass(s) {
+  if (s === 'accepted') return 'btn btn-amber btn-sm';
+  if (s === 'in_progress') return 'btn btn-purple btn-sm';
+  if (s === 'completed') return 'btn btn-success btn-sm';
+  if (s === 'cancelled') return 'btn btn-danger-soft btn-sm';
+  return 'btn btn-secondary btn-sm';
+}
+
+function renderJobsList() {
+  const list = document.getElementById('jobs-list');
+  const jobs = jobFilter === 'all' ? proState.jobs : proState.jobs.filter(j => j.status === jobFilter);
+  if (!jobs.length) {
+    list.innerHTML = `<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><div class="empty-title">No jobs yet</div><div class="empty-sub">Save a quote to create a team job.</div></div>`;
+    return;
+  }
+  list.innerHTML = '';
+  jobs.forEach(job => {
+    const card = document.createElement('div');
+    card.className = 'job-card';
+    card.setAttribute('data-status', job.status);
+    const nexts = nextStatuses(job.status, proState.teamRole);
+    const actionBtns = nexts.map(ns => `<button class="job-action-btn ${statusBtnClass(ns)}" data-job="${job.id}" data-next="${ns}">${statusBtnLabel(ns)}</button>`).join('');
+    const cancelBtn = proState.teamRole === 'owner' && job.status !== 'completed' && job.status !== 'cancelled'
+      ? `<button class="job-action-btn btn btn-danger-soft btn-sm" data-job="${job.id}" data-next="cancelled">Cancel</button>` : '';
+    const paidSection = proState.teamRole === 'owner' && job.status === 'completed' ? `
+      <div class="paid-box">
+        <div class="paid-box-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Record Payment</div>
+        <div class="paid-input-row">
+          <div class="paid-input-wrap"><span>$</span><input type="number" class="paid-amount-input" data-job="${job.id}" value="${job.paid_amount || ''}" placeholder="0" min="0" step="1" /></div>
+          <button class="btn btn-success btn-sm save-paid-btn" data-job="${job.id}">Save</button>
+        </div>
+        ${job.paid_amount ? `<div class="paid-current">Recorded: ${money(job.paid_amount)}</div>` : ''}
+      </div>` : '';
+    card.innerHTML = `
+      <button class="job-card-header" data-expand="${job.id}">
+        <div class="job-card-top">
+          <div>
+            <div class="job-card-name">${job.customer_name || 'Unknown'}</div>
+            <div class="job-card-addr">${job.service_address || ''}</div>
+          </div>
+          <div class="job-card-right">
+            <div class="job-card-price">${money(job.quoted_price)}</div>
+            <span class="status-badge status-${job.status}">${statusLabel(job.status)}</span>
+          </div>
+        </div>
+        <div class="job-card-meta">
+          <span class="job-card-date">${prettyDateShort(job.created_at)}</span>
+          <span class="job-card-items">${job.items_summary || ''}</span>
+        </div>
+      </button>
+      <div class="job-card-body hidden" id="job-body-${job.id}">
+        <div class="job-detail-grid">
+          <div><div class="job-detail-label">Phone</div><div class="job-detail-val">${job.customer_phone || '—'}</div></div>
+          <div><div class="job-detail-label">Email</div><div class="job-detail-val">${job.customer_email || '—'}</div></div>
+          <div><div class="job-detail-label">Service</div><div class="job-detail-val">${job.service_type === 'external' ? 'Ext Only' : 'Int + Ext'}</div></div>
+          <div><div class="job-detail-label">Storeys</div><div class="job-detail-val">${job.storeys === 'two' ? '2 Storey' : '1 Storey'}</div></div>
+          <div><div class="job-detail-label">Builder's</div><div class="job-detail-val">${job.builders_clean ? 'Yes' : 'No'}</div></div>
+          <div><div class="job-detail-label">Created</div><div class="job-detail-val">${prettyDate(job.created_at)}</div></div>
+        </div>
+        ${job.notes ? `<div class="job-notes"><span class="job-notes-label">Notes</span>${job.notes}</div>` : ''}
+        <div class="job-actions">${actionBtns}${cancelBtn}</div>
+        ${paidSection}
+      </div>`;
+    list.appendChild(card);
+  });
+
+  // Expand/collapse
+  list.querySelectorAll('[data-expand]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = document.getElementById(`job-body-${btn.dataset.expand}`);
+      if (body) body.classList.toggle('hidden');
+    });
+  });
+
+  // Status actions
+  list.querySelectorAll('.job-action-btn[data-next]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const jobId = btn.dataset.job;
+      const nextStatus = btn.dataset.next;
+      await updateJobStatus(jobId, nextStatus);
+    });
+  });
+
+  // Paid amount
+  list.querySelectorAll('.save-paid-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const jobId = btn.dataset.job;
+      const input = list.querySelector(`.paid-amount-input[data-job="${jobId}"]`);
+      const amount = parseFloat(input?.value) || 0;
+      await savePaidAmount(jobId, amount);
+    });
+  });
+}
+
+async function updateJobStatus(jobId, newStatus) {
+  try {
+    const sb = await getSb();
+    const { error } = await sb.from('jobs').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', jobId);
+    if (error) throw error;
+    const job = proState.jobs.find(j => j.id === jobId);
+    await logActivity(proState.teamId, proState.user.id, `Job ${statusLabel(newStatus)}`, `${job?.customer_name || 'Job'} — ${money(job?.quoted_price)}`);
+    const [jobs, feed] = await Promise.all([fetchJobs(proState.teamId), fetchActivity(proState.teamId)]);
+    proState.jobs = jobs; proState.feed = feed;
+    renderJobsList(); renderActivity(); updateKPIs();
+    showToast(`Job marked as ${statusLabel(newStatus)}.`, 'success');
+  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+}
+
+async function savePaidAmount(jobId, amount) {
+  try {
+    const sb = await getSb();
+    const { error } = await sb.from('jobs').update({ paid_amount: amount }).eq('id', jobId);
+    if (error) throw error;
+    const [jobs] = await Promise.all([fetchJobs(proState.teamId)]);
+    proState.jobs = jobs;
+    renderJobsList(); updateKPIs();
+    showToast(`Payment of ${money(amount)} recorded.`, 'success');
+  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+}
+
+// ── Activity Feed ─────────────────────────────────────────
+function activityIcon(action) {
+  if (action.includes('sent') || action.includes('Quote')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`;
+  if (action.includes('Accept')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+  if (action.includes('Progress') || action.includes('Start')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>`;
+  if (action.includes('Complet')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+  if (action.includes('Cancel')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>`;
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`;
+}
+function renderActivity() {
+  const list = document.getElementById('activity-list');
+  if (!proState.feed.length) {
+    list.innerHTML = `<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><div class="empty-title">No activity yet</div><div class="empty-sub">Team actions will appear here in real time.</div></div>`;
+    return;
+  }
+  list.innerHTML = proState.feed.map(item => `
+    <div class="activity-item">
+      <div class="activity-icon">${activityIcon(item.action || '')}</div>
+      <div>
+        <div class="activity-action">${item.action || ''}</div>
+        <div class="activity-details">${item.details || ''}</div>
+        <div class="activity-time">${prettyDate(item.created_at)}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Init ──────────────────────────────────────────────────
+buildSteppers();
+syncSettingsToForm();
+updateQuoteDisplay();
+bootPro();
+</script>
 </body>
 </html>
