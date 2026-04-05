@@ -738,75 +738,78 @@ Sent using Window Quote Pro`;
     }
 
     function renderJobs(){
-      const list = $("jobsList");
-      list.innerHTML = "";
-      const jobs = appState.jobs.filter(job => appState.jobFilter === "all" ? true : job.status === appState.jobFilter);
+  const list = $("jobsList");
+  list.innerHTML = "";
 
-      if (!jobs.length){
-        list.innerHTML = `<div class="mini">No jobs yet.</div>`;
+  const jobs = appState.jobs.filter(job =>
+    appState.jobFilter === "all" ? true : job.status === appState.jobFilter
+  );
+
+  if (!jobs.length){
+    list.innerHTML = `<div class="mini">No jobs yet.</div>`;
+  }
+
+  jobs.forEach(job => {
+    const card = document.createElement("div");
+    card.className = "job-card";
+
+    card.innerHTML = `
+      <div class="job-top">
+        <div>
+          <div class="job-title">${escapeHtml(job.customer_name || "Unnamed Customer")}</div>
+          <p class="job-sub">${escapeHtml(job.service_address || "")}</p>
+        </div>
+        <span class="status ${job.status}">${statusLabel(job.status)}</span>
+      </div>
+
+      <div class="job-meta">
+        <div><strong>Price</strong><br>${money(job.quoted_price || 0)}</div>
+        <div><strong>Quoted</strong><br>${prettyDate(job.quoted_at || job.created_at)}</div>
+      </div>
+
+      <div class="mini" style="margin-bottom:10px">
+        ${job.customer_phone ? `Phone: ${escapeHtml(job.customer_phone)}<br>` : ""}
+        ${job.customer_email ? `Email: ${escapeHtml(job.customer_email)}<br>` : ""}
+        Service: ${job.service_type === "external" ? "External Only" : "Internal + External"}<br>
+        Storeys: ${job.storeys === "two" ? "Two Storey" : "Single Storey"}<br>
+        Windows: ${job.windows || 0}, Tracks: ${job.tracks || 0}, Flyscreens: ${job.flyscreens || 0}
+      </div>
+
+      <div class="btn-row">
+        ${job.status === "quote_sent" ? `<button class="btn secondary" data-action="accept" data-id="${job.id}">Mark Accepted</button>` : ""}
+        ${job.status === "accepted" ? `<button class="btn warn" data-action="start" data-id="${job.id}">Start Job</button>` : ""}
+        ${job.status === "in_progress" ? `<button class="btn good" data-action="complete" data-id="${job.id}">Complete Job</button>` : ""}
+      </div>
+    `;
+
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll("button[data-action]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+
+      try{
+        if (action === "accept") await markJobAccepted(id);
+        if (action === "start") await markJobStarted(id);
+        if (action === "complete") await markJobCompleted(id);
+        await getJobs();
+      } catch(err){
+        alert(err.message);
       }
+    });
+  });
 
-      jobs.forEach(job => {
-        const card = document.createElement("div");
-        card.className = "job-card";
-        card.innerHTML = `
-          <div class="job-top">
-            <div>
-              <div class="job-title">${escapeHtml(job.customer_name || "Unnamed Customer")}</div>
-              <p class="job-sub">${escapeHtml(job.service_address || "")}</p>
-            </div>
-            <span class="status ${job.status}">${statusLabel(job.status)}</span>
-          </div>
-          <div class="job-meta">
-            <div><strong>Price</strong><br>${money(job.quoted_price)}</div>
-            <div><strong>Quoted</strong><br>${prettyDate(job.quoted_at)}</div>
-          </div>
-          <div class="btn-row">
-            ${job.status === "quote_sent" ? `<button class="btn secondary" data-action="accept" data-id="${job.id}">Mark Accepted</button>` : ""}
-            ${job.status === "accepted" ? `<button class="btn warn" data-action="start" data-id="${job.id}">Start Job</button>` : ""}
-            ${job.status === "in_progress" ? `<button class="btn good" data-action="complete" data-id="${job.id}">Complete Job</button>` : ""}
-          </div>
-        `;
-        list.appendChild(card);
-      });
-
-      list.querySelectorAll("button[data-action]").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-          const action = btn.dataset.action;
-          try{
-            if (action === "accept") await markJobAccepted(id);
-            if (action === "start") await markJobStarted(id);
-            if (action === "complete") await markJobCompleted(id);
-          }catch(err){
-            alert(err.message);
-          }
-        });
-      });
-
-      $("kpiQuoteSent").textContent = appState.jobs.filter(j => j.status === "quote_sent").length;
-      $("kpiAccepted").textContent = appState.jobs.filter(j => j.status === "accepted").length;
-      $("kpiInProgress").textContent = appState.jobs.filter(j => j.status === "in_progress").length;
-      $("kpiCompleted").textContent = appState.jobs.filter(j => j.status === "completed").length;
-    }
+  $("kpiQuoteSent").textContent = appState.jobs.filter(j => j.status === "quote_sent").length;
+  $("kpiAccepted").textContent = appState.jobs.filter(j => j.status === "accepted").length;
+  $("kpiInProgress").textContent = appState.jobs.filter(j => j.status === "in_progress").length;
+  $("kpiCompleted").textContent = appState.jobs.filter(j => j.status === "completed").length;
+}
 
     function renderFeed(){
-      const list = $("activityFeed");
-      list.innerHTML = "";
-      if (!appState.feed.length){
-        list.innerHTML = `<div class="mini">No activity yet.</div>`;
-        return;
-      }
-      appState.feed.forEach(item => {
-        const row = document.createElement("div");
-        row.className = "feed-row";
-        row.innerHTML = `
-          <p><strong>${escapeHtml(item.user_name || "Someone")}</strong> ${escapeHtml(item.message || item.event_type || "")}</p>
-          <small>${prettyDate(item.created_at)}</small>
-        `;
-        list.appendChild(row);
-      });
-    }
+  $("activityFeed").innerHTML = `<div class="mini">Activity feed can be added next.</div>`;
+}
 
     async function signUp(email,password,fullName){
       if (!supabase) throw new Error("Add your Supabase URL and anon key first.");
@@ -878,39 +881,61 @@ Sent using Window Quote Pro`;
     }
 
     async function createJob(){
-      const d = calculateQuote();
-      const { data, error } = await supabase.rpc("create_job", {
-        p_team_id:appState.teamId,
-        p_customer_name:d.customerName,
-        p_customer_email:d.customerEmail,
-        p_customer_phone:d.customerPhone,
-        p_service_address:d.serviceAddress,
-        p_windows:d.windows,
-        p_tracks:d.tracks,
-        p_flyscreens:d.flyscreens,
-        p_balustrades:d.balustrades,
-        p_solar_panels:d.solarPanels,
-        p_gutter_metres:d.gutterMetres,
-        p_service_type:d.serviceType,
-        p_storeys:d.storeys,
-        p_notes:d.notes,
-        p_quoted_price:d.finalPrice,
-        p_gst_included:d.gstIncluded === "true"
-      });
-      if (error) throw error;
-      return data;
-    }
+  const d = calculateQuote();
 
+  const { data, error } = await supabase
+    .from("jobs")
+    .insert([{
+      team_id: appState.teamId,
+      customer_name: d.customerName,
+      customer_email: d.customerEmail,
+      customer_phone: d.customerPhone,
+      service_address: d.serviceAddress,
+      windows: d.windows,
+      tracks: d.tracks,
+      flyscreens: d.flyscreens,
+      balustrades: d.balustrades,
+      solar_panels: d.solarPanels,
+      gutter_metres: d.gutterMetres,
+      service_type: d.serviceType,
+      storeys: d.storeys,
+      notes: d.notes,
+      quoted_price: d.finalPrice,
+      status: "quote_sent",
+      quoted_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
+    }])
+    .select();
+
+  if (error) throw error;
+  return data;
+}
     async function getJobs(){
-      const { data, error } = await supabase
-        .from("jobs")
-        .select("*")
-        .eq("team_id", appState.teamId)
-        .order("created_at", { ascending:false });
-      if (error) throw error;
-      appState.jobs = data || [];
-      renderJobs();
-    }
+  const { data, error } = await supabase
+    .from("jobs")
+    .select("*")
+    .eq("team_id", appState.teamId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  appState.jobs = data || [];
+  renderJobs();
+}
+
+async function markJobAccepted(id){
+  const { error } = await supabase.rpc("mark_job_accepted", { p_job_id: id });
+  if (error) throw error;
+}
+
+async function markJobStarted(id){
+  const { error } = await supabase.rpc("mark_job_started", { p_job_id: id });
+  if (error) throw error;
+}
+
+async function markJobCompleted(id){
+  const { error } = await supabase.rpc("mark_job_completed", { p_job_id: id });
+  if (error) throw error;
+}
 
     async function getFeed(){
       const { data, error } = await supabase
@@ -945,85 +970,83 @@ Sent using Window Quote Pro`;
       if (appState.feedChannel){ supabase.removeChannel(appState.feedChannel); appState.feedChannel = null; }
     }
 
-    function subscribeRealtime(){
-      if (!supabase || !appState.teamId) return;
-      unsubscribeRealtime();
+function subscribeRealtime(){
+  if (!supabase || !appState.teamId) return;
+  unsubscribeRealtime();
 
-      appState.jobsChannel = supabase.channel(`jobs-${appState.teamId}`)
-        .on("postgres_changes", {
-          event:"*",
-          schema:"public",
-          table:"jobs",
-          filter:`team_id=eq.${appState.teamId}`
-        }, async () => { await getJobs(); })
-        .subscribe();
+  appState.jobsChannel = supabase.channel(`jobs-${appState.teamId}`)
+    .on("postgres_changes", {
+      event: "*",
+      schema: "public",
+      table: "jobs",
+      filter: `team_id=eq.${appState.teamId}`
+    }, async () => {
+      await getJobs();
+    })
+    .subscribe();
 
-      appState.feedChannel = supabase.channel(`feed-${appState.teamId}`)
-        .on("postgres_changes", {
-          event:"*",
-          schema:"public",
-          table:"job_events",
-          filter:`team_id=eq.${appState.teamId}`
-        }, async () => { await getFeed(); })
-        .subscribe();
+  // Leave feed off for now unless job_events is fully set up
+  // appState.feedChannel = supabase.channel(`feed-${appState.teamId}`)
+  //   .on("postgres_changes", {
+  //     event: "*",
+  //     schema: "public",
+  //     table: "job_events",
+  //     filter: `team_id=eq.${appState.teamId}`
+  //   }, async () => {
+  //     await getFeed();
+  //   })
+  //   .subscribe();
+}
+
+async function bootProMode(){
+  if (!supabase) return;
+
+  try{
+    appState.user = await getCurrentUser();
+    appState.proEnabled = !!appState.user;
+
+    if (!appState.user){
+      appState.teamId = null;
+      appState.teamName = "";
+      appState.teamRole = "";
+      renderAuthState();
+      return;
     }
 
-    async function bootProMode(){
-      if (!supabase) return;
-      try{
-        appState.user = await getCurrentUser();
-        appState.proEnabled = !!appState.user;
+    const teams = await getMyTeams();
 
-        if (!appState.user){
-          appState.teamId = null;
-          appState.teamName = "";
-          appState.teamRole = "";
-          renderAuthState();
-          return;
-        }
+    if (teams.length){
+      const t = teams[0];
 
-        const teams = await getMyTeams();
-        if (teams.length){
-          const t = teams[0];
-          appState.teamId = t.team.id;
-          appState.teamName = t.team.business_name;
-          appState.teamRole = t.role;
-          $("teamCountPill").textContent = `${await getTeamMembersCount(appState.teamId)} members`;
-          await getJobs();
-          await getFeed();
-          subscribeRealtime();
-        } else {
-          appState.teamId = null;
-          appState.teamName = "";
-          appState.teamRole = "";
-        }
+      appState.teamId = t.team.id;
+      appState.teamName = t.team.business_name;
+      appState.teamRole = t.role;
 
-        renderAuthState();
-      } catch(err){
-        console.error(err);
-        alert(err.message);
-      }
+      $("teamCountPill").textContent =
+        `${await getTeamMembersCount(appState.teamId)} members`;
+
+      await getJobs();
+      renderFeed();
+      subscribeRealtime();
+
+    } else {
+      appState.teamId = null;
+      appState.teamName = "";
+      appState.teamRole = "";
+      appState.jobs = [];
+      appState.feed = [];
+      renderJobs();
+      renderFeed();
     }
 
-    document.querySelectorAll(".tab[data-tab]").forEach(btn => {
-      btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
-    });
+    renderAuthState();
+    setModeUI();
 
-    document.querySelectorAll(".authTab").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".authTab").forEach(b => {
-          b.classList.remove("active");
-          b.classList.remove("secondary");
-          b.classList.add("ghost");
-        });
-        btn.classList.add("active");
-        btn.classList.add("secondary");
-        btn.classList.remove("ghost");
-        const tab = btn.dataset.authTab;
-        $("signinPanel").classList.toggle("hidden", tab !== "signin");
-        $("signupPanel").classList.toggle("hidden", tab !== "signup");
-      });
-    });
+  } catch(err){
+    console.error(err);
+    alert(err.message);
+  }
+}
 
     document.querySelectorAll(".jobFilter").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1108,14 +1131,16 @@ Sent using Window Quote Pro`;
     });
 
     $("saveTeamJobBtn").addEventListener("click", async () => {
-      try{
-        if (!appState.teamId) throw new Error("Create or join a Pro team first.");
-        await createJob();
-        alert("Job saved to team.");
-      } catch(err){
-        alert(err.message);
-      }
-    });
+  try{
+    if (!appState.teamId) throw new Error("Create or join a Pro team first.");
+    await createJob();
+    await getJobs();
+    setActiveTab("pro");
+    alert("Job saved to team.");
+  } catch(err){
+    alert(err.message);
+  }
+});
 
     [
       "businessName","contactName","businessPhone","businessEmail","customMessage",
