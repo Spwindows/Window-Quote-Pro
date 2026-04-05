@@ -926,6 +926,11 @@ function switchTab(tab) {
   var footer = document.getElementById('quote-footer');
   if (footer) footer.style.display = tab === 'quote' ? '' : 'none';
   if (tab === 'pricing') syncSettingsToForm();
+  // Clear Pro badge when switching to Pro tab
+  if (tab === 'pro') {
+    var badge = document.querySelector('#pro-tab-icon .tab-badge');
+    if (badge) badge.remove();
+  }
 }
 
 function switchSubTab(sub) {
@@ -1008,6 +1013,7 @@ document.getElementById('send-quote-btn').addEventListener('click', async functi
     return;
   }
 
+  // Build the email content first (before any async work)
   var result = calculateQuote();
   var svcLabel = q.serviceType === 'external' ? 'External Only' : 'Internal + External';
   var stLabel = q.storeys === 'two' ? 'Two Storey' : 'Single Storey';
@@ -1030,16 +1036,20 @@ document.getElementById('send-quote-btn').addEventListener('click', async functi
 
   var subject = encodeURIComponent('Window Cleaning Quote \u2014 ' + (q.serviceAddress || q.customerName || 'Your Property'));
   var mailto = 'mailto:' + encodeURIComponent(q.customerEmail || '') + '?subject=' + subject + '&body=' + encodeURIComponent(body);
-  window.open(mailto, '_blank');
 
-  // Auto-save to team if Pro is active
+  // CRITICAL: Save job to Supabase BEFORE opening email client.
+  // On mobile, opening mailto switches to the email app and suspends the browser,
+  // which kills any async operations that haven't completed yet.
   if (proState.teamId && proState.user) {
     await saveJobToTeam();
-    // Show notification badge on Pro tab & auto-switch to Jobs view
     showProBadge();
     switchTab('pro');
     switchSubTab('jobs');
-  } else {
+  }
+
+  // Always open email client (after save completes if Pro)
+  window.open(mailto, '_blank');
+  if (!proState.teamId || !proState.user) {
     showToast('Quote sent!', 'success');
   }
 });
@@ -1383,21 +1393,11 @@ document.getElementById('copy-invite-btn').addEventListener('click', function() 
 function showProBadge() {
   var icon = document.getElementById('pro-tab-icon');
   if (!icon) return;
-  var existing = icon.querySelector('.tab-badge');
-  if (existing) existing.remove();
+  if (icon.querySelector('.tab-badge')) return; // already showing
   var badge = document.createElement('span');
   badge.className = 'tab-badge';
   badge.textContent = '!';
   icon.appendChild(badge);
-  // Clear badge when user taps Pro tab
-  var proBtns = document.querySelectorAll('.tab-btn[data-tab="pro"]');
-  proBtns.forEach(function(b) {
-    b.addEventListener('click', function clearBadge() {
-      var bd = icon.querySelector('.tab-badge');
-      if (bd) bd.remove();
-      b.removeEventListener('click', clearBadge);
-    }, { once: true });
-  });
 }
 
 // ── Save Job ──────────────────────────────────────────────
