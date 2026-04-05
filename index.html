@@ -1185,8 +1185,54 @@ Sent using Window Quote Pro`;
     });
 
     $("saveLocalBtn").addEventListener("click", saveSettings);
-    $("stickySaveBtn").addEventListener("click", saveSettings);
-    $("stickyEmailBtn").addEventListener("click", openEmailQuote);
+    function showProJobsAll(){
+  setActiveTab("pro");
+
+  document.querySelectorAll(".subtab").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".subpanel").forEach(panel => panel.classList.remove("active"));
+
+  const jobsTab = document.querySelector('.subtab[data-subtab="jobs"]');
+  const jobsPanel = document.getElementById("jobsSubpanel");
+  if (jobsTab) jobsTab.classList.add("active");
+  if (jobsPanel) jobsPanel.classList.add("active");
+
+  document.querySelectorAll(".jobFilter").forEach(b => {
+    b.classList.remove("active");
+    b.classList.remove("secondary");
+    b.classList.add("ghost");
+  });
+
+  const allBtn = document.querySelector('.jobFilter[data-job-filter="all"]');
+  if (allBtn){
+    allBtn.classList.add("active");
+    allBtn.classList.add("secondary");
+    allBtn.classList.remove("ghost");
+  }
+
+  appState.jobFilter = "all";
+  renderJobs();
+}
+
+async function saveCurrentQuoteToTeam(showAlert = true){
+  if (!appState.teamId) throw new Error("Create or join a Pro team first.");
+
+  await createJob();
+  await getJobs();
+  await loadActivity();
+  showProJobsAll();
+
+  if (showAlert) alert("Quote saved to team jobs.");
+}
+
+async function emailAndSaveQuote(){
+  if (!appState.teamId) throw new Error("Create or join a Pro team first.");
+
+  await createJob();
+  await getJobs();
+  await loadActivity();
+  showProJobsAll();
+  openEmailQuote();
+}
     $("pricingMode").addEventListener("change", updatePricingModeUI);
 
     $("signinBtn").addEventListener("click", async () => {
