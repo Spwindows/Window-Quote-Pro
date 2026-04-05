@@ -685,7 +685,6 @@ Sent using Window Quote Pro`;
           details
         });
       } catch {
-        // Fail quietly if activity_logs does not exist yet
       }
     }
 
@@ -750,11 +749,16 @@ Sent using Window Quote Pro`;
       jobs.forEach(job => {
         const card = document.createElement("div");
         card.className = "job-card";
+
+        const serviceLabel = job.service_type === "external" ? "External Only" : "Internal + External";
+        const storeysLabel = job.storeys === "two" ? "Two Storey" : "Single Storey";
+        const buildersLabel = job.builders_clean ? "Yes" : "No";
+
         card.innerHTML = `
           <div class="job-top">
             <div>
               <div class="job-title">${escapeHtml(job.customer_name || "Unnamed Customer")}</div>
-              <p class="job-sub">${escapeHtml(job.service_address || "")}</p>
+              <p class="job-sub">${escapeHtml(job.service_address || "No address added")}</p>
             </div>
             <span class="status ${job.status}">${statusLabel(job.status)}</span>
           </div>
@@ -764,12 +768,19 @@ Sent using Window Quote Pro`;
             <div><strong>Quoted</strong><br>${prettyDate(job.quoted_at || job.created_at)}</div>
           </div>
 
-          <div class="mini" style="margin-bottom:10px">
-            ${job.customer_phone ? `Phone: ${escapeHtml(job.customer_phone)}<br>` : ""}
-            ${job.customer_email ? `Email: ${escapeHtml(job.customer_email)}<br>` : ""}
-            Service: ${job.service_type === "external" ? "External Only" : "Internal + External"}<br>
-            Storeys: ${job.storeys === "two" ? "Two Storey" : "Single Storey"}<br>
-            Windows: ${job.windows || 0}, Tracks: ${job.tracks || 0}, Flyscreens: ${job.flyscreens || 0}
+          <div class="mini" style="margin-bottom:10px;line-height:1.5">
+            ${job.customer_phone ? `<strong>Phone:</strong> ${escapeHtml(job.customer_phone)}<br>` : ""}
+            ${job.customer_email ? `<strong>Email:</strong> ${escapeHtml(job.customer_email)}<br>` : ""}
+            <strong>Service:</strong> ${serviceLabel}<br>
+            <strong>Storeys:</strong> ${storeysLabel}<br>
+            <strong>Builder's Clean:</strong> ${buildersLabel}<br>
+            <strong>Windows:</strong> ${job.windows || 0},
+            <strong>Tracks:</strong> ${job.tracks || 0},
+            <strong>Flyscreens:</strong> ${job.flyscreens || 0},
+            <strong>Balustrades:</strong> ${job.balustrades || 0},
+            <strong>Solar Panels:</strong> ${job.solar_panels || 0},
+            <strong>Gutter Metres:</strong> ${job.gutter_metres || 0}
+            ${job.notes ? `<br><strong>Notes:</strong> ${escapeHtml(job.notes)}` : ""}
           </div>
 
           <div class="btn-row">
@@ -778,6 +789,7 @@ Sent using Window Quote Pro`;
             ${job.status === "in_progress" ? `<button class="btn good" type="button" data-action="complete" data-id="${job.id}">Complete Job</button>` : ""}
           </div>
         `;
+
         list.appendChild(card);
       });
 
@@ -785,10 +797,12 @@ Sent using Window Quote Pro`;
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
           const action = btn.dataset.action;
+
           try{
             if (action === "accept") await markJobAccepted(id);
             if (action === "start") await markJobStarted(id);
             if (action === "complete") await markJobCompleted(id);
+
             await getJobs();
             await loadActivity();
           } catch(err){
@@ -912,6 +926,7 @@ Sent using Window Quote Pro`;
         gutter_metres: d.gutterMetres,
         service_type: d.serviceType,
         storeys: d.storeys,
+        builders_clean: d.buildersClean,
         notes: d.notes,
         quoted_price: d.finalPrice,
         status: "quote_sent",
@@ -956,18 +971,21 @@ Sent using Window Quote Pro`;
       const { error } = await supabase.rpc("mark_job_accepted", { p_job_id: id });
       if (error) throw error;
       await logActivity("Job Accepted", `Job ID: ${id}`);
+      await getJobs();
     }
 
     async function markJobStarted(id){
       const { error } = await supabase.rpc("mark_job_started", { p_job_id: id });
       if (error) throw error;
       await logActivity("Job Started", `Job ID: ${id}`);
+      await getJobs();
     }
 
     async function markJobCompleted(id){
       const { error } = await supabase.rpc("mark_job_completed", { p_job_id: id });
       if (error) throw error;
       await logActivity("Job Completed", `Job ID: ${id}`);
+      await getJobs();
     }
 
     function unsubscribeRealtime(){
@@ -1197,6 +1215,7 @@ Sent using Window Quote Pro`;
     setModeUI();
     renderJobs();
     renderFeed();
+
     if (hasSupabaseKeys) bootProMode();
 
     if ("serviceWorker" in navigator){
