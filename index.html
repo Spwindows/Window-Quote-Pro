@@ -602,12 +602,29 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
               <span style="font-weight:700;font-size:0.875rem;color:#111827;">Invite Staff</span>
             </div>
-            <button class="btn btn-secondary btn-full mb-2" id="gen-invite-btn">Generate Invite Code</button>
-            <div class="invite-row hidden" id="invite-row">
-              <span class="invite-code" id="invite-code-display"></span>
-              <button class="copy-btn" id="copy-invite-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-              </button>
+            <button class="btn btn-secondary btn-full mb-2" id="gen-invite-btn">Generate Invite Link</button>
+            <div class="hidden" id="invite-row" style="margin-top:0.5rem;">
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                <span class="invite-code" id="invite-code-display"></span>
+                <button class="copy-btn" id="copy-invite-btn" title="Copy code">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                </button>
+              </div>
+              <div id="invite-link-row" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:0.75rem;padding:0.75rem;">
+                <div style="font-size:0.6875rem;font-weight:600;color:#0369a1;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.375rem;">Shareable Link</div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  <input type="text" id="invite-link-display" readonly style="flex:1;font-size:0.75rem;font-weight:600;color:#0c4a6e;background:transparent;border:none;outline:none;overflow:hidden;text-overflow:ellipsis;" />
+                  <button class="copy-btn" id="copy-link-btn" title="Copy link" style="flex-shrink:0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  </button>
+                </div>
+                <button class="btn btn-full" id="share-link-btn" style="margin-top:0.5rem;background:#0284c7;color:#fff;font-weight:700;font-size:0.8125rem;padding:0.625rem;border-radius:0.625rem;">
+                  <span style="display:flex;align-items:center;justify-content:center;gap:0.375rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+                    Share via SMS / WhatsApp
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -704,6 +721,7 @@ var jobFilter = 'all';
 var authMode = 'signin';
 var proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
 var supabaseClient = null;
+var realtimeChannel = null;
 var saveBusy = false;
 var lastPrice = 0;
 
@@ -1269,16 +1287,19 @@ async function bootPro() {
       if (teamRole === 'owner') {
         try { await checkWeeklyAutoArchive(teamId); } catch(e) { console.warn('Auto-archive check failed:', e); }
       }
-      // Realtime subscription
+      // Realtime subscription — cleanup old channel first
       var sb = await getSb();
       if (sb) {
-        sb.channel('jobs-' + teamId).on('postgres_changes', {
-          event: '*', schema: 'public', table: 'jobs', filter: 'team_id=eq.' + teamId
-        }, async function() {
-          var r = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
-          proState.jobs = r[0]; proState.feed = r[1];
-          renderJobsList(); renderActivity(); updateKPIs();
-        }).subscribe();
+        try {
+          if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+          realtimeChannel = sb.channel('jobs-' + teamId + '-' + Date.now()).on('postgres_changes', {
+            event: '*', schema: 'public', table: 'jobs', filter: 'team_id=eq.' + teamId
+          }, async function() {
+            var r = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
+            proState.jobs = r[0]; proState.feed = r[1];
+            renderJobsList(); renderActivity(); updateKPIs();
+          }).subscribe();
+        } catch(subErr) { console.warn('Realtime subscription error:', subErr); }
       }
     } else {
       proState = { user: user, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
@@ -1396,15 +1417,27 @@ document.getElementById('join-team-btn').addEventListener('click', async functio
   finally { btn.disabled = false; btn.textContent = 'Join Team'; }
 });
 
-// ── Generate Invite ───────────────────────────────────────
+// ── Generate Invite Link ──────────────────────────────────
+function buildInviteLink(code) {
+  var base = window.location.origin + window.location.pathname;
+  return base + '?invite=' + encodeURIComponent(code);
+}
+
 document.getElementById('gen-invite-btn').addEventListener('click', async function() {
   if (!proState.teamId) return;
+  var btn = document.getElementById('gen-invite-btn');
+  btn.disabled = true; btn.textContent = 'Generating...';
   try {
     var code = await createTeamInvite(proState.teamId);
     document.getElementById('invite-code-display').textContent = code;
+    var link = buildInviteLink(code);
+    document.getElementById('invite-link-display').value = link;
     document.getElementById('invite-row').classList.remove('hidden');
   } catch(err) { showToast(getFriendlyError(err), 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Generate Invite Link'; }
 });
+
+// Copy code
 document.getElementById('copy-invite-btn').addEventListener('click', function() {
   var code = document.getElementById('invite-code-display').textContent;
   navigator.clipboard.writeText(code).then(function() {
@@ -1413,6 +1446,31 @@ document.getElementById('copy-invite-btn').addEventListener('click', function() 
     showToast('Code copied!', 'success');
     setTimeout(function() { btn.classList.remove('copied'); }, 2000);
   });
+});
+
+// Copy link
+document.getElementById('copy-link-btn').addEventListener('click', function() {
+  var link = document.getElementById('invite-link-display').value;
+  navigator.clipboard.writeText(link).then(function() {
+    var btn = document.getElementById('copy-link-btn');
+    btn.classList.add('copied');
+    showToast('Invite link copied!', 'success');
+    setTimeout(function() { btn.classList.remove('copied'); }, 2000);
+  });
+});
+
+// Share via native share / SMS / WhatsApp
+document.getElementById('share-link-btn').addEventListener('click', function() {
+  var link = document.getElementById('invite-link-display').value;
+  var teamName = proState.teamName || 'our team';
+  var shareText = 'Join ' + teamName + ' on Window Quote Pro! Sign up and use this link to join the team: ' + link;
+  if (navigator.share) {
+    navigator.share({ title: 'Join ' + teamName, text: shareText, url: link }).catch(function() {});
+  } else {
+    // Fallback: open WhatsApp or SMS
+    var encoded = encodeURIComponent(shareText);
+    window.open('https://wa.me/?text=' + encoded, '_blank');
+  }
 });
 
 // ── Pro Tab Notification Badge ────────────────────────────
@@ -2022,6 +2080,32 @@ document.getElementById('reset-all-btn').addEventListener('click', async functio
 buildSteppers();
 syncSettingsToForm();
 updateQuoteDisplay();
+
+// Check for invite code in URL (?invite=XXXX)
+(function checkInviteUrl() {
+  var params = new URLSearchParams(window.location.search);
+  var inviteCode = params.get('invite');
+  if (inviteCode) {
+    // Clean the URL so the code doesn't persist on refresh
+    var cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+    // Pre-fill the invite code and switch to Pro tab
+    var input = document.getElementById('invite-code-input');
+    if (input) input.value = inviteCode.toUpperCase();
+    // Switch to Pro tab
+    activeTab = 'pro';
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.add('hidden'); });
+    document.getElementById('tab-pro').classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.tab === 'pro');
+    });
+    // Show a helpful message
+    setTimeout(function() {
+      showToast('Invite code pre-filled! Sign in or create an account, then tap Join Team.', 'info');
+    }, 500);
+  }
+})();
+
 bootPro();
 </script>
-</html>
+</body>
