@@ -610,6 +610,25 @@
               </button>
             </div>
           </div>
+
+          <!-- Weekly Archive History -->
+          <div class="card hidden" id="archive-panel">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span style="font-weight:700;font-size:0.875rem;color:#111827;">Weekly History</span>
+            </div>
+            <div id="archive-list" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+          </div>
+
+          <!-- Reset All Data -->
+          <div class="card hidden" id="reset-panel" style="border:1px solid #fecaca;background:#fef2f2;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+              <span style="font-weight:700;font-size:0.875rem;color:#dc2626;">Danger Zone</span>
+            </div>
+            <p style="font-size:0.8rem;color:#6b7280;margin-bottom:0.75rem;">Clear all job data from the team board. This cannot be undone. Completed jobs will be archived first.</p>
+            <button class="btn btn-full" id="reset-all-btn" style="background:#ef4444;color:#fff;font-weight:700;">Reset All Job Data</button>
+          </div>
         </div>
 
         <!-- Jobs Sub-panel -->
@@ -1246,6 +1265,10 @@ async function bootPro() {
       var teamRole = t.role || 'worker';
       var results = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
       proState = { user: user, teamId: teamId, teamName: teamName, teamRole: teamRole, jobs: results[0], feed: results[1] };
+      // Auto-archive completed jobs if past Sunday midnight
+      if (teamRole === 'owner') {
+        try { await checkWeeklyAutoArchive(teamId); } catch(e) { console.warn('Auto-archive check failed:', e); }
+      }
       // Realtime subscription
       var sb = await getSb();
       if (sb) {
@@ -1297,8 +1320,11 @@ function renderProPanel() {
     roleBadge.className = 'role-badge ' + (proState.teamRole === 'owner' ? 'role-owner' : 'role-staff');
     document.getElementById('invite-panel').classList.toggle('hidden', proState.teamRole !== 'owner');
     document.getElementById('revenue-banner').classList.toggle('hidden', proState.teamRole !== 'owner');
+    document.getElementById('archive-panel').classList.toggle('hidden', proState.teamRole !== 'owner');
+    document.getElementById('reset-panel').classList.toggle('hidden', proState.teamRole !== 'owner');
     renderJobsList(); renderActivity(); updateKPIs();
     buildJobFilters();
+    renderArchiveHistory();
   }
 }
 
@@ -1750,6 +1776,247 @@ function renderActivity() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// WEEKLY ARCHIVE & RESET
+// ═══════════════════════════════════════════════════════════
+
+var ARCHIVE_KEY = 'wqp_last_archive';
+
+function getWeekStart(d) {
+  var dt = new Date(d);
+  var day = dt.getDay(); // 0=Sun
+  var diff = day === 0 ? 6 : day - 1; // Monday start
+  dt.setDate(dt.getDate() - diff);
+  dt.setHours(0, 0, 0, 0);
+  return dt;
+}
+
+function getWeekEnd(weekStart) {
+  var dt = new Date(weekStart);
+  dt.setDate(dt.getDate() + 6);
+  dt.setHours(23, 59, 59, 999);
+  return dt;
+}
+
+function formatWeekLabel(start, end) {
+  var opts = { day: 'numeric', month: 'short' };
+  return start.toLocaleDateString('en-AU', opts) + ' \u2013 ' + end.toLocaleDateString('en-AU', opts) + ', ' + end.getFullYear();
+}
+
+async function fetchArchives(teamId) {
+  var sb = await getSb();
+  if (!sb || !teamId) return [];
+  var result = await sb.from('weekly_archives').select('*').eq('team_id', teamId).order('week_start', { ascending: false }).limit(52);
+  if (result.error) { console.warn('Fetch archives error:', result.error); return []; }
+  return result.data || [];
+}
+
+async function archiveCompletedJobs(teamId) {
+  var sb = await getSb();
+  if (!sb || !teamId) return;
+
+  // Get completed jobs
+  var jobsResult = await sb.from('jobs').select('*').eq('team_id', teamId).eq('status', 'completed');
+  if (jobsResult.error) throw jobsResult.error;
+  var completedJobs = jobsResult.data || [];
+  if (!completedJobs.length) return 0;
+
+  // Calculate summary
+  var now = new Date();
+  var weekStart = getWeekStart(now);
+  var weekEnd = getWeekEnd(weekStart);
+  var totalRevenue = completedJobs.reduce(function(s, j) { return s + (j.paid_amount || j.quoted_price || 0); }, 0);
+  var quotedTotal = completedJobs.reduce(function(s, j) { return s + (j.quoted_price || 0); }, 0);
+
+  // Insert archive summary
+  var archiveResult = await sb.from('weekly_archives').insert({
+    team_id: teamId,
+    week_start: weekStart.toISOString(),
+    week_end: weekEnd.toISOString(),
+    job_count: completedJobs.length,
+    total_revenue: totalRevenue,
+    total_quoted: quotedTotal,
+    archived_at: now.toISOString(),
+    job_details: JSON.stringify(completedJobs.map(function(j) {
+      return { customer: j.customer_name, price: j.quoted_price, paid: j.paid_amount, services: j.items_summary };
+    }))
+  });
+  if (archiveResult.error) throw archiveResult.error;
+
+  // Delete completed jobs from active board
+  var ids = completedJobs.map(function(j) { return j.id; });
+  var delResult = await sb.from('jobs').delete().in('id', ids);
+  if (delResult.error) throw delResult.error;
+
+  return completedJobs.length;
+}
+
+async function checkWeeklyAutoArchive(teamId) {
+  var now = new Date();
+  var day = now.getDay(); // 0=Sun
+  // Check if it's Monday (day=1) and we haven't archived this week yet
+  // Or if the last archive was more than 7 days ago
+  var lastArchive = localStorage.getItem(ARCHIVE_KEY + '_' + teamId);
+  var weekStart = getWeekStart(now);
+
+  if (lastArchive) {
+    var lastDate = new Date(lastArchive);
+    var lastWeekStart = getWeekStart(lastDate);
+    // If same week, skip
+    if (lastWeekStart.getTime() === weekStart.getTime()) return;
+  }
+
+  // Only auto-archive on Monday or later in the week if we haven't done it yet
+  if (day === 0) return; // Don't archive on Sunday, wait for Monday
+
+  // Check if there are completed jobs from before this week
+  var sb = await getSb();
+  if (!sb) return;
+  var jobsResult = await sb.from('jobs').select('*').eq('team_id', teamId).eq('status', 'completed').lt('created_at', weekStart.toISOString());
+  if (jobsResult.error || !jobsResult.data || !jobsResult.data.length) {
+    // No old completed jobs, mark as checked
+    localStorage.setItem(ARCHIVE_KEY + '_' + teamId, now.toISOString());
+    return;
+  }
+
+  // Archive old completed jobs
+  var completedJobs = jobsResult.data;
+  var prevWeekStart = getWeekStart(new Date(weekStart.getTime() - 86400000)); // Previous week
+  var prevWeekEnd = getWeekEnd(prevWeekStart);
+  var totalRevenue = completedJobs.reduce(function(s, j) { return s + (j.paid_amount || j.quoted_price || 0); }, 0);
+  var quotedTotal = completedJobs.reduce(function(s, j) { return s + (j.quoted_price || 0); }, 0);
+
+  var archiveResult = await sb.from('weekly_archives').insert({
+    team_id: teamId,
+    week_start: prevWeekStart.toISOString(),
+    week_end: prevWeekEnd.toISOString(),
+    job_count: completedJobs.length,
+    total_revenue: totalRevenue,
+    total_quoted: quotedTotal,
+    archived_at: now.toISOString(),
+    job_details: JSON.stringify(completedJobs.map(function(j) {
+      return { customer: j.customer_name, price: j.quoted_price, paid: j.paid_amount, services: j.items_summary };
+    }))
+  });
+  if (archiveResult.error) { console.warn('Auto-archive insert failed:', archiveResult.error); return; }
+
+  // Delete those old completed jobs
+  var ids = completedJobs.map(function(j) { return j.id; });
+  var delResult = await sb.from('jobs').delete().in('id', ids);
+  if (delResult.error) { console.warn('Auto-archive delete failed:', delResult.error); }
+
+  localStorage.setItem(ARCHIVE_KEY + '_' + teamId, now.toISOString());
+
+  // Refresh jobs
+  var r = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
+  proState.jobs = r[0]; proState.feed = r[1];
+
+  showToast(completedJobs.length + ' completed job' + (completedJobs.length > 1 ? 's' : '') + ' archived from last week.', 'success');
+}
+
+async function renderArchiveHistory() {
+  var list = document.getElementById('archive-list');
+  if (!list) return;
+  if (!proState.teamId || proState.teamRole !== 'owner') { list.innerHTML = ''; return; }
+
+  try {
+    var archives = await fetchArchives(proState.teamId);
+    if (!archives.length) {
+      list.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:0.8125rem;padding:1rem 0;">No archived weeks yet. Completed jobs are automatically archived each Monday.</div>';
+      return;
+    }
+    list.innerHTML = archives.map(function(a) {
+      var weekLabel = '';
+      try {
+        weekLabel = formatWeekLabel(new Date(a.week_start), new Date(a.week_end));
+      } catch(e) { weekLabel = 'Week'; }
+      var details = [];
+      try { details = JSON.parse(a.job_details || '[]'); } catch(e) {}
+      var detailsHtml = details.length ? '<div class="archive-details" style="display:none;margin-top:0.5rem;">' +
+        details.map(function(d) {
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:0.25rem 0;border-bottom:1px solid #f3f4f6;font-size:0.75rem;">' +
+            '<span style="color:#374151;">' + (d.customer || 'Customer') + '</span>' +
+            '<span style="color:#059669;font-weight:600;">' + money(d.paid || d.price || 0) + '</span>' +
+          '</div>';
+        }).join('') + '</div>' : '';
+
+      return '<div class="archive-week-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.625rem;padding:0.75rem;cursor:pointer;" onclick="this.querySelector(\'.archive-details\').style.display=this.querySelector(\'.archive-details\').style.display===\'none\'?\'block\':\'none\'">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<div>' +
+            '<div style="font-weight:700;font-size:0.8125rem;color:#1e293b;">' + weekLabel + '</div>' +
+            '<div style="font-size:0.75rem;color:#64748b;margin-top:0.125rem;">' + a.job_count + ' job' + (a.job_count !== 1 ? 's' : '') + ' completed</div>' +
+          '</div>' +
+          '<div style="text-align:right;">' +
+            '<div style="font-weight:700;font-size:0.9375rem;color:#059669;">' + money(a.total_revenue || 0) + '</div>' +
+            '<div style="font-size:0.6875rem;color:#94a3b8;">revenue</div>' +
+          '</div>' +
+        '</div>' +
+        detailsHtml +
+      '</div>';
+    }).join('');
+  } catch(err) {
+    list.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:0.8125rem;padding:0.5rem;">Could not load archives.</div>';
+    console.warn('renderArchiveHistory error:', err);
+  }
+}
+
+// ── Reset All Data ───────────────────────────────────────
+document.getElementById('reset-all-btn').addEventListener('click', async function() {
+  if (!proState.teamId || proState.teamRole !== 'owner') {
+    showToast('Only the team owner can reset data.', 'error');
+    return;
+  }
+  var c1 = confirm('\u26A0\uFE0F Reset All Job Data?\n\nThis will:\n\u2022 Archive all completed jobs to history\n\u2022 Delete ALL remaining jobs (quoted, accepted, in progress)\n\u2022 Clear the active job board\n\nThis cannot be undone.');
+  if (!c1) return;
+  var c2 = confirm('Are you absolutely sure? Type OK to confirm this will delete all active jobs.');
+  if (!c2) return;
+
+  try {
+    showToast('Archiving and resetting...', 'default');
+    var sb = await getSb();
+    if (!sb) throw new Error('Not connected.');
+
+    // First archive any completed jobs
+    var completedResult = await sb.from('jobs').select('*').eq('team_id', proState.teamId).eq('status', 'completed');
+    if (!completedResult.error && completedResult.data && completedResult.data.length) {
+      var completedJobs = completedResult.data;
+      var now = new Date();
+      var weekStart = getWeekStart(now);
+      var weekEnd = getWeekEnd(weekStart);
+      var totalRevenue = completedJobs.reduce(function(s, j) { return s + (j.paid_amount || j.quoted_price || 0); }, 0);
+      var quotedTotal = completedJobs.reduce(function(s, j) { return s + (j.quoted_price || 0); }, 0);
+      await sb.from('weekly_archives').insert({
+        team_id: proState.teamId,
+        week_start: weekStart.toISOString(),
+        week_end: weekEnd.toISOString(),
+        job_count: completedJobs.length,
+        total_revenue: totalRevenue,
+        total_quoted: quotedTotal,
+        archived_at: now.toISOString(),
+        job_details: JSON.stringify(completedJobs.map(function(j) {
+          return { customer: j.customer_name, price: j.quoted_price, paid: j.paid_amount, services: j.items_summary };
+        }))
+      });
+    }
+
+    // Delete ALL jobs for this team
+    var delResult = await sb.from('jobs').delete().eq('team_id', proState.teamId);
+    if (delResult.error) throw delResult.error;
+
+    // Log the reset
+    await logActivity(proState.teamId, proState.user.id, 'Board Reset', 'All jobs cleared by owner');
+
+    // Refresh
+    var r = await Promise.all([fetchJobs(proState.teamId), fetchActivity(proState.teamId)]);
+    proState.jobs = r[0]; proState.feed = r[1];
+    renderJobsList(); renderActivity(); updateKPIs(); renderArchiveHistory();
+
+    showToast('All job data has been reset. Completed jobs were archived.', 'success');
+  } catch(err) {
+    showToast('Reset failed: ' + getFriendlyError(err), 'error');
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
 buildSteppers();
@@ -1757,5 +2024,4 @@ syncSettingsToForm();
 updateQuoteDisplay();
 bootPro();
 </script>
-</body>
 </html>
