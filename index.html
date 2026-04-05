@@ -1349,7 +1349,10 @@ async function emailAndSaveQuote(){
     renderFeed();
 
     if (hasSupabaseKeys) bootProMode();
-
+$("saveLocalBtn").addEventListener("click", saveSettings);
+$("stickySaveBtn").addEventListener("click", saveSettings);
+$("stickyEmailBtn").addEventListener("click", openEmailQuote);
+$("pricingMode").addEventListener("change", updatePricingModeUI);
     if ("serviceWorker" in navigator){
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
