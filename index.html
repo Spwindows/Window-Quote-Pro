@@ -12,163 +12,79 @@
     html { font-size: 16px; }
     body {
       font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-      background: #f3f4f6;
-      color: #111827;
-      -webkit-tap-highlight-color: transparent;
-      min-height: 100vh;
+      background: #f3f4f6; color: #111827;
+      -webkit-tap-highlight-color: transparent; min-height: 100vh;
     }
     input, textarea, select, button { font-family: inherit; }
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; }
 
-    /* ── Layout ── */
+    /* Layout */
     #app { min-height: 100vh; }
-    .header {
-      background: #fff;
-      border-bottom: 1px solid #e5e7eb;
-      position: sticky; top: 0; z-index: 30;
-      padding: 0 1rem;
-    }
-    .header-inner {
-      max-width: 680px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 0;
-    }
+    .header { background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 30; padding: 0 1rem; }
+    .header-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; }
     .header-brand { display: flex; align-items: center; gap: 0.625rem; }
-    .header-logo {
-      width: 2.25rem; height: 2.25rem; border-radius: 0.75rem;
-      background: #2563eb; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
-    }
+    .header-logo { width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; background: #2563eb; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
     .header-logo svg { color: #fff; }
     .header-title { font-weight: 900; font-size: 1rem; line-height: 1; color: #111827; }
     .header-sub { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; font-weight: 500; }
-    .badge-free {
-      font-size: 0.7rem; font-weight: 700; background: #f3f4f6;
-      color: #6b7280; padding: 0.25rem 0.625rem; border-radius: 9999px;
-      border: 1px solid #e5e7eb;
-    }
-    .badge-pro {
-      font-size: 0.7rem; font-weight: 700; background: #2563eb;
-      color: #fff; padding: 0.25rem 0.625rem; border-radius: 9999px;
-    }
+    .badge-free { font-size: 0.7rem; font-weight: 700; background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.625rem; border-radius: 9999px; border: 1px solid #e5e7eb; }
+    .badge-pro { font-size: 0.7rem; font-weight: 700; background: #2563eb; color: #fff; padding: 0.25rem 0.625rem; border-radius: 9999px; }
+    .main-content { max-width: 680px; margin: 0 auto; padding: 1rem 1rem 6rem; }
 
-    .main-content {
-      max-width: 680px; margin: 0 auto;
-      padding: 1rem 1rem 6rem;
-    }
-
-    /* ── Tab Bar ── */
-    .tab-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-      background: #fff; border-top: 1px solid #e5e7eb;
-      padding-bottom: env(safe-area-inset-bottom);
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-    }
-    .tab-bar-inner {
-      max-width: 680px; margin: 0 auto;
-      display: flex; align-items: center; padding: 0.5rem 1rem; gap: 0.25rem;
-    }
-    .tab-btn {
-      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
-      padding: 0.5rem; border-radius: 0.75rem; border: none; background: none;
-      cursor: pointer; transition: all 0.15s; color: #9ca3af;
-    }
+    /* Tab Bar */
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: #fff; border-top: 1px solid #e5e7eb; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 20px rgba(0,0,0,0.06); }
+    .tab-bar-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; padding: 0.5rem 1rem; gap: 0.25rem; }
+    .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.5rem; border-radius: 0.75rem; border: none; background: none; cursor: pointer; transition: all 0.15s; color: #9ca3af; }
     .tab-btn.active { color: #2563eb; }
-    .tab-btn-icon {
-      width: 2.5rem; height: 2rem; display: flex; align-items: center; justify-content: center;
-      border-radius: 0.75rem; transition: all 0.15s; position: relative;
-    }
+    .tab-btn-icon { width: 2.5rem; height: 2rem; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; transition: all 0.15s; position: relative; }
     .tab-btn.active .tab-btn-icon { background: #eff6ff; }
     .tab-btn-label { font-size: 0.6875rem; font-weight: 700; line-height: 1; }
-    .tab-badge {
-      position: absolute; top: 0.125rem; right: 0;
-      width: 1rem; height: 1rem; background: #ef4444; color: #fff;
-      font-size: 0.625rem; font-weight: 900; border-radius: 9999px;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .tab-badge { position: absolute; top: 0.125rem; right: 0; width: 1rem; height: 1rem; background: #ef4444; color: #fff; font-size: 0.625rem; font-weight: 900; border-radius: 9999px; display: flex; align-items: center; justify-content: center; }
+    .hidden { display: none !important; }
 
-    /* ── Cards ── */
-    .card {
-      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 1rem; margin-bottom: 0.75rem;
-    }
-    .card-title {
-      font-weight: 700; font-size: 0.9375rem; color: #1f2937;
-      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;
-    }
+    /* Cards */
+    .card { background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 1rem; margin-bottom: 0.75rem; }
+    .card-title { font-weight: 700; font-size: 0.9375rem; color: #1f2937; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
     .card-title svg { color: #3b82f6; }
 
-    /* ── Form fields ── */
-    .field-label {
-      display: block; font-size: 0.6875rem; font-weight: 600; color: #6b7280;
-      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;
-    }
-    .field-input {
-      width: 100%; padding: 0.625rem 0.75rem; border-radius: 0.75rem;
-      border: 1px solid #e5e7eb; background: #f9fafb;
-      font-size: 0.875rem; font-weight: 500; color: #111827;
-      outline: none; transition: all 0.15s;
-    }
+    /* Form fields */
+    .field-label { display: block; font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .field-input { width: 100%; padding: 0.625rem 0.75rem; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #f9fafb; font-size: 0.875rem; font-weight: 500; color: #111827; outline: none; transition: all 0.15s; }
     .field-input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
     .field-input-icon { position: relative; }
-    .field-input-icon svg {
-      position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
-      color: #9ca3af; pointer-events: none;
-    }
+    .field-input-icon svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
     .field-input-icon .field-input { padding-left: 2rem; }
     .field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     .field-full { grid-column: 1 / -1; }
+    .section-label { font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
 
-    /* ── Stepper ── */
-    .stepper-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #e5e7eb;
-      background: #fff; transition: all 0.15s; margin-bottom: 0.5rem;
-    }
+    /* Stepper */
+    .stepper-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff; transition: all 0.15s; margin-bottom: 0.5rem; }
     .stepper-row.active { background: #eff6ff; border-color: #bfdbfe; }
-    .stepper-label {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-size: 0.875rem; font-weight: 600; color: #4b5563; min-width: 0;
-    }
+    .stepper-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #4b5563; min-width: 0; }
     .stepper-row.active .stepper-label { color: #1e3a8a; }
     .stepper-label svg { color: #9ca3af; flex-shrink: 0; }
     .stepper-row.active .stepper-label svg { color: #2563eb; }
     .stepper-controls { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
-    .stepper-val {
-      width: 2rem; text-align: center; font-weight: 700; font-size: 1rem;
-      color: #9ca3af; font-variant-numeric: tabular-nums;
-    }
+    .stepper-val { width: 2rem; text-align: center; font-weight: 700; font-size: 1rem; color: #9ca3af; font-variant-numeric: tabular-nums; }
     .stepper-row.active .stepper-val { color: #1d4ed8; }
-    .btn-stepper {
-      width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; border: none;
-      font-size: 1.125rem; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.1s; background: #f3f4f6; color: #374151;
-      user-select: none;
-    }
+    .btn-stepper { width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; border: none; font-size: 1.125rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s; background: #f3f4f6; color: #374151; user-select: none; }
     .btn-stepper:active { transform: scale(0.9); }
     .btn-stepper.minus:disabled { opacity: 0.35; cursor: default; }
     .btn-stepper.plus { background: #2563eb; color: #fff; }
     .btn-stepper.plus:active { background: #1d4ed8; }
 
-    /* ── Toggle buttons ── */
+    /* Toggle buttons */
     .toggle-group { display: grid; gap: 0.375rem; }
-    .toggle-btn {
-      padding: 0.5rem 0.5rem; border-radius: 0.75rem; border: 2px solid #e5e7eb;
-      background: #f9fafb; font-size: 0.75rem; font-weight: 700; color: #4b5563;
-      cursor: pointer; transition: all 0.15s; text-align: center;
-    }
+    .toggle-btn { padding: 0.5rem 0.5rem; border-radius: 0.75rem; border: 2px solid #e5e7eb; background: #f9fafb; font-size: 0.75rem; font-weight: 700; color: #4b5563; cursor: pointer; transition: all 0.15s; text-align: center; }
     .toggle-btn.active { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
     .toggle-btn.active-amber { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
 
-    /* ── Buttons ── */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
-      padding: 0.625rem 1rem; border-radius: 0.75rem; border: none;
-      font-size: 0.875rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
-    }
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; padding: 0.625rem 1rem; border-radius: 0.75rem; border: none; font-size: 0.875rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
     .btn-primary { background: #2563eb; color: #fff; }
     .btn-primary:hover { background: #1d4ed8; }
     .btn-primary:disabled { opacity: 0.5; cursor: default; }
@@ -188,38 +104,19 @@
     .btn-sm { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
     .btn-lg { padding: 0.875rem 1.25rem; font-size: 0.9375rem; }
 
-    /* ── Quote Footer ── */
-    .quote-footer {
-      position: fixed; bottom: 4.5rem; left: 0; right: 0; z-index: 40;
-    }
-    .quote-footer-inner {
-      max-width: 680px; margin: 0 auto; padding: 0.5rem 0.75rem;
-    }
-    .quote-footer-card {
-      background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 0.75rem 1rem;
-      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
-    }
-    .quote-price {
-      font-size: 1.875rem; font-weight: 900; color: #111827;
-      font-variant-numeric: tabular-nums; line-height: 1;
-      transition: transform 0.25s ease;
-    }
+    /* Quote Footer */
+    .quote-footer { position: fixed; bottom: 4.5rem; left: 0; right: 0; z-index: 40; }
+    .quote-footer-inner { max-width: 680px; margin: 0 auto; padding: 0.5rem 0.75rem; }
+    .quote-footer-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem; box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+    .quote-price { font-size: 1.875rem; font-weight: 900; color: #111827; font-variant-numeric: tabular-nums; line-height: 1; transition: transform 0.25s ease; }
     .quote-price.pulse { animation: pricePulse 0.25s ease-out; }
-    @keyframes pricePulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
+    @keyframes pricePulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     .quote-price-sub { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; font-weight: 500; }
     .quote-footer-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
 
-    /* ── Summary chips ── */
+    /* Summary chips */
     .chip-strip { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
-    .chip {
-      display: inline-flex; align-items: center; gap: 0.25rem;
-      padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;
-    }
+    .chip { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
     .chip-blue { background: #dbeafe; color: #1d4ed8; }
     .chip-indigo { background: #e0e7ff; color: #3730a3; }
     .chip-sky { background: #e0f2fe; color: #0369a1; }
@@ -227,277 +124,125 @@
     .chip-amber { background: #fef3c7; color: #92400e; }
     .chip-teal { background: #ccfbf1; color: #0f766e; }
 
-    /* ── Collapsible ── */
-    .collapsible-header {
-      width: 100%; display: flex; align-items: center; justify-content: space-between;
-      padding: 0.875rem 1rem; background: none; border: none; cursor: pointer;
-      font-size: 0.875rem; font-weight: 700; color: #1f2937; text-align: left;
-    }
+    /* Collapsible */
+    .collapsible-header { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1rem; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 700; color: #1f2937; text-align: left; }
     .collapsible-header svg { color: #9ca3af; transition: transform 0.2s; }
     .collapsible-header.open svg { transform: rotate(180deg); }
-    .collapsible-body { padding: 0 1rem 1rem; }
 
-    /* ── Rate cards ── */
-    .rate-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-    .rate-card {
-      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 0.75rem;
-    }
-    .rate-card-label { font-size: 0.75rem; font-weight: 600; color: #6b7280; margin-bottom: 0.25rem; }
-    .rate-card-input-row { display: flex; align-items: baseline; gap: 0.125rem; }
-    .rate-card-prefix { color: #9ca3af; font-size: 0.875rem; font-weight: 600; }
-    .rate-card input {
-      flex: 1; background: transparent; border: none; outline: none;
-      font-size: 1.125rem; font-weight: 900; color: #111827; width: 100%; text-align: right;
-    }
-    .rate-card-unit { font-size: 0.6875rem; color: #9ca3af; text-align: right; margin-top: 0.125rem; }
+    /* Quote Preview */
+    .quote-preview-pre { white-space: pre-wrap; word-break: break-word; font-size: 0.8125rem; color: #374151; background: #f9fafb; border-radius: 0.75rem; padding: 1rem; border: 1px solid #e5e7eb; font-family: 'DM Sans', system-ui, sans-serif; line-height: 1.5; }
 
-    /* ── KPI cards ── */
+    /* Pricing Mode */
+    .pricing-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+    .pricing-mode-btn { padding: 0.75rem; border-radius: 0.75rem; border: 2px solid #e5e7eb; background: #f9fafb; cursor: pointer; text-align: left; transition: all 0.15s; }
+    .pricing-mode-btn.active { border-color: #2563eb; background: #eff6ff; }
+    .mode-title { font-weight: 700; font-size: 0.875rem; color: #1f2937; }
+    .pricing-mode-btn.active .mode-title { color: #1d4ed8; }
+    .mode-desc { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
+
+    /* Rate cards */
+    .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .rate-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 0.625rem; }
+    .rate-card-label { font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
+    .rate-card-input { width: 100%; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #fff; font-size: 0.875rem; font-weight: 600; color: #111827; outline: none; }
+    .rate-card-input:focus { border-color: #93c5fd; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+    .rate-card-unit { font-size: 0.6875rem; color: #9ca3af; margin-top: 0.125rem; }
+
+    /* Toast */
+    #toast-container { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+    .toast { padding: 0.625rem 1rem; border-radius: 0.75rem; font-size: 0.8125rem; font-weight: 600; color: #fff; background: #1f2937; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: toastIn 0.25s ease-out; pointer-events: auto; }
+    .toast.success { background: #059669; }
+    .toast.error { background: #dc2626; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-0.5rem); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Pro Tab */
+    .auth-tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
+    .auth-tab { flex: 1; padding: 0.5rem; border-radius: 0.75rem; border: 2px solid #e5e7eb; background: #f9fafb; font-size: 0.8125rem; font-weight: 700; color: #6b7280; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .auth-tab.active { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+    .field-stack { display: flex; flex-direction: column; gap: 0.625rem; }
+    .team-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .team-name { font-weight: 800; font-size: 1.125rem; color: #111827; }
+    .team-meta { font-size: 0.75rem; color: #6b7280; }
+    .role-badge { font-size: 0.6875rem; font-weight: 700; padding: 0.25rem 0.625rem; border-radius: 9999px; }
+    .role-owner { background: #dbeafe; color: #1d4ed8; }
+    .role-staff { background: #f3f4f6; color: #6b7280; }
+    .sub-tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
+    .sub-tab { flex: 1; padding: 0.5rem; border-radius: 0.75rem; border: none; background: #f3f4f6; font-size: 0.8125rem; font-weight: 700; color: #6b7280; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .sub-tab.active { background: #1f2937; color: #fff; }
     .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem; }
-    .kpi-card { border-radius: 0.75rem; padding: 0.75rem; border: 1px solid; }
+    .kpi-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 0.75rem; }
     .kpi-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
-    .kpi-label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
-    .kpi-value { font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
-    .kpi-blue { background: #eff6ff; border-color: #bfdbfe; color: #1e3a8a; }
-    .kpi-amber { background: #fffbeb; border-color: #fde68a; color: #78350f; }
-    .kpi-purple { background: #f5f3ff; border-color: #ddd6fe; color: #4c1d95; }
-    .kpi-green { background: #ecfdf5; border-color: #a7f3d0; color: #064e3b; }
+    .kpi-label { font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi-value { font-size: 1.5rem; font-weight: 900; color: #111827; }
+    .revenue-banner { background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%); border-radius: 0.75rem; padding: 1rem; margin-bottom: 0.75rem; color: #fff; }
+    .revenue-banner-header { font-size: 0.8125rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .revenue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .revenue-label { font-size: 0.6875rem; font-weight: 500; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.04em; }
+    .revenue-value { font-size: 1.25rem; font-weight: 900; }
+    .invite-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+    .invite-code { font-size: 1.125rem; font-weight: 900; color: #1d4ed8; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
+    .copy-btn { width: 2rem; height: 2rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; background: #f9fafb; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .copy-btn:hover { background: #e5e7eb; }
+    .copy-btn.copied { background: #d1fae5; border-color: #6ee7b7; }
 
-    /* ── Revenue banner ── */
-    .revenue-banner {
-      background: linear-gradient(135deg, #1d4ed8, #2563eb);
-      border-radius: 1rem; padding: 1rem; color: #fff; margin-bottom: 0.75rem;
-    }
-    .revenue-banner-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; opacity: 0.85; font-size: 0.875rem; font-weight: 700; }
-    .revenue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-    .revenue-label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; margin-bottom: 0.25rem; }
-    .revenue-value { font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+    /* Filter chips */
+    .filter-strip { display: flex; gap: 0.375rem; overflow-x: auto; padding-bottom: 0.75rem; -webkit-overflow-scrolling: touch; }
+    .filter-chip { padding: 0.375rem 0.75rem; border-radius: 9999px; border: 1px solid #e5e7eb; background: #fff; font-size: 0.75rem; font-weight: 700; color: #6b7280; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .filter-chip.active { background: #1f2937; color: #fff; border-color: #1f2937; }
 
-    /* ── Job cards ── */
-    .job-card {
-      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
-      border-left: 4px solid #e5e7eb;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 0.5rem; overflow: hidden;
-    }
+    /* Job cards */
+    .job-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 0.75rem; margin-bottom: 0.5rem; overflow: hidden; border-left: 4px solid #e5e7eb; }
     .job-card[data-status="quote_sent"] { border-left-color: #3b82f6; }
     .job-card[data-status="accepted"] { border-left-color: #f59e0b; }
     .job-card[data-status="in_progress"] { border-left-color: #8b5cf6; }
     .job-card[data-status="completed"] { border-left-color: #10b981; }
     .job-card[data-status="cancelled"] { border-left-color: #ef4444; }
-    .job-card-header { padding: 1rem; cursor: pointer; width: 100%; background: none; border: none; text-align: left; }
-    .job-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
-    .job-card-name { font-weight: 700; font-size: 1rem; color: #111827; }
+    .job-card-header { width: 100%; padding: 0.75rem; background: none; border: none; cursor: pointer; text-align: left; display: block; }
+    .job-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+    .job-card-name { font-weight: 700; font-size: 0.875rem; color: #111827; }
     .job-card-addr { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
-    .job-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.375rem; flex-shrink: 0; }
-    .job-card-price { font-size: 1.125rem; font-weight: 900; color: #111827; font-variant-numeric: tabular-nums; }
-    .job-card-meta { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
-    .job-card-date { font-size: 0.75rem; color: #9ca3af; }
-    .job-card-items { font-size: 0.75rem; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .job-card-body { padding: 0 1rem 1rem; border-top: 1px solid #f3f4f6; padding-top: 0.75rem; }
-    .job-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem; margin-bottom: 0.75rem; }
-    .job-detail-label { color: #9ca3af; font-weight: 600; }
-    .job-detail-val { color: #374151; font-weight: 600; margin-top: 0.125rem; }
-    .job-notes { background: #f9fafb; border-radius: 0.75rem; padding: 0.625rem 0.75rem; font-size: 0.75rem; color: #4b5563; margin-bottom: 0.75rem; }
-    .job-notes-label { font-weight: 600; color: #9ca3af; display: block; margin-bottom: 0.25rem; }
-    .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
-    .paid-box { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.75rem; padding: 0.75rem; }
-    .paid-box-label { font-size: 0.75rem; font-weight: 600; color: #059669; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.25rem; }
-    .paid-input-row { display: flex; gap: 0.5rem; }
-    .paid-input-wrap { position: relative; flex: 1; }
-    .paid-input-wrap span { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #059669; font-weight: 700; font-size: 0.875rem; }
-    .paid-input-wrap input {
-      width: 100%; padding: 0.5rem 0.75rem 0.5rem 1.5rem; border-radius: 0.75rem;
-      border: 1px solid #a7f3d0; background: #fff; font-size: 0.875rem; font-weight: 700;
-      outline: none; color: #111827;
-    }
-    .paid-input-wrap input:focus { border-color: #34d399; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+    .job-card-right { text-align: right; flex-shrink: 0; }
+    .job-card-price { font-weight: 900; font-size: 1rem; color: #111827; }
+    .status-badge { display: inline-block; font-size: 0.6875rem; font-weight: 700; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-top: 0.25rem; }
+    .status-quote_sent { background: #dbeafe; color: #1d4ed8; }
+    .status-accepted { background: #fef3c7; color: #92400e; }
+    .status-in_progress { background: #ede9fe; color: #6d28d9; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .job-card-meta { display: flex; gap: 0.75rem; margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af; }
+    .job-card-body { padding: 0 0.75rem 0.75rem; border-top: 1px solid #f3f4f6; }
+    .job-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem; }
+    .job-detail-label { font-size: 0.6875rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+    .job-detail-val { font-size: 0.8125rem; font-weight: 600; color: #374151; margin-top: 0.125rem; }
+    .job-notes { margin-top: 0.75rem; padding: 0.625rem; background: #f9fafb; border-radius: 0.5rem; font-size: 0.8125rem; color: #374151; }
+    .job-notes-label { display: block; font-size: 0.6875rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .job-actions { display: flex; gap: 0.375rem; margin-top: 0.75rem; flex-wrap: wrap; }
+    .paid-box { margin-top: 0.75rem; padding: 0.75rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.75rem; }
+    .paid-box-label { font-size: 0.6875rem; font-weight: 700; color: #065f46; text-transform: uppercase; display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem; }
+    .paid-input-row { display: flex; gap: 0.5rem; align-items: center; }
+    .paid-input-wrap { display: flex; align-items: center; gap: 0.25rem; background: #fff; border: 1px solid #d1fae5; border-radius: 0.5rem; padding: 0.375rem 0.5rem; flex: 1; }
+    .paid-input-wrap span { font-weight: 700; color: #065f46; }
+    .paid-input-wrap input { border: none; outline: none; background: none; font-size: 0.875rem; font-weight: 600; width: 100%; }
     .paid-current { font-size: 0.75rem; color: #059669; font-weight: 600; margin-top: 0.375rem; }
 
-    /* ── Status badges ── */
-    .status-badge {
-      font-size: 0.6875rem; font-weight: 700; padding: 0.25rem 0.5rem;
-      border-radius: 9999px; border: 1px solid; white-space: nowrap;
-    }
-    .status-quote_sent { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
-    .status-accepted { background: #fef3c7; color: #92400e; border-color: #fde68a; }
-    .status-in_progress { background: #ede9fe; color: #4c1d95; border-color: #ddd6fe; }
-    .status-completed { background: #d1fae5; color: #064e3b; border-color: #a7f3d0; }
-    .status-cancelled { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
-
-    /* ── Filter chips ── */
-    .filter-strip { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; margin-bottom: 0.75rem; -webkit-overflow-scrolling: touch; }
-    .filter-strip::-webkit-scrollbar { display: none; }
-    .filter-chip {
-      flex-shrink: 0; padding: 0.375rem 0.75rem; border-radius: 9999px;
-      font-size: 0.75rem; font-weight: 700; border: 1px solid #e5e7eb;
-      background: #fff; color: #4b5563; cursor: pointer; transition: all 0.15s;
-    }
-    .filter-chip.active { background: #2563eb; color: #fff; border-color: #2563eb; }
-
-    /* ── Auth / Team ── */
-    .mode-toggle { display: flex; background: #f3f4f6; border-radius: 0.75rem; padding: 0.25rem; margin-bottom: 1rem; }
-    .mode-btn {
-      flex: 1; padding: 0.5rem; border-radius: 0.625rem; border: none; background: none;
-      font-size: 0.875rem; font-weight: 700; cursor: pointer; transition: all 0.15s; color: #6b7280;
-    }
-    .mode-btn.active { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-    /* ── Sub tabs ── */
-    .sub-tabs { display: flex; background: #f3f4f6; border-radius: 0.75rem; padding: 0.25rem; margin-bottom: 0.75rem; }
-    .sub-tab {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.375rem;
-      padding: 0.5rem; border-radius: 0.625rem; border: none; background: none;
-      font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.15s; color: #6b7280;
-    }
-    .sub-tab.active { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-    /* ── Team header ── */
-    .team-header {
-      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
-      padding: 1rem; margin-bottom: 0.75rem;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .team-logo {
-      width: 2rem; height: 2rem; border-radius: 0.625rem; background: #2563eb;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .team-info { min-width: 0; margin-left: 0.625rem; }
-    .team-name { font-weight: 700; font-size: 0.875rem; color: #111827; }
-    .team-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; }
-    .role-badge {
-      font-size: 0.6875rem; font-weight: 700; padding: 0.125rem 0.5rem;
-      border-radius: 9999px;
-    }
-    .role-owner { background: #dbeafe; color: #1d4ed8; }
-    .role-staff { background: #f3f4f6; color: #4b5563; }
-    .team-email { font-size: 0.75rem; color: #9ca3af; }
-
-    /* ── Activity feed ── */
-    .activity-item {
-      background: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb;
-      padding: 0.75rem 1rem; display: flex; align-items: flex-start; gap: 0.75rem;
-      margin-bottom: 0.5rem;
-    }
-    .activity-icon {
-      width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; background: #f9fafb;
-      border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-top: 0.125rem;
-    }
-    .activity-action { font-weight: 700; font-size: 0.875rem; color: #111827; }
+    /* Activity */
+    .activity-item { display: flex; gap: 0.625rem; padding: 0.625rem 0; border-bottom: 1px solid #f3f4f6; }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon { width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; background: #f3f4f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .activity-action { font-size: 0.8125rem; font-weight: 700; color: #111827; }
     .activity-details { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
-    .activity-time { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; }
+    .activity-time { font-size: 0.6875rem; color: #9ca3af; margin-top: 0.125rem; }
 
-    /* ── Empty state ── */
-    .empty-state {
-      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
-      padding: 3rem 1rem; text-align: center;
-    }
-    .empty-state svg { color: #d1d5db; margin: 0 auto 0.75rem; display: block; }
-    .empty-title { font-weight: 600; color: #6b7280; font-size: 0.875rem; }
-    .empty-sub { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; }
+    /* Empty state */
+    .empty-state { text-align: center; padding: 2rem 1rem; color: #9ca3af; }
+    .empty-state svg { margin: 0 auto 0.75rem; }
+    .empty-title { font-weight: 700; font-size: 0.875rem; color: #6b7280; }
+    .empty-sub { font-size: 0.8125rem; margin-top: 0.25rem; }
 
-    /* ── Info box ── */
-    .info-box {
-      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 1rem;
-      padding: 1rem; display: flex; gap: 0.75rem; margin-top: 1rem;
-    }
-    .info-box svg { color: #3b82f6; flex-shrink: 0; margin-top: 0.125rem; }
-    .info-box-title { font-size: 0.875rem; font-weight: 700; color: #1e3a8a; }
-    .info-box ul { font-size: 0.75rem; color: #1d4ed8; margin-top: 0.25rem; list-style: none; }
-    .info-box li::before { content: '· '; }
-
-    /* ── Quote preview ── */
-    .quote-preview-pre {
-      font-family: 'Courier New', monospace; font-size: 0.75rem; color: #374151;
-      line-height: 1.6; white-space: pre-wrap; background: #f9fafb;
-      border-radius: 0.75rem; padding: 0.75rem;
-    }
-
-    /* ── Invite code ── */
-    .invite-row {
-      display: flex; align-items: center; gap: 0.5rem;
-      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem;
-      padding: 0.625rem 0.75rem; margin-top: 0.5rem;
-    }
-    .invite-code { flex: 1; font-family: monospace; font-weight: 700; font-size: 0.875rem; color: #111827; letter-spacing: 0.15em; }
-    .copy-btn { background: none; border: none; cursor: pointer; color: #9ca3af; transition: color 0.15s; }
-    .copy-btn:hover { color: #374151; }
-    .copy-btn.copied { color: #10b981; }
-
-    /* ── Toast ── */
-    #toast-container {
-      position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
-      z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
-      pointer-events: none; width: min(calc(100vw - 2rem), 360px);
-    }
-    .toast {
-      background: #1f2937; color: #fff; padding: 0.75rem 1rem; border-radius: 0.75rem;
-      font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      animation: toastIn 0.25s ease-out; pointer-events: auto;
-    }
-    .toast.success { background: #059669; }
-    .toast.error { background: #dc2626; }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateY(-0.5rem); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── Misc ── */
-    .divider { height: 1px; background: #f3f4f6; margin: 0.75rem 0; }
-    .text-muted { color: #6b7280; font-size: 0.75rem; }
-    .section-label { font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-    .flex-row { display: flex; align-items: center; gap: 0.5rem; }
-    .ml-auto { margin-left: auto; }
-    .mt-1 { margin-top: 0.25rem; }
-    .mt-2 { margin-top: 0.5rem; }
-    .mt-3 { margin-top: 0.75rem; }
-    .mb-2 { margin-bottom: 0.5rem; }
-    .mb-3 { margin-bottom: 0.75rem; }
-    .w-full { width: 100%; }
-    .hidden { display: none !important; }
-    textarea.field-input { resize: none; }
-    .pricing-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
-    .pricing-mode-btn {
-      padding: 0.75rem; border-radius: 0.75rem; border: 2px solid #e5e7eb;
-      background: #f9fafb; cursor: pointer; transition: all 0.15s; text-align: left;
-    }
-    .pricing-mode-btn.active { border-color: #3b82f6; background: #eff6ff; }
-    .pricing-mode-btn .mode-title { font-weight: 700; font-size: 0.875rem; color: #374151; }
-    .pricing-mode-btn.active .mode-title { color: #1d4ed8; }
-    .pricing-mode-btn .mode-desc { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
-    .num-input-wrap { position: relative; }
-    .num-input-wrap .prefix { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.875rem; font-weight: 600; }
-    .num-input-wrap .suffix { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.875rem; }
-    .num-input-wrap input { width: 100%; padding: 0.625rem 0.75rem; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #f9fafb; font-size: 0.875rem; font-weight: 700; color: #111827; outline: none; transition: all 0.15s; text-align: right; }
-    .num-input-wrap.has-prefix input { padding-left: 1.75rem; }
-    .num-input-wrap.has-suffix input { padding-right: 1.75rem; }
-    .num-input-wrap input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
-    .save-action-row { display: flex; align-items: center; gap: 0.5rem; }
-    .save-note { font-size: 0.75rem; color: #9ca3af; margin-top: 0.75rem; display: flex; align-items: flex-start; gap: 0.375rem; }
-    .save-note svg { flex-shrink: 0; margin-top: 0.125rem; }
-    .gst-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-    .round-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-    .modifier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-    .modifier-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 0.75rem; }
-    .modifier-card.amber { background: #fffbeb; border-color: #fde68a; }
-    .modifier-label { font-size: 0.75rem; font-weight: 600; color: #6b7280; margin-bottom: 0.25rem; }
-    .modifier-card.amber .modifier-label { color: #92400e; }
-    .modifier-input-row { display: flex; align-items: baseline; }
-    .modifier-input { flex: 1; background: transparent; border: none; outline: none; font-size: 1.125rem; font-weight: 900; color: #111827; width: 100%; text-align: right; }
-    .modifier-card.amber .modifier-input { color: #92400e; }
-    .modifier-unit { font-size: 0.6875rem; color: #9ca3af; text-align: right; margin-top: 0.125rem; }
-    .modifier-card.amber .modifier-unit { color: #d97706; }
-    .hourly-card { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.75rem; padding: 0.75rem; margin-bottom: 1rem; }
-    .hourly-input-row { display: flex; align-items: baseline; gap: 0.25rem; }
-    .hourly-prefix { color: #93c5fd; font-size: 0.875rem; font-weight: 600; }
-    .hourly-input { flex: 1; background: transparent; border: none; outline: none; font-size: 1.5rem; font-weight: 900; color: #1d4ed8; width: 100%; }
-    .hourly-suffix { color: #93c5fd; font-size: 0.875rem; }
-    .save-quote-row {
-      background: #fff; border-radius: 1rem; border: 1px solid #e5e7eb;
-      padding: 0.875rem 1rem; display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; transition: background 0.15s; margin-bottom: 0.75rem;
-    }
+    /* Save quote row */
+    .save-quote-row { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 0.75rem; cursor: pointer; transition: all 0.15s; margin-bottom: 0.75rem; }
     .save-quote-row:hover { background: #f9fafb; }
-    .save-quote-row-left { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 700; color: #374151; }
+    .save-quote-row-left { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 700; color: #1f2937; }
     .save-quote-row-left svg { color: #3b82f6; }
   </style>
 </head>
@@ -509,7 +254,7 @@
     <div class="header-inner">
       <div class="header-brand">
         <div class="header-logo">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 0 1-9.95-9H3a9 9 0 0 0 9 9Z"/><path d="M2.05 13A10 10 0 0 1 12 2c5.52 0 10 4.48 10 10"/><path d="M12 8v4l3 3"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
         </div>
         <div>
           <div class="header-title">Window Quote Pro</div>
@@ -522,9 +267,10 @@
 
   <!-- Main Content -->
   <div class="main-content">
-    <!-- Quote Tab -->
+    <!-- ═══ QUOTE TAB ═══ -->
     <div id="tab-quote">
       <div class="chip-strip" id="service-chips"></div>
+
       <!-- Customer Details -->
       <div class="card">
         <div class="card-title">
@@ -563,17 +309,21 @@
       <!-- Services -->
       <div class="card">
         <div class="card-title" style="justify-content:space-between">
-          <span>Services</span>
+          <span style="display:flex;align-items:center;gap:0.5rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+            Services
+          </span>
           <span id="items-badge" class="hidden" style="font-size:0.75rem;font-weight:700;background:#dbeafe;color:#1d4ed8;padding:0.25rem 0.5rem;border-radius:9999px;"></span>
         </div>
-        <div id="stepper-list">
-          <!-- Steppers injected by JS -->
-        </div>
+        <div id="stepper-list"></div>
       </div>
 
       <!-- Job Options -->
       <div class="card">
-        <div class="card-title">Job Options</div>
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Job Options
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
           <div>
             <div class="section-label">Service</div>
@@ -593,7 +343,7 @@
             <div class="section-label">Builder's</div>
             <div class="toggle-group">
               <button class="toggle-btn active" data-group="builders" data-val="no">No</button>
-              <button class="toggle-btn" data-group="builders" data-val="yes" id="builders-yes-btn">Yes</button>
+              <button class="toggle-btn" data-group="builders" data-val="yes">Yes</button>
             </div>
           </div>
         </div>
@@ -618,12 +368,12 @@
       </div>
 
       <!-- Quote Footer -->
-      <div class="quote-footer">
+      <div class="quote-footer" id="quote-footer">
         <div class="quote-footer-inner">
           <div class="quote-footer-card">
             <div>
-              <div class="quote-price" id="quote-price-display">$170</div>
-              <div class="quote-price-sub" id="quote-price-sub">Includes GST · Int + Ext · 1 Storey</div>
+              <div class="quote-price" id="quote-price-display">$165</div>
+              <div class="quote-price-sub" id="quote-price-sub">Includes GST</div>
             </div>
             <div class="quote-footer-actions">
               <button class="btn btn-secondary btn-sm" id="save-job-btn" style="display:none;">
@@ -640,42 +390,20 @@
       </div>
     </div>
 
-    <!-- Pricing Tab -->
+    <!-- ═══ PRICING TAB ═══ -->
     <div id="tab-pricing" class="hidden">
       <!-- Business Details -->
       <div class="card">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
           Business Details
-          <span style="font-size:0.75rem;color:#6b7280;font-weight:400;margin-left:0.25rem;">Appears on your quotes</span>
         </div>
         <div class="field-grid-2">
-          <div class="field-full">
-            <label class="field-label">Business Name</label>
-            <input type="text" class="field-input" id="s-bizname" placeholder="Crystal Clear Windows" />
-          </div>
-          <div>
-            <label class="field-label">Contact Name</label>
-            <input type="text" class="field-input" id="s-contact" placeholder="Mike" />
-          </div>
-          <div>
-            <label class="field-label">Phone</label>
-            <div class="field-input-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92Z"/></svg>
-              <input type="tel" class="field-input" id="s-phone" placeholder="0412 345 678" />
-            </div>
-          </div>
-          <div class="field-full">
-            <label class="field-label">Email</label>
-            <div class="field-input-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              <input type="email" class="field-input" id="s-email" placeholder="quotes@yourbusiness.com.au" />
-            </div>
-          </div>
-          <div class="field-full">
-            <label class="field-label">Quote Message</label>
-            <textarea class="field-input" id="s-message" rows="4"></textarea>
-          </div>
+          <div class="field-full"><label class="field-label">Business Name</label><input type="text" class="field-input" id="s-bizname" placeholder="Crystal Clear Windows" /></div>
+          <div><label class="field-label">Contact Name</label><input type="text" class="field-input" id="s-contact" placeholder="Mike" /></div>
+          <div><label class="field-label">Phone</label><div class="field-input-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92Z"/></svg><input type="tel" class="field-input" id="s-phone" placeholder="0412 345 678" /></div></div>
+          <div class="field-full"><label class="field-label">Email</label><div class="field-input-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><input type="email" class="field-input" id="s-email" placeholder="quotes@yourbusiness.com.au" /></div></div>
+          <div class="field-full"><label class="field-label">Quote Message</label><textarea class="field-input" id="s-message" rows="4"></textarea></div>
         </div>
       </div>
 
@@ -684,104 +412,39 @@
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           Pricing Mode
-          <span style="font-size:0.75rem;color:#6b7280;font-weight:400;margin-left:0.25rem;">How your quotes are calculated</span>
         </div>
         <div class="pricing-mode-grid">
-          <button class="pricing-mode-btn active" data-mode="per_item">
-            <div class="mode-title">Per Item</div>
-            <div class="mode-desc">Fixed price per service</div>
-          </button>
-          <button class="pricing-mode-btn" data-mode="time_based">
-            <div class="mode-title">Time Based</div>
-            <div class="mode-desc">Hourly rate × time</div>
-          </button>
+          <button class="pricing-mode-btn active" data-mode="per_item"><div class="mode-title">Per Item</div><div class="mode-desc">Fixed rate per service</div></button>
+          <button class="pricing-mode-btn" data-mode="time_based"><div class="mode-title">Time Based</div><div class="mode-desc">Hourly rate calculation</div></button>
         </div>
 
         <!-- Per Item Rates -->
         <div id="per-item-section">
-          <div class="section-label">Rates per item</div>
           <div class="rate-grid">
-            <div class="rate-card">
-              <div class="rate-card-label">Window</div>
-              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-window" value="18" min="0" step="0.01" /></div>
-              <div class="rate-card-unit">/item</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Track</div>
-              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-track" value="6" min="0" step="0.01" /></div>
-              <div class="rate-card-unit">/item</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Flyscreen</div>
-              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-fly" value="4" min="0" step="0.01" /></div>
-              <div class="rate-card-unit">/item</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Balustrade</div>
-              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-bal" value="35" min="0" step="0.01" /></div>
-              <div class="rate-card-unit">/item</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Solar Panel</div>
-              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-solar" value="12" min="0" step="0.01" /></div>
-              <div class="rate-card-unit">/item</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Gutter</div>
-              <div class="rate-card-input-row"><span class="rate-card-prefix">$</span><input type="number" id="r-gutter" value="6" min="0" step="0.01" /></div>
-              <div class="rate-card-unit">/metre</div>
-            </div>
+            <div class="rate-card"><div class="rate-card-label">Window</div><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="rate-card-input" id="r-window" /></div><div class="rate-card-unit">per window</div></div>
+            <div class="rate-card"><div class="rate-card-label">Track</div><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="rate-card-input" id="r-track" /></div><div class="rate-card-unit">per track</div></div>
+            <div class="rate-card"><div class="rate-card-label">Flyscreen</div><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="rate-card-input" id="r-fly" /></div><div class="rate-card-unit">per flyscreen</div></div>
+            <div class="rate-card"><div class="rate-card-label">Balustrade</div><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="rate-card-input" id="r-bal" /></div><div class="rate-card-unit">per balustrade</div></div>
+            <div class="rate-card"><div class="rate-card-label">Solar Panel</div><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="rate-card-input" id="r-solar" /></div><div class="rate-card-unit">per panel</div></div>
+            <div class="rate-card"><div class="rate-card-label">Gutter</div><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="rate-card-input" id="r-gutter" /></div><div class="rate-card-unit">per metre</div></div>
           </div>
         </div>
 
-        <!-- Time Based -->
+        <!-- Time Based Rates -->
         <div id="time-based-section" class="hidden">
-          <div class="section-label">Hourly Rate</div>
-          <div class="hourly-card">
-            <div class="hourly-input-row">
-              <span class="hourly-prefix">$</span>
-              <input type="number" class="hourly-input" id="r-hourly" value="135" min="0" step="1" />
-              <span class="hourly-suffix">/hr</span>
-            </div>
-          </div>
-          <div class="section-label">Minutes per item</div>
           <div class="rate-grid">
-            <div class="rate-card">
-              <div class="rate-card-label">Window</div>
-              <div class="rate-card-input-row"><input type="number" id="m-window" value="8" min="0" step="0.5" /></div>
-              <div class="rate-card-unit">mins</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Track</div>
-              <div class="rate-card-input-row"><input type="number" id="m-track" value="7" min="0" step="0.5" /></div>
-              <div class="rate-card-unit">mins</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Flyscreen</div>
-              <div class="rate-card-input-row"><input type="number" id="m-fly" value="1.5" min="0" step="0.5" /></div>
-              <div class="rate-card-unit">mins</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Balustrade</div>
-              <div class="rate-card-input-row"><input type="number" id="m-bal" value="6" min="0" step="0.5" /></div>
-              <div class="rate-card-unit">mins</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Solar Panel</div>
-              <div class="rate-card-input-row"><input type="number" id="m-solar" value="2" min="0" step="0.5" /></div>
-              <div class="rate-card-unit">mins</div>
-            </div>
-            <div class="rate-card">
-              <div class="rate-card-label">Gutter/m</div>
-              <div class="rate-card-input-row"><input type="number" id="m-gutter" value="0.8" min="0" step="0.1" /></div>
-              <div class="rate-card-unit">mins</div>
-            </div>
+            <div class="rate-card"><div class="rate-card-label">Hourly Rate</div><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="rate-card-input" id="r-hourly" /></div><div class="rate-card-unit">per hour</div></div>
+            <div class="rate-card"><div class="rate-card-label">Over 6hrs Fee</div><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="rate-card-input" id="r-over6" /></div><div class="rate-card-unit">bonus fee</div></div>
           </div>
           <div style="margin-top:0.75rem;">
-            <label class="field-label">Over 6hrs surcharge</label>
-            <div class="num-input-wrap has-prefix" style="max-width:160px;">
-              <span class="prefix">$</span>
-              <input type="number" id="r-over6" value="100" min="0" step="1" />
+            <div class="section-label" style="margin-bottom:0.5rem;">Minutes per item</div>
+            <div class="rate-grid">
+              <div class="rate-card"><div class="rate-card-label">Window</div><input type="number" class="rate-card-input" id="m-window" /><div class="rate-card-unit">mins</div></div>
+              <div class="rate-card"><div class="rate-card-label">Track</div><input type="number" class="rate-card-input" id="m-track" /><div class="rate-card-unit">mins</div></div>
+              <div class="rate-card"><div class="rate-card-label">Flyscreen</div><input type="number" class="rate-card-input" id="m-fly" /><div class="rate-card-unit">mins</div></div>
+              <div class="rate-card"><div class="rate-card-label">Balustrade</div><input type="number" class="rate-card-input" id="m-bal" /><div class="rate-card-unit">mins</div></div>
+              <div class="rate-card"><div class="rate-card-label">Solar Panel</div><input type="number" class="rate-card-input" id="m-solar" /><div class="rate-card-unit">mins</div></div>
+              <div class="rate-card"><div class="rate-card-label">Gutter</div><input type="number" class="rate-card-input" id="m-gutter" /><div class="rate-card-unit">mins/m</div></div>
             </div>
           </div>
         </div>
@@ -789,220 +452,135 @@
 
       <!-- Modifiers -->
       <div class="card" style="padding:0;overflow:hidden;">
-        <button class="collapsible-header open" id="mod-toggle">
-          Price Modifiers
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <button class="collapsible-header" id="mod-toggle">
+          <span>Price Modifiers</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <div id="mod-body" class="collapsible-body">
-          <div class="modifier-grid">
-            <div class="modifier-card">
-              <div class="modifier-label">Ext Only</div>
-              <div class="modifier-input-row"><input type="number" class="modifier-input" id="mod-ext" value="0.52" min="0" max="1" step="0.01" /></div>
-              <div class="modifier-unit">multiplier</div>
-            </div>
-            <div class="modifier-card">
-              <div class="modifier-label">2 Storey</div>
-              <div class="modifier-input-row"><input type="number" class="modifier-input" id="mod-2s" value="0.15" min="0" step="0.01" /></div>
-              <div class="modifier-unit">add-on</div>
-            </div>
-            <div class="modifier-card amber">
-              <div class="modifier-label">Builder's</div>
-              <div class="modifier-input-row"><input type="number" class="modifier-input" id="mod-bc" value="1" min="0" step="0.01" /></div>
-              <div class="modifier-unit">add-on</div>
-            </div>
+        <div id="mod-body" class="hidden" style="padding:0 1rem 1rem;">
+          <div class="rate-grid">
+            <div class="rate-card"><div class="rate-card-label">Ext Only Factor</div><input type="number" class="rate-card-input" id="mod-ext" step="0.01" /><div class="rate-card-unit">multiplier</div></div>
+            <div class="rate-card"><div class="rate-card-label">2-Storey Add</div><input type="number" class="rate-card-input" id="mod-2s" step="0.01" /><div class="rate-card-unit">add %</div></div>
+            <div class="rate-card field-full"><div class="rate-card-label">Builder's Clean Add</div><input type="number" class="rate-card-input" id="mod-bc" step="0.01" /><div class="rate-card-unit">add %</div></div>
           </div>
         </div>
       </div>
 
-      <!-- GST & Minimums -->
+      <!-- GST & Minimum -->
       <div class="card" style="padding:0;overflow:hidden;">
-        <button class="collapsible-header open" id="gst-toggle">
-          GST &amp; Minimum Fee
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <button class="collapsible-header" id="gst-toggle">
+          <span>GST &amp; Minimum Fee</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <div id="gst-body" class="collapsible-body">
-          <div class="field-grid-2 mb-3">
-            <div>
-              <label class="field-label">Minimum Fee</label>
-              <div class="num-input-wrap has-prefix">
-                <span class="prefix">$</span>
-                <input type="number" id="s-minfee" value="165" min="0" step="1" />
-              </div>
-            </div>
-            <div>
-              <label class="field-label">GST Rate</label>
-              <div class="num-input-wrap has-suffix">
-                <span class="suffix">%</span>
-                <input type="number" id="s-gstrate" value="10" min="0" step="0.1" />
-              </div>
-            </div>
+        <div id="gst-body" class="hidden" style="padding:0 1rem 1rem;">
+          <div class="field-grid-2" style="margin-bottom:0.75rem;">
+            <div><label class="field-label">Minimum Fee</label><div style="display:flex;align-items:center;gap:0.25rem;"><span style="font-weight:700;color:#6b7280;">$</span><input type="number" class="field-input" id="s-minfee" /></div></div>
+            <div><label class="field-label">GST Rate (%)</label><input type="number" class="field-input" id="s-gstrate" step="0.1" /></div>
           </div>
-          <div class="mb-3">
-            <label class="field-label">GST Handling</label>
-            <div class="gst-grid">
-              <button class="toggle-btn active" data-group="gst" data-val="included">Price includes GST</button>
-              <button class="toggle-btn" data-group="gst" data-val="added">Add GST on top</button>
+          <div style="margin-bottom:0.75rem;">
+            <div class="section-label">GST Handling</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.375rem;">
+              <button class="toggle-btn active" data-group="gst" data-val="included">Included in price</button>
+              <button class="toggle-btn" data-group="gst" data-val="added">Added on top</button>
             </div>
           </div>
           <div>
-            <label class="field-label">Price Rounding</label>
-            <div class="round-grid">
-              <button class="toggle-btn" data-group="round" data-val="none">None</button>
-              <button class="toggle-btn" data-group="round" data-val="5">$5</button>
+            <div class="section-label">Rounding</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.375rem;">
               <button class="toggle-btn active" data-group="round" data-val="10">$10</button>
+              <button class="toggle-btn" data-group="round" data-val="5">$5</button>
+              <button class="toggle-btn" data-group="round" data-val="none">None</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Save -->
-      <button class="btn btn-primary btn-full btn-lg" id="save-settings-btn" style="border-radius:1rem;box-shadow:0 4px 12px rgba(37,99,235,0.25);">
+      <!-- Save Settings -->
+      <button class="btn btn-dark btn-full btn-lg" id="save-settings-btn" style="margin-top:0.5rem;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save Settings to This Device
+        Save Settings
       </button>
-      <div class="save-note">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        Settings are saved locally on this device. Pro users can sync settings across the team.
-      </div>
     </div>
 
-    <!-- Pro Tab -->
+    <!-- ═══ PRO TAB ═══ -->
     <div id="tab-pro" class="hidden">
       <!-- Auth Panel -->
       <div id="pro-auth-panel">
         <div class="card">
-          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
-            <div style="width:2.5rem;height:2.5rem;border-radius:0.75rem;background:#2563eb;display:flex;align-items:center;justify-content:center;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Pro Mode
+          </div>
+          <p style="font-size:0.8125rem;color:#6b7280;margin-bottom:1rem;">Sign in or create an account to unlock team job tracking, real-time sync, and revenue dashboards.</p>
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="auth-signin-tab">Sign In</button>
+            <button class="auth-tab" id="auth-signup-tab">Create Account</button>
+          </div>
+          <div class="field-stack">
+            <div id="auth-name-field" class="hidden">
+              <label class="field-label">Full Name</label>
+              <input type="text" class="field-input" id="auth-name" placeholder="Your name" />
             </div>
             <div>
-              <div style="font-weight:700;color:#111827;">Pro Access</div>
-              <div style="font-size:0.75rem;color:#6b7280;">Real-time job management for your team</div>
+              <label class="field-label">Email</label>
+              <input type="email" class="field-input" id="auth-email" placeholder="you@email.com" />
             </div>
-          </div>
-          <div class="mode-toggle">
-            <button class="mode-btn active" id="auth-signin-tab">Sign In</button>
-            <button class="mode-btn" id="auth-signup-tab">Create Account</button>
-          </div>
-          <div id="auth-name-field" class="hidden mb-2">
-            <label class="field-label">Full Name</label>
-            <input type="text" class="field-input" id="auth-name" placeholder="Your name" />
-          </div>
-          <div class="mb-2">
-            <label class="field-label">Email</label>
-            <input type="email" class="field-input" id="auth-email" placeholder="you@email.com" />
-          </div>
-          <div class="mb-3">
-            <label class="field-label">Password</label>
-            <input type="password" class="field-input" id="auth-password" placeholder="Password" />
-          </div>
-          <button class="btn btn-primary btn-full" id="auth-submit-btn">Sign In</button>
-        </div>
-        <div class="info-box">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          <div>
-            <div class="info-box-title">What's included in Pro?</div>
-            <ul>
-              <li>Real-time job board for your whole team</li>
-              <li>Staff can accept and start jobs instantly</li>
-              <li>Owner sees revenue dashboard and activity feed</li>
-              <li>Invite staff with a simple code</li>
-            </ul>
+            <div>
+              <label class="field-label">Password</label>
+              <input type="password" class="field-input" id="auth-password" placeholder="Min 6 characters" />
+            </div>
+            <button class="btn btn-primary btn-full" id="auth-submit-btn">Sign In</button>
           </div>
         </div>
       </div>
 
-      <!-- Team Setup (after login, no team) -->
+      <!-- Team Setup Panel -->
       <div id="pro-team-setup" class="hidden">
-        <div class="card" style="margin-bottom:0.75rem;">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-weight:700;font-size:0.875rem;color:#111827;" id="setup-email-display"></div>
-              <div style="font-size:0.75rem;color:#6b7280;margin-top:0.25rem;">Signed in · No team yet</div>
-            </div>
-            <button class="btn btn-secondary btn-sm" id="setup-signout-btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-              Sign Out
-            </button>
-          </div>
-        </div>
-        <div class="card mb-3">
-          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
-            <span style="font-weight:700;font-size:0.875rem;color:#111827;">Create Your Team</span>
-          </div>
-          <input type="text" class="field-input mb-3" id="team-name-input" placeholder="Business name" />
-          <button class="btn btn-primary btn-full" id="create-team-btn">Create Team</button>
-        </div>
         <div class="card">
-          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
-            <span style="font-weight:700;font-size:0.875rem;color:#111827;">Join with Invite Code</span>
+          <div class="card-title">Welcome!</div>
+          <p style="font-size:0.8125rem;color:#6b7280;margin-bottom:0.5rem;">Signed in as <strong id="setup-email-display"></strong></p>
+          <p style="font-size:0.8125rem;color:#6b7280;margin-bottom:1rem;">Create a new team or join an existing one with an invite code.</p>
+          <div style="margin-bottom:1rem;">
+            <label class="field-label">Create a Team</label>
+            <input type="text" class="field-input mb-2" id="team-name-input" placeholder="Your business name" />
+            <button class="btn btn-primary btn-full" id="create-team-btn">Create Team</button>
           </div>
-          <input type="text" class="field-input mb-3" id="invite-code-input" placeholder="ABCD1234" style="font-family:monospace;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;" />
-          <button class="btn btn-dark btn-full" id="join-team-btn">Join Team</button>
+          <div style="border-top:1px solid #e5e7eb;padding-top:1rem;">
+            <label class="field-label">Join with Invite Code</label>
+            <input type="text" class="field-input mb-2" id="invite-code-input" placeholder="Enter code" style="text-transform:uppercase;" />
+            <button class="btn btn-secondary btn-full" id="join-team-btn">Join Team</button>
+          </div>
+          <button class="btn btn-danger-soft btn-full" id="setup-signout-btn" style="margin-top:1rem;">Sign Out</button>
         </div>
       </div>
 
-      <!-- Pro Dashboard (logged in + team) -->
+      <!-- Pro Dashboard -->
       <div id="pro-dashboard" class="hidden">
-        <!-- Team Header -->
         <div class="team-header">
-          <div style="display:flex;align-items:center;min-width:0;">
-            <div class="team-logo">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg>
-            </div>
-            <div class="team-info">
-              <div class="team-name" id="team-name-display"></div>
-              <div class="team-meta">
-                <span class="role-badge role-owner" id="team-role-badge">Owner</span>
-                <span class="team-email" id="team-email-display"></span>
-              </div>
-            </div>
+          <div>
+            <div class="team-name" id="team-name-display"></div>
+            <div class="team-meta" id="team-email-display"></div>
           </div>
-          <button class="btn btn-secondary btn-sm" id="pro-signout-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-            Out
-          </button>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="role-badge" id="team-role-badge">Owner</span>
+            <button class="btn btn-danger-soft btn-sm" id="pro-signout-btn">Sign Out</button>
+          </div>
         </div>
 
-        <!-- Sub Tabs -->
         <div class="sub-tabs">
-          <button class="sub-tab active" data-subtab="dashboard">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-            Dashboard
-          </button>
-          <button class="sub-tab" data-subtab="jobs">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            Jobs
-          </button>
-          <button class="sub-tab" data-subtab="activity">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Activity
-          </button>
+          <button class="sub-tab active" data-subtab="dashboard">Dashboard</button>
+          <button class="sub-tab" data-subtab="jobs">Jobs</button>
+          <button class="sub-tab" data-subtab="activity">Activity</button>
         </div>
 
         <!-- Dashboard Sub-panel -->
         <div id="subtab-dashboard">
           <div class="kpi-grid">
-            <div class="kpi-card kpi-blue">
-              <div class="kpi-card-header"><span class="kpi-label">Quoted</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-              <div class="kpi-value" id="kpi-quoted">0</div>
-            </div>
-            <div class="kpi-card kpi-amber">
-              <div class="kpi-card-header"><span class="kpi-label">Accepted</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
-              <div class="kpi-value" id="kpi-accepted">0</div>
-            </div>
-            <div class="kpi-card kpi-purple">
-              <div class="kpi-card-header"><span class="kpi-label">In Progress</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
-              <div class="kpi-value" id="kpi-progress">0</div>
-            </div>
-            <div class="kpi-card kpi-green">
-              <div class="kpi-card-header"><span class="kpi-label">Completed</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
-              <div class="kpi-value" id="kpi-completed">0</div>
-            </div>
+            <div class="kpi-card"><div class="kpi-card-header"><span class="kpi-label">Quoted</span></div><div class="kpi-value" id="kpi-quoted">0</div></div>
+            <div class="kpi-card"><div class="kpi-card-header"><span class="kpi-label">Accepted</span></div><div class="kpi-value" id="kpi-accepted">0</div></div>
+            <div class="kpi-card"><div class="kpi-card-header"><span class="kpi-label">In Progress</span></div><div class="kpi-value" id="kpi-progress">0</div></div>
+            <div class="kpi-card"><div class="kpi-card-header"><span class="kpi-label">Completed</span></div><div class="kpi-value" id="kpi-completed">0</div></div>
           </div>
-          <div class="revenue-banner" id="revenue-banner">
+          <div class="revenue-banner hidden" id="revenue-banner">
             <div class="revenue-banner-header">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
               Revenue Overview
@@ -1019,7 +597,7 @@
             </span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
-          <div class="card" id="invite-panel">
+          <div class="card hidden" id="invite-panel">
             <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
               <span style="font-weight:700;font-size:0.875rem;color:#111827;">Invite Staff</span>
@@ -1059,7 +637,7 @@
       </button>
       <button class="tab-btn" data-tab="pricing">
         <div class="tab-btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         </div>
         <span class="tab-btn-label">Pricing</span>
       </button>
@@ -1075,63 +653,76 @@
 
 <script>
 // ═══════════════════════════════════════════════════════════
-// WINDOW QUOTE PRO — Full App Logic
+// WINDOW QUOTE PRO — Complete App Logic (Standalone)
 // ═══════════════════════════════════════════════════════════
 
-const SETTINGS_KEY = 'wqp_settings_v4';
-const SUPABASE_URL = "https://cwrlnfcgryhmohopdwrs.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM";
+var SETTINGS_KEY = 'wqp_settings_v4';
+var SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM';
 
 // ── Default Settings ──────────────────────────────────────
-const DEFAULT_SETTINGS = {
+var DEFAULT_SETTINGS = {
   businessName: '', contactName: '', businessPhone: '', businessEmail: '',
-  customMessage: `Hi, thanks for your enquiry!\n\nThis quote includes the selected services as discussed.\n\nAdditional items such as tracks, flyscreens, or detailing can be added if required.\n\nLet me know if you'd like to proceed or make any changes.\n\nThanks,`,
+  customMessage: "Hi, thanks for your enquiry!\n\nThis quote includes the selected services as discussed.\n\nAdditional items such as tracks, flyscreens, or detailing can be added if required.\n\nLet me know if you'd like to proceed or make any changes.\n\nThanks,",
   pricingMode: 'per_item', roundingRule: '10',
   rateWindow: 18, rateTrack: 6, rateFlyscreen: 4, rateBalustrade: 35, rateSolar: 12, rateGutter: 6,
   hourlyRate: 135, minsPerWindow: 8, minsPerTrack: 7, minsPerFlyscreen: 1.5,
   minsPerBalustrade: 6, minsPerSolar: 2, minsPerGutterMetre: 0.8, over6HoursFee: 100,
   externalOnlyFactor: 0.52, twoStoreyFactor: 0.15, buildersCleanFactor: 1,
-  minimumFee: 165, gstRate: 0.10, gstIncluded: 'true',
+  minimumFee: 165, gstRate: 0.10, gstIncluded: 'true'
 };
 
 // ── State ─────────────────────────────────────────────────
-let settings = loadSettings();
-let quoteInput = {
+var settings = loadSettings();
+var quoteInput = {
   customerName: '', customerEmail: '', customerPhone: '', serviceAddress: '',
   windows: 0, tracks: 0, flyscreens: 0, balustrades: 0, solarPanels: 0, gutterMetres: 0,
-  serviceType: 'full', storeys: 'single', buildersClean: false, notes: '',
+  serviceType: 'full', storeys: 'single', buildersClean: false, notes: ''
 };
-let activeTab = 'quote';
-let activeSubTab = 'dashboard';
-let jobFilter = 'all';
-let authMode = 'signin';
-let proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
-let supabaseClient = null;
-let saveBusy = false;
-let lastPrice = 0;
+var activeTab = 'quote';
+var activeSubTab = 'dashboard';
+var jobFilter = 'all';
+var authMode = 'signin';
+var proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
+var supabaseClient = null;
+var saveBusy = false;
+var lastPrice = 0;
 
 // ── Helpers ───────────────────────────────────────────────
-function n(v) { const x = Number(v); return isFinite(x) ? x : 0; }
+function n(v) { var x = Number(v); return isFinite(x) ? x : 0; }
 function money(v) {
-  const val = n(v);
-  return val === Math.floor(val) ? `$${val.toFixed(0)}` : `$${val.toFixed(2)}`;
+  var val = n(v);
+  return val === Math.floor(val) ? '$' + val.toFixed(0) : '$' + val.toFixed(2);
 }
 function roundUp(val, step) {
   if (!step || step <= 0) return val;
   return Math.ceil(val / step) * step;
 }
 function prettyDate(ts) {
-  try { return ts ? new Date(ts).toLocaleString('en-AU', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : ''; } catch { return ''; }
+  try { return ts ? new Date(ts).toLocaleString('en-AU', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : ''; }
+  catch(e) { return ''; }
 }
 function prettyDateShort(ts) {
-  try { return ts ? new Date(ts).toLocaleDateString('en-AU', { day:'numeric', month:'short' }) : ''; } catch { return ''; }
+  try { return ts ? new Date(ts).toLocaleDateString('en-AU', { day:'numeric', month:'short' }) : ''; }
+  catch(e) { return ''; }
 }
 function loadSettings() {
-  try { const raw = localStorage.getItem(SETTINGS_KEY); return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS }; }
-  catch { return { ...DEFAULT_SETTINGS }; }
+  try {
+    var raw = localStorage.getItem(SETTINGS_KEY);
+    var data = raw ? JSON.parse(raw) : {};
+    var merged = {};
+    for (var k in DEFAULT_SETTINGS) merged[k] = DEFAULT_SETTINGS[k];
+    for (var k in data) merged[k] = data[k];
+    return merged;
+  } catch(e) {
+    var copy = {};
+    for (var k in DEFAULT_SETTINGS) copy[k] = DEFAULT_SETTINGS[k];
+    return copy;
+  }
 }
 function saveSettingsToStorage() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-function getFriendlyError(err, fallback = 'Something went wrong.') {
+function getFriendlyError(err, fallback) {
+  if (!fallback) fallback = 'Something went wrong.';
   if (!err) return fallback;
   if (typeof err === 'string') return err;
   if (err.message) return err.message;
@@ -1140,29 +731,30 @@ function getFriendlyError(err, fallback = 'Something went wrong.') {
 }
 
 // ── Toast ─────────────────────────────────────────────────
-function showToast(msg, type = 'default') {
-  const c = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
+function showToast(msg, type) {
+  if (!type) type = 'default';
+  var c = document.getElementById('toast-container');
+  var t = document.createElement('div');
+  t.className = 'toast ' + type;
   t.textContent = msg;
   c.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  setTimeout(function() { t.remove(); }, 3000);
 }
 
 // ── Quote Calculation ─────────────────────────────────────
 function calculateQuote() {
-  const s = settings;
-  const q = quoteInput;
-  let base = 0, hours = 0;
+  var s = settings;
+  var q = quoteInput;
+  var base = 0, hours = 0;
 
   if (s.pricingMode === 'per_item') {
     base = q.windows * n(s.rateWindow) + q.tracks * n(s.rateTrack) +
            q.flyscreens * n(s.rateFlyscreen) + q.balustrades * n(s.rateBalustrade) +
            q.solarPanels * n(s.rateSolar) + q.gutterMetres * n(s.rateGutter);
   } else {
-    const mins = q.windows * n(s.minsPerWindow) + q.tracks * n(s.minsPerTrack) +
-                 q.flyscreens * n(s.minsPerFlyscreen) + q.balustrades * n(s.minsPerBalustrade) +
-                 q.solarPanels * n(s.minsPerSolar) + q.gutterMetres * n(s.minsPerGutterMetre);
+    var mins = q.windows * n(s.minsPerWindow) + q.tracks * n(s.minsPerTrack) +
+               q.flyscreens * n(s.minsPerFlyscreen) + q.balustrades * n(s.minsPerBalustrade) +
+               q.solarPanels * n(s.minsPerSolar) + q.gutterMetres * n(s.minsPerGutterMetre);
     hours = mins / 60;
     base = hours * n(s.hourlyRate);
     if (hours > 6) base += n(s.over6HoursFee);
@@ -1172,21 +764,21 @@ function calculateQuote() {
   if (q.storeys === 'two') base *= (1 + n(s.twoStoreyFactor));
   if (q.buildersClean) base *= (1 + n(s.buildersCleanFactor));
 
-  let finalPrice = Math.max(base, n(s.minimumFee));
+  var finalPrice = Math.max(base, n(s.minimumFee));
   if (s.gstIncluded === 'false') finalPrice *= (1 + n(s.gstRate));
 
-  const roundingRule = s.roundingRule === 'none' ? 0 : n(s.roundingRule);
+  var roundingRule = s.roundingRule === 'none' ? 0 : n(s.roundingRule);
   if (roundingRule > 0) finalPrice = roundUp(finalPrice, roundingRule);
 
-  const gstText = s.gstIncluded === 'true' ? 'Includes GST' : 'GST added on top';
-  return { finalPrice, hours, gstText };
+  var gstText = s.gstIncluded === 'true' ? 'Includes GST' : 'GST added on top';
+  return { finalPrice: finalPrice, hours: hours, gstText: gstText };
 }
 
 // ── Update Quote Display ──────────────────────────────────
 function updateQuoteDisplay() {
-  const result = calculateQuote();
-  const priceEl = document.getElementById('quote-price-display');
-  const subEl = document.getElementById('quote-price-sub');
+  var result = calculateQuote();
+  var priceEl = document.getElementById('quote-price-display');
+  var subEl = document.getElementById('quote-price-sub');
 
   if (result.finalPrice !== lastPrice) {
     priceEl.classList.remove('pulse');
@@ -1196,51 +788,51 @@ function updateQuoteDisplay() {
   }
   priceEl.textContent = money(result.finalPrice);
 
-  const svcLabel = quoteInput.serviceType === 'external' ? 'Ext Only' : 'Int + Ext';
-  const stLabel = quoteInput.storeys === 'two' ? '2 Storey' : '1 Storey';
-  subEl.textContent = `${result.gstText} · ${svcLabel} · ${stLabel}`;
+  var svcLabel = quoteInput.serviceType === 'external' ? 'Ext Only' : 'Int + Ext';
+  var stLabel = quoteInput.storeys === 'two' ? '2 Storey' : '1 Storey';
+  var parts = [result.gstText, svcLabel, stLabel];
+  if (quoteInput.buildersClean) parts.push("Builder's");
+  subEl.textContent = parts.join(' \u00B7 ');
 
   // Update chips
-  const chipDefs = [
+  var chipDefs = [
     { key: 'windows', label: 'Win', cls: 'chip-blue' },
     { key: 'tracks', label: 'Trk', cls: 'chip-indigo' },
     { key: 'flyscreens', label: 'Fly', cls: 'chip-sky' },
     { key: 'balustrades', label: 'Bal', cls: 'chip-violet' },
     { key: 'solarPanels', label: 'Sol', cls: 'chip-amber' },
-    { key: 'gutterMetres', label: 'Gut', cls: 'chip-teal' },
+    { key: 'gutterMetres', label: 'Gut', cls: 'chip-teal' }
   ];
-  const strip = document.getElementById('service-chips');
+  var strip = document.getElementById('service-chips');
   strip.innerHTML = '';
-  chipDefs.forEach(({ key, label, cls }) => {
-    const val = quoteInput[key];
+  chipDefs.forEach(function(d) {
+    var val = quoteInput[d.key];
     if (val > 0) {
-      const chip = document.createElement('span');
-      chip.className = `chip ${cls}`;
-      chip.textContent = `${val}× ${label}`;
+      var chip = document.createElement('span');
+      chip.className = 'chip ' + d.cls;
+      chip.textContent = val + '\u00D7 ' + d.label;
       strip.appendChild(chip);
     }
   });
 
   // Items badge
-  const total = quoteInput.windows + quoteInput.tracks + quoteInput.flyscreens +
-                quoteInput.balustrades + quoteInput.solarPanels + quoteInput.gutterMetres;
-  const badge = document.getElementById('items-badge');
-  if (total > 0) { badge.textContent = `${total} items`; badge.classList.remove('hidden'); }
+  var total = quoteInput.windows + quoteInput.tracks + quoteInput.flyscreens +
+              quoteInput.balustrades + quoteInput.solarPanels + quoteInput.gutterMetres;
+  var badge = document.getElementById('items-badge');
+  if (total > 0) { badge.textContent = total + ' items'; badge.classList.remove('hidden'); }
   else { badge.classList.add('hidden'); }
 
-  // Update stepper row highlight
-  const KEYS = ['windows','tracks','flyscreens','balustrades','solarPanels','gutterMetres'];
-  KEYS.forEach(k => {
-    const row = document.querySelector(`[data-stepper="${k}"]`);
-    if (row) {
-      if (quoteInput[k] > 0) row.classList.add('active');
-      else row.classList.remove('active');
-      const valEl = row.querySelector('.stepper-val');
-      const isFloat = k === 'gutterMetres';
-      if (valEl) valEl.textContent = isFloat ? (quoteInput[k] % 1 === 0 ? quoteInput[k].toFixed(0) : quoteInput[k].toFixed(1)) : quoteInput[k];
-      const minusBtn = row.querySelector('.btn-stepper.minus');
-      if (minusBtn) minusBtn.disabled = quoteInput[k] === 0;
-    }
+  // Update stepper row highlights
+  var KEYS = ['windows','tracks','flyscreens','balustrades','solarPanels','gutterMetres'];
+  KEYS.forEach(function(k) {
+    var row = document.querySelector('[data-stepper="' + k + '"]');
+    if (!row) return;
+    if (quoteInput[k] > 0) row.classList.add('active'); else row.classList.remove('active');
+    var valEl = row.querySelector('.stepper-val');
+    var isFloat = k === 'gutterMetres';
+    if (valEl) valEl.textContent = isFloat ? (quoteInput[k] % 1 === 0 ? quoteInput[k].toFixed(0) : quoteInput[k].toFixed(1)) : quoteInput[k];
+    var minusBtn = row.querySelector('.btn-stepper.minus');
+    if (minusBtn) minusBtn.disabled = quoteInput[k] === 0;
   });
 
   // Update quote preview
@@ -1248,59 +840,72 @@ function updateQuoteDisplay() {
 }
 
 function updatePreview(result) {
-  const q = quoteInput; const s = settings;
-  const svcLabel = q.serviceType === 'external' ? 'External Only' : 'Internal + External';
-  const stLabel = q.storeys === 'two' ? 'Two Storey' : 'Single Storey';
-  const lines = [];
-  if (q.windows > 0) lines.push(`Windows: ${q.windows}`);
-  if (q.tracks > 0) lines.push(`Tracks: ${q.tracks}`);
-  if (q.flyscreens > 0) lines.push(`Flyscreens: ${q.flyscreens}`);
-  if (q.balustrades > 0) lines.push(`Balustrades: ${q.balustrades}`);
-  if (q.solarPanels > 0) lines.push(`Solar Panels: ${q.solarPanels}`);
-  if (q.gutterMetres > 0) lines.push(`Gutter Cleaning: ${q.gutterMetres}m`);
-  const text = `Hi ${q.customerName || 'there'},\n\n${s.customMessage}\n\n${s.contactName || s.businessName}\n\n---\nQUOTE DETAILS\nAddress: ${q.serviceAddress || 'Not specified'}\nService: ${svcLabel} | ${stLabel}${q.buildersClean ? " | Builder's Clean" : ''}\n\n${lines.join('\n') || 'No items selected'}\n\nTOTAL: ${money(result.finalPrice)} (${result.gstText})\n---\n\n${s.businessName}${s.businessPhone ? ' | ' + s.businessPhone : ''}${s.businessEmail ? ' | ' + s.businessEmail : ''}`;
-  const pre = document.getElementById('preview-text');
+  var q = quoteInput, s = settings;
+  var svcLabel = q.serviceType === 'external' ? 'External Only' : 'Internal + External';
+  var stLabel = q.storeys === 'two' ? 'Two Storey' : 'Single Storey';
+  var lines = [];
+  if (q.windows > 0) lines.push('Windows: ' + q.windows);
+  if (q.tracks > 0) lines.push('Tracks: ' + q.tracks);
+  if (q.flyscreens > 0) lines.push('Flyscreens: ' + q.flyscreens);
+  if (q.balustrades > 0) lines.push('Balustrades: ' + q.balustrades);
+  if (q.solarPanels > 0) lines.push('Solar Panels: ' + q.solarPanels);
+  if (q.gutterMetres > 0) lines.push('Gutter Cleaning: ' + q.gutterMetres + 'm');
+
+  var text = 'Hi ' + (q.customerName || 'there') + ',\n\n' +
+    s.customMessage + '\n\n' +
+    (s.contactName || s.businessName) + '\n\n' +
+    '---\nQUOTE DETAILS\n' +
+    'Address: ' + (q.serviceAddress || 'Not specified') + '\n' +
+    'Service: ' + svcLabel + ' | ' + stLabel + (q.buildersClean ? " | Builder's Clean" : '') + '\n\n' +
+    (lines.length ? lines.join('\n') : 'No items selected') + '\n\n' +
+    'TOTAL: ' + money(result.finalPrice) + ' (' + result.gstText + ')\n---\n\n' +
+    s.businessName + (s.businessPhone ? ' | ' + s.businessPhone : '') + (s.businessEmail ? ' | ' + s.businessEmail : '');
+
+  var pre = document.getElementById('preview-text');
   if (pre) pre.textContent = text;
 }
 
 // ── Build Steppers ────────────────────────────────────────
-const STEPPERS = [
+var STEPPERS = [
   { key: 'windows', label: 'Windows', icon: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>' },
   { key: 'tracks', label: 'Tracks', icon: '<line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/>' },
   { key: 'flyscreens', label: 'Flyscreens', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
   { key: 'balustrades', label: 'Balustrades', icon: '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>' },
   { key: 'solarPanels', label: 'Solar Panels', icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>' },
-  { key: 'gutterMetres', label: 'Gutter (m)', isFloat: true, step: 0.5, icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>' },
+  { key: 'gutterMetres', label: 'Gutter (m)', isFloat: true, step: 0.5, icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>' }
 ];
 
 function buildSteppers() {
-  const list = document.getElementById('stepper-list');
+  var list = document.getElementById('stepper-list');
   list.innerHTML = '';
-  STEPPERS.forEach(({ key, label, icon, isFloat, step = 1 }) => {
-    const row = document.createElement('div');
+  STEPPERS.forEach(function(item) {
+    var key = item.key, label = item.label, icon = item.icon;
+    var isFloat = item.isFloat || false;
+    var step = item.step || 1;
+    var row = document.createElement('div');
     row.className = 'stepper-row';
     row.setAttribute('data-stepper', key);
-    row.innerHTML = `
-      <div class="stepper-label">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
-        ${label}
-      </div>
-      <div class="stepper-controls">
-        <button class="btn-stepper minus" data-key="${key}" data-step="${step}" data-float="${isFloat ? '1' : '0'}" disabled>−</button>
-        <span class="stepper-val">0</span>
-        <button class="btn-stepper plus" data-key="${key}" data-step="${step}" data-float="${isFloat ? '1' : '0'}">+</button>
-      </div>`;
+    row.innerHTML =
+      '<div class="stepper-label">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + icon + '</svg>' +
+        label +
+      '</div>' +
+      '<div class="stepper-controls">' +
+        '<button class="btn-stepper minus" data-key="' + key + '" data-step="' + step + '" data-float="' + (isFloat ? '1' : '0') + '" disabled>\u2212</button>' +
+        '<span class="stepper-val">0</span>' +
+        '<button class="btn-stepper plus" data-key="' + key + '" data-step="' + step + '" data-float="' + (isFloat ? '1' : '0') + '">+</button>' +
+      '</div>';
     list.appendChild(row);
   });
 
-  list.addEventListener('click', e => {
-    const btn = e.target.closest('.btn-stepper');
+  list.addEventListener('click', function(e) {
+    var btn = e.target.closest('.btn-stepper');
     if (!btn) return;
-    const key = btn.dataset.key;
-    const step = parseFloat(btn.dataset.step);
-    const isFloat = btn.dataset.float === '1';
-    const isPlus = btn.classList.contains('plus');
-    let val = quoteInput[key];
+    var key = btn.dataset.key;
+    var step = parseFloat(btn.dataset.step);
+    var isFloat = btn.dataset.float === '1';
+    var isPlus = btn.classList.contains('plus');
+    var val = quoteInput[key];
     if (isPlus) val = isFloat ? Math.round((val + step) * 10) / 10 : val + 1;
     else val = Math.max(0, isFloat ? Math.round((val - step) * 10) / 10 : val - 1);
     quoteInput[key] = val;
@@ -1311,26 +916,29 @@ function buildSteppers() {
 // ── Tab Navigation ────────────────────────────────────────
 function switchTab(tab) {
   activeTab = tab;
-  ['quote', 'pricing', 'pro'].forEach(t => {
-    document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+  ['quote', 'pricing', 'pro'].forEach(function(t) {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
   });
-  document.querySelectorAll('.tab-btn').forEach(btn => {
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
+  // Show/hide quote footer only on quote tab
+  var footer = document.getElementById('quote-footer');
+  if (footer) footer.style.display = tab === 'quote' ? '' : 'none';
   if (tab === 'pricing') syncSettingsToForm();
 }
 
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
 });
 
 // ── Toggle Buttons ────────────────────────────────────────
-document.addEventListener('click', e => {
-  const btn = e.target.closest('.toggle-btn[data-group]');
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.toggle-btn[data-group]');
   if (!btn) return;
-  const group = btn.dataset.group;
-  const val = btn.dataset.val;
-  document.querySelectorAll(`.toggle-btn[data-group="${group}"]`).forEach(b => {
+  var group = btn.dataset.group;
+  var val = btn.dataset.val;
+  document.querySelectorAll('.toggle-btn[data-group="' + group + '"]').forEach(function(b) {
     b.classList.remove('active', 'active-amber');
   });
   if (group === 'builders' && val === 'yes') btn.classList.add('active-amber');
@@ -1339,16 +947,16 @@ document.addEventListener('click', e => {
   if (group === 'service') quoteInput.serviceType = val;
   else if (group === 'storeys') quoteInput.storeys = val;
   else if (group === 'builders') quoteInput.buildersClean = val === 'yes';
-  else if (group === 'gst') settings.gstIncluded = val === 'included' ? 'true' : 'false';
-  else if (group === 'round') settings.roundingRule = val;
+  else if (group === 'gst') { settings.gstIncluded = val === 'included' ? 'true' : 'false'; }
+  else if (group === 'round') { settings.roundingRule = val; }
 
   updateQuoteDisplay();
 });
 
 // ── Pricing Mode ──────────────────────────────────────────
-document.querySelectorAll('.pricing-mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.pricing-mode-btn').forEach(b => b.classList.remove('active'));
+document.querySelectorAll('.pricing-mode-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.pricing-mode-btn').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     settings.pricingMode = btn.dataset.mode;
     document.getElementById('per-item-section').classList.toggle('hidden', settings.pricingMode !== 'per_item');
@@ -1358,32 +966,65 @@ document.querySelectorAll('.pricing-mode-btn').forEach(btn => {
 });
 
 // ── Collapsibles ──────────────────────────────────────────
-['mod', 'gst', 'preview'].forEach(id => {
-  const toggle = document.getElementById(`${id}-toggle`);
-  const body = document.getElementById(`${id}-body`);
+['mod', 'gst', 'preview'].forEach(function(id) {
+  var toggle = document.getElementById(id + '-toggle');
+  var body = document.getElementById(id + '-body');
   if (!toggle || !body) return;
-  toggle.addEventListener('click', () => {
-    const isOpen = !body.classList.contains('hidden');
+  toggle.addEventListener('click', function() {
+    var isOpen = !body.classList.contains('hidden');
     body.classList.toggle('hidden', isOpen);
     toggle.classList.toggle('open', !isOpen);
   });
 });
 
 // ── Customer Inputs ───────────────────────────────────────
-['name','phone','email','address','notes'].forEach(field => {
-  const el = document.getElementById(`q-${field}`);
+['name','phone','email','address','notes'].forEach(function(field) {
+  var el = document.getElementById('q-' + field);
   if (!el) return;
-  el.addEventListener('input', () => {
-    const map = { name:'customerName', phone:'customerPhone', email:'customerEmail', address:'serviceAddress', notes:'notes' };
+  el.addEventListener('input', function() {
+    var map = { name:'customerName', phone:'customerPhone', email:'customerEmail', address:'serviceAddress', notes:'notes' };
     quoteInput[map[field]] = el.value;
     updateQuoteDisplay();
   });
 });
 
+// ── Send Quote (Email) ────────────────────────────────────
+document.getElementById('send-quote-btn').addEventListener('click', function() {
+  var result = calculateQuote();
+  var q = quoteInput, s = settings;
+  var svcLabel = q.serviceType === 'external' ? 'External Only' : 'Internal + External';
+  var stLabel = q.storeys === 'two' ? 'Two Storey' : 'Single Storey';
+  var lines = [];
+  if (q.windows > 0) lines.push('Windows: ' + q.windows);
+  if (q.tracks > 0) lines.push('Tracks: ' + q.tracks);
+  if (q.flyscreens > 0) lines.push('Flyscreens: ' + q.flyscreens);
+  if (q.balustrades > 0) lines.push('Balustrades: ' + q.balustrades);
+  if (q.solarPanels > 0) lines.push('Solar Panels: ' + q.solarPanels);
+  if (q.gutterMetres > 0) lines.push('Gutter Cleaning: ' + q.gutterMetres + 'm');
+
+  var body = 'Hi ' + (q.customerName || 'there') + ',\n\n' +
+    s.customMessage + '\n\n' +
+    (s.contactName || s.businessName) + '\n\n---\nQUOTE DETAILS\n' +
+    'Address: ' + (q.serviceAddress || 'Not specified') + '\n' +
+    'Service: ' + svcLabel + ' | ' + stLabel + (q.buildersClean ? " | Builder's Clean" : '') + '\n\n' +
+    (lines.length ? lines.join('\n') : 'No items selected') + '\n\n' +
+    'TOTAL: ' + money(result.finalPrice) + ' (' + result.gstText + ')\n---\n\n' +
+    s.businessName + (s.businessPhone ? ' | ' + s.businessPhone : '') + (s.businessEmail ? ' | ' + s.businessEmail : '');
+
+  var subject = encodeURIComponent('Window Cleaning Quote \u2014 ' + (q.serviceAddress || q.customerName || 'Your Property'));
+  var mailto = 'mailto:' + encodeURIComponent(q.customerEmail || '') + '?subject=' + subject + '&body=' + encodeURIComponent(body);
+  window.open(mailto, '_blank');
+
+  // Also save to team if Pro
+  if (proState.teamId && proState.user) {
+    saveJobToTeam();
+  }
+});
+
 // ── Settings Form Sync ────────────────────────────────────
 function syncSettingsToForm() {
-  const s = settings;
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  var s = settings;
+  function set(id, val) { var el = document.getElementById(id); if (el) el.value = val; }
   set('s-bizname', s.businessName); set('s-contact', s.contactName);
   set('s-phone', s.businessPhone); set('s-email', s.businessEmail);
   set('s-message', s.customMessage);
@@ -1396,23 +1037,27 @@ function syncSettingsToForm() {
   set('s-minfee', s.minimumFee); set('s-gstrate', (s.gstRate * 100).toFixed(1));
 
   // Pricing mode buttons
-  document.querySelectorAll('.pricing-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === s.pricingMode));
+  document.querySelectorAll('.pricing-mode-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.mode === s.pricingMode); });
   document.getElementById('per-item-section').classList.toggle('hidden', s.pricingMode !== 'per_item');
   document.getElementById('time-based-section').classList.toggle('hidden', s.pricingMode !== 'time_based');
 
   // GST toggle
-  document.querySelectorAll('.toggle-btn[data-group="gst"]').forEach(b => {
-    b.classList.toggle('active', (b.dataset.val === 'included' && s.gstIncluded === 'true') || (b.dataset.val === 'added' && s.gstIncluded === 'false'));
+  document.querySelectorAll('.toggle-btn[data-group="gst"]').forEach(function(b) {
+    b.classList.remove('active');
+    if ((b.dataset.val === 'included' && s.gstIncluded === 'true') || (b.dataset.val === 'added' && s.gstIncluded === 'false')) {
+      b.classList.add('active');
+    }
   });
   // Round toggle
-  document.querySelectorAll('.toggle-btn[data-group="round"]').forEach(b => {
-    b.classList.toggle('active', b.dataset.val === s.roundingRule);
+  document.querySelectorAll('.toggle-btn[data-group="round"]').forEach(function(b) {
+    b.classList.remove('active');
+    if (b.dataset.val === s.roundingRule) b.classList.add('active');
   });
 }
 
 function readSettingsFromForm() {
-  const g = id => { const el = document.getElementById(id); return el ? el.value : ''; };
-  const gn = id => n(g(id));
+  function g(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+  function gn(id) { return n(g(id)); }
   settings.businessName = g('s-bizname'); settings.contactName = g('s-contact');
   settings.businessPhone = g('s-phone'); settings.businessEmail = g('s-email');
   settings.customMessage = g('s-message');
@@ -1432,145 +1077,173 @@ function readSettingsFromForm() {
 // Live update pricing as user types
 ['r-window','r-track','r-fly','r-bal','r-solar','r-gutter','r-hourly','r-over6',
  'm-window','m-track','m-fly','m-bal','m-solar','m-gutter',
- 'mod-ext','mod-2s','mod-bc','s-minfee','s-gstrate'].forEach(id => {
-  const el = document.getElementById(id);
+ 'mod-ext','mod-2s','mod-bc','s-minfee','s-gstrate'].forEach(function(id) {
+  var el = document.getElementById(id);
   if (el) el.addEventListener('input', readSettingsFromForm);
 });
-['s-bizname','s-contact','s-phone','s-email','s-message'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', () => { settings[{
-    's-bizname':'businessName','s-contact':'contactName','s-phone':'businessPhone',
-    's-email':'businessEmail','s-message':'customMessage'
-  }[id]] = el.value; });
+
+// Business detail fields also update live
+['s-bizname','s-contact','s-phone','s-email','s-message'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('input', function() {
+    var map = { 's-bizname':'businessName', 's-contact':'contactName', 's-phone':'businessPhone', 's-email':'businessEmail', 's-message':'customMessage' };
+    settings[map[id]] = el.value;
+    updateQuoteDisplay();
+  });
 });
 
-document.getElementById('save-settings-btn').addEventListener('click', () => {
+// Save Settings Button
+document.getElementById('save-settings-btn').addEventListener('click', function() {
   readSettingsFromForm();
   saveSettingsToStorage();
-  showToast('Settings saved.', 'success');
+  showToast('Settings saved!', 'success');
 });
 
-// ── Send Quote ────────────────────────────────────────────
-document.getElementById('send-quote-btn').addEventListener('click', async () => {
-  const result = calculateQuote();
-  const q = quoteInput; const s = settings;
-  const svcLabel = q.serviceType === 'external' ? 'External Only' : 'Internal + External';
-  const stLabel = q.storeys === 'two' ? 'Two Storey' : 'Single Storey';
-  const lines = [];
-  if (q.windows > 0) lines.push(`Windows: ${q.windows}`);
-  if (q.tracks > 0) lines.push(`Tracks: ${q.tracks}`);
-  if (q.flyscreens > 0) lines.push(`Flyscreens: ${q.flyscreens}`);
-  if (q.balustrades > 0) lines.push(`Balustrades: ${q.balustrades}`);
-  if (q.solarPanels > 0) lines.push(`Solar Panels: ${q.solarPanels}`);
-  if (q.gutterMetres > 0) lines.push(`Gutter Cleaning: ${q.gutterMetres}m`);
-  const body = `Hi ${q.customerName || 'there'},\n\n${s.customMessage}\n\n${s.contactName || s.businessName}\n\n---\nQUOTE DETAILS\nAddress: ${q.serviceAddress || 'Not specified'}\nService: ${svcLabel} | ${stLabel}${q.buildersClean ? " | Builder's Clean" : ''}\n\n${lines.join('\n') || 'No items selected'}\n\nTOTAL: ${money(result.finalPrice)} (${result.gstText})\n---\n\n${s.businessName}${s.businessPhone ? ' | ' + s.businessPhone : ''}${s.businessEmail ? ' | ' + s.businessEmail : ''}`;
-  const subject = encodeURIComponent(`Window Cleaning Quote — ${q.serviceAddress || q.customerName || 'Your Property'}`);
-  window.open(`mailto:${encodeURIComponent(q.customerEmail || '')}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank');
-  if (proState.teamId) { await saveJobToTeam(); }
-});
+// ═══════════════════════════════════════════════════════════
+// SUPABASE / PRO MODE
+// ═══════════════════════════════════════════════════════════
 
-// ── Supabase ──────────────────────────────────────────────
 async function getSb() {
   if (supabaseClient) return supabaseClient;
   try {
-    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var mod = await import('https://esm.sh/@supabase/supabase-js@2');
+    supabaseClient = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     return supabaseClient;
-  } catch { return null; }
+  } catch(e) {
+    console.error('Supabase load failed:', e);
+    return null;
+  }
 }
 
 async function sbSignIn(email, password) {
-  const sb = await getSb(); if (!sb) throw new Error('Not connected.');
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) throw error; return data;
+  var sb = await getSb();
+  if (!sb) throw new Error('Supabase not available.');
+  var result = await sb.auth.signInWithPassword({ email: email, password: password });
+  if (result.error) throw result.error;
+  return result.data;
 }
+
 async function sbSignUp(email, password, name) {
-  const sb = await getSb(); if (!sb) throw new Error('Not connected.');
-  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
-  if (error) throw error; return data;
+  var sb = await getSb();
+  if (!sb) throw new Error('Supabase not available.');
+  var result = await sb.auth.signUp({ email: email, password: password, options: { data: { full_name: name || '' } } });
+  if (result.error) throw result.error;
+  return result.data;
 }
+
 async function sbSignOut() {
-  const sb = await getSb(); if (!sb) return;
-  await sb.auth.signOut();
+  var sb = await getSb();
+  if (!sb) return;
+  var result = await sb.auth.signOut();
+  if (result.error) throw result.error;
 }
+
 async function getCurrentUser() {
-  const sb = await getSb(); if (!sb) return null;
-  const { data } = await sb.auth.getUser();
-  return data?.user || null;
+  var sb = await getSb();
+  if (!sb) return null;
+  var result = await sb.auth.getUser();
+  if (result.error) return null;
+  return result.data.user;
 }
+
 async function getMyTeams(userId) {
-  const sb = await getSb();
-  const { data, error } = await sb.from('team_members').select('id,role,status,team_id,team:teams(id,business_name)').eq('user_id', userId).eq('status', 'active');
-  if (error) throw error; return data || [];
+  var sb = await getSb();
+  var result = await sb.from('team_members').select('id,role,status,team_id,team:teams(id,business_name)').eq('user_id', userId).eq('status', 'active');
+  if (result.error) throw result.error;
+  return result.data || [];
 }
+
 async function fetchJobs(teamId) {
-  const sb = await getSb(); if (!sb || !teamId) return [];
-  const { data, error } = await sb.from('jobs').select('*').eq('team_id', teamId).order('created_at', { ascending: false });
-  if (error) throw error; return data || [];
+  var sb = await getSb();
+  if (!sb || !teamId) return [];
+  var result = await sb.from('jobs').select('*').eq('team_id', teamId).order('created_at', { ascending: false });
+  if (result.error) throw result.error;
+  return result.data || [];
 }
+
 async function fetchActivity(teamId) {
-  const sb = await getSb(); if (!sb || !teamId) return [];
-  const { data, error } = await sb.from('activity_logs').select('*').eq('team_id', teamId).order('created_at', { ascending: false }).limit(30);
-  if (error) throw error; return data || [];
+  var sb = await getSb();
+  if (!sb || !teamId) return [];
+  var result = await sb.from('activity_logs').select('*').eq('team_id', teamId).order('created_at', { ascending: false }).limit(30);
+  if (result.error) throw result.error;
+  return result.data || [];
 }
-async function logActivity(teamId, userId, action, details = '') {
-  const sb = await getSb(); if (!sb || !teamId || !userId) return;
-  try { await sb.from('activity_logs').insert({ team_id: teamId, user_id: userId, action, details }); } catch {}
+
+async function logActivity(teamId, userId, action, details) {
+  var sb = await getSb();
+  if (!sb || !teamId || !userId) return;
+  try { await sb.from('activity_logs').insert({ team_id: teamId, user_id: userId, action: action, details: details || '' }); } catch(e) {}
 }
+
 async function createTeamAndMakeOwner(name) {
-  const sb = await getSb();
-  const { data, error } = await sb.rpc('create_team_and_make_owner', { p_business_name: name });
-  if (error) throw error; return data;
+  var sb = await getSb();
+  var result = await sb.rpc('create_team_and_make_owner', { p_business_name: name });
+  if (result.error) throw result.error;
+  return result.data;
 }
+
 async function joinTeamWithInvite(code) {
-  const sb = await getSb();
-  const { data, error } = await sb.rpc('join_team_with_invite', { p_invite_code: code });
-  if (error) throw error; return data;
+  var sb = await getSb();
+  var result = await sb.rpc('join_team_with_invite', { p_invite_code: code });
+  if (result.error) throw result.error;
+  return result.data;
 }
+
 async function createTeamInvite(teamId) {
-  const sb = await getSb();
-  const { data, error } = await sb.rpc('create_team_invite', { p_team_id: teamId, p_role: 'worker' });
-  if (error) throw error; return data;
+  var sb = await getSb();
+  var result = await sb.rpc('create_team_invite', { p_team_id: teamId, p_role: 'worker' });
+  if (result.error) throw result.error;
+  return result.data;
 }
 
 // ── Pro Boot ──────────────────────────────────────────────
 async function bootPro() {
   try {
-    const user = await getCurrentUser();
-    if (!user) { proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] }; renderProPanel(); return; }
-    const teams = await getMyTeams(user.id);
+    var user = await getCurrentUser();
+    if (!user) {
+      proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
+      renderProPanel();
+      return;
+    }
+    var teams = await getMyTeams(user.id);
     if (teams.length) {
-      const t = teams[0];
-      const teamId = t.team?.id || t.team_id;
-      const teamName = t.team?.business_name || 'Your Team';
-      const teamRole = t.role || 'worker';
-      const [jobs, feed] = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
-      proState = { user, teamId, teamName, teamRole, jobs, feed };
-      // Realtime
-      const sb = await getSb();
+      var t = teams[0];
+      var teamId = (t.team && t.team.id) || t.team_id;
+      var teamName = (t.team && t.team.business_name) || 'Your Team';
+      var teamRole = t.role || 'worker';
+      var results = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
+      proState = { user: user, teamId: teamId, teamName: teamName, teamRole: teamRole, jobs: results[0], feed: results[1] };
+      // Realtime subscription
+      var sb = await getSb();
       if (sb) {
-        sb.channel(`jobs-${teamId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `team_id=eq.${teamId}` }, async () => {
-          const [j, f] = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
-          proState.jobs = j; proState.feed = f;
+        sb.channel('jobs-' + teamId).on('postgres_changes', {
+          event: '*', schema: 'public', table: 'jobs', filter: 'team_id=eq.' + teamId
+        }, async function() {
+          var r = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
+          proState.jobs = r[0]; proState.feed = r[1];
           renderJobsList(); renderActivity(); updateKPIs();
         }).subscribe();
       }
     } else {
-      proState = { user, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
+      proState = { user: user, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
     }
     renderProPanel();
-  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  } catch(err) {
+    showToast(getFriendlyError(err), 'error');
+  }
 }
 
 // ── Pro Panel Render ──────────────────────────────────────
 function renderProPanel() {
-  const { user, teamId } = proState;
+  var user = proState.user;
+  var teamId = proState.teamId;
+
   document.getElementById('pro-auth-panel').classList.toggle('hidden', !!user);
   document.getElementById('pro-team-setup').classList.toggle('hidden', !user || !!teamId);
   document.getElementById('pro-dashboard').classList.toggle('hidden', !user || !teamId);
 
   // Badge
-  const badge = document.getElementById('pro-badge');
+  var badge = document.getElementById('pro-badge');
   badge.className = teamId ? 'badge-pro' : 'badge-free';
   badge.textContent = teamId ? 'PRO' : 'FREE';
 
@@ -1586,10 +1259,9 @@ function renderProPanel() {
   if (user && teamId) {
     document.getElementById('team-name-display').textContent = proState.teamName;
     document.getElementById('team-email-display').textContent = user.email;
-    const roleBadge = document.getElementById('team-role-badge');
+    var roleBadge = document.getElementById('team-role-badge');
     roleBadge.textContent = proState.teamRole === 'owner' ? 'Owner' : 'Staff';
-    roleBadge.className = `role-badge ${proState.teamRole === 'owner
-' ? 'role-owner' : 'role-staff'}`;
+    roleBadge.className = 'role-badge ' + (proState.teamRole === 'owner' ? 'role-owner' : 'role-staff');
     document.getElementById('invite-panel').classList.toggle('hidden', proState.teamRole !== 'owner');
     document.getElementById('revenue-banner').classList.toggle('hidden', proState.teamRole !== 'owner');
     renderJobsList(); renderActivity(); updateKPIs();
@@ -1598,87 +1270,89 @@ function renderProPanel() {
 }
 
 // ── Auth ──────────────────────────────────────────────────
-document.getElementById('auth-signin-tab').addEventListener('click', () => {
+document.getElementById('auth-signin-tab').addEventListener('click', function() {
   authMode = 'signin';
   document.getElementById('auth-signin-tab').classList.add('active');
   document.getElementById('auth-signup-tab').classList.remove('active');
   document.getElementById('auth-name-field').classList.add('hidden');
   document.getElementById('auth-submit-btn').textContent = 'Sign In';
 });
-document.getElementById('auth-signup-tab').addEventListener('click', () => {
+document.getElementById('auth-signup-tab').addEventListener('click', function() {
   authMode = 'signup';
   document.getElementById('auth-signup-tab').classList.add('active');
   document.getElementById('auth-signin-tab').classList.remove('active');
   document.getElementById('auth-name-field').classList.remove('hidden');
   document.getElementById('auth-submit-btn').textContent = 'Create Account';
 });
-document.getElementById('auth-submit-btn').addEventListener('click', async () => {
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value;
-  const name = document.getElementById('auth-name').value.trim();
+document.getElementById('auth-submit-btn').addEventListener('click', async function() {
+  var email = document.getElementById('auth-email').value.trim();
+  var password = document.getElementById('auth-password').value;
+  var name = document.getElementById('auth-name').value.trim();
   if (!email || !password) { showToast('Please enter email and password.', 'error'); return; }
-  const btn = document.getElementById('auth-submit-btn');
+  var btn = document.getElementById('auth-submit-btn');
   btn.disabled = true; btn.textContent = '...';
   try {
     if (authMode === 'signin') await sbSignIn(email, password);
     else await sbSignUp(email, password, name);
     await bootPro();
     showToast(authMode === 'signin' ? 'Signed in!' : 'Account created!', 'success');
-  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  } catch(err) { showToast(getFriendlyError(err), 'error'); }
   finally { btn.disabled = false; btn.textContent = authMode === 'signin' ? 'Sign In' : 'Create Account'; }
 });
 
-document.getElementById('setup-signout-btn').addEventListener('click', async () => {
-  await sbSignOut(); proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
+document.getElementById('setup-signout-btn').addEventListener('click', async function() {
+  await sbSignOut();
+  proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
   renderProPanel(); showToast('Signed out.');
 });
-document.getElementById('pro-signout-btn').addEventListener('click', async () => {
-  await sbSignOut(); proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
+document.getElementById('pro-signout-btn').addEventListener('click', async function() {
+  await sbSignOut();
+  proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
   renderProPanel(); showToast('Signed out.');
 });
 
 // ── Team Create / Join ────────────────────────────────────
-document.getElementById('create-team-btn').addEventListener('click', async () => {
-  const name = document.getElementById('team-name-input').value.trim();
+document.getElementById('create-team-btn').addEventListener('click', async function() {
+  var name = document.getElementById('team-name-input').value.trim();
   if (!name) { showToast('Enter a business name.', 'error'); return; }
-  const btn = document.getElementById('create-team-btn');
+  var btn = document.getElementById('create-team-btn');
   btn.disabled = true; btn.textContent = 'Creating...';
   try {
     await createTeamAndMakeOwner(name);
     await bootPro();
     showToast('Team created!', 'success');
-  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  } catch(err) { showToast(getFriendlyError(err), 'error'); }
   finally { btn.disabled = false; btn.textContent = 'Create Team'; }
 });
-document.getElementById('join-team-btn').addEventListener('click', async () => {
-  const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
+document.getElementById('join-team-btn').addEventListener('click', async function() {
+  var code = document.getElementById('invite-code-input').value.trim().toUpperCase();
   if (!code) { showToast('Enter an invite code.', 'error'); return; }
-  const btn = document.getElementById('join-team-btn');
+  var btn = document.getElementById('join-team-btn');
   btn.disabled = true; btn.textContent = 'Joining...';
   try {
     await joinTeamWithInvite(code);
     await bootPro();
     showToast('Joined team!', 'success');
-  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  } catch(err) { showToast(getFriendlyError(err), 'error'); }
   finally { btn.disabled = false; btn.textContent = 'Join Team'; }
 });
 
 // ── Generate Invite ───────────────────────────────────────
-document.getElementById('gen-invite-btn').addEventListener('click', async () => {
+document.getElementById('gen-invite-btn').addEventListener('click', async function() {
   if (!proState.teamId) return;
   try {
-    const code = await createTeamInvite(proState.teamId);
+    var code = await createTeamInvite(proState.teamId);
     document.getElementById('invite-code-display').textContent = code;
     document.getElementById('invite-row').classList.remove('hidden');
-  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  } catch(err) { showToast(getFriendlyError(err), 'error'); }
 });
-document.getElementById('copy-invite-btn').addEventListener('click', () => {
-  const code = document.getElementById('invite-code-display').textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    const btn = document.getElementById('copy-invite-btn');
+document.getElementById('copy-invite-btn').addEventListener('click', function() {
+  var code = document.getElementById('invite-code-display').textContent;
+  navigator.clipboard.writeText(code).then(function() {
+    var btn = document.getElementById('copy-invite-btn');
     btn.classList.add('copied');
     showToast('Code copied!', 'success');
-    setTimeout(() => btn.classList.remove('copied'), 2000);
+    setTimeout(function() { btn.classList.remove('copied'); }, 2000);
   });
 });
 
@@ -1687,17 +1361,17 @@ async function saveJobToTeam() {
   if (!proState.teamId || !proState.user || saveBusy) return;
   saveBusy = true;
   try {
-    const result = calculateQuote();
-    const q = quoteInput;
-    const sb = await getSb();
-    const items = [];
-    if (q.windows > 0) items.push(`${q.windows} windows`);
-    if (q.tracks > 0) items.push(`${q.tracks} tracks`);
-    if (q.flyscreens > 0) items.push(`${q.flyscreens} flyscreens`);
-    if (q.balustrades > 0) items.push(`${q.balustrades} balustrades`);
-    if (q.solarPanels > 0) items.push(`${q.solarPanels} solar panels`);
-    if (q.gutterMetres > 0) items.push(`${q.gutterMetres}m gutters`);
-    const { error } = await sb.from('jobs').insert({
+    var result = calculateQuote();
+    var q = quoteInput;
+    var sb = await getSb();
+    var items = [];
+    if (q.windows > 0) items.push(q.windows + ' windows');
+    if (q.tracks > 0) items.push(q.tracks + ' tracks');
+    if (q.flyscreens > 0) items.push(q.flyscreens + ' flyscreens');
+    if (q.balustrades > 0) items.push(q.balustrades + ' balustrades');
+    if (q.solarPanels > 0) items.push(q.solarPanels + ' solar panels');
+    if (q.gutterMetres > 0) items.push(q.gutterMetres + 'm gutters');
+    var insertResult = await sb.from('jobs').insert({
       team_id: proState.teamId,
       customer_name: q.customerName || 'Unknown',
       customer_phone: q.customerPhone,
@@ -1712,15 +1386,15 @@ async function saveJobToTeam() {
       quoted_price: result.finalPrice,
       status: 'quote_sent',
       items_summary: items.join(', '),
-      created_by: proState.user.id,
+      created_by: proState.user.id
     });
-    if (error) throw error;
-    await logActivity(proState.teamId, proState.user.id, 'Quote sent', `${q.customerName || 'Customer'} — ${money(result.finalPrice)}`);
-    const [jobs, feed] = await Promise.all([fetchJobs(proState.teamId), fetchActivity(proState.teamId)]);
-    proState.jobs = jobs; proState.feed = feed;
+    if (insertResult.error) throw insertResult.error;
+    await logActivity(proState.teamId, proState.user.id, 'Quote sent', (q.customerName || 'Customer') + ' \u2014 ' + money(result.finalPrice));
+    var r = await Promise.all([fetchJobs(proState.teamId), fetchActivity(proState.teamId)]);
+    proState.jobs = r[0]; proState.feed = r[1];
     renderJobsList(); renderActivity(); updateKPIs();
     showToast('Job saved to team board!', 'success');
-  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+  } catch(err) { showToast(getFriendlyError(err), 'error'); }
   finally { saveBusy = false; }
 }
 
@@ -1728,35 +1402,35 @@ document.getElementById('save-job-btn').addEventListener('click', saveJobToTeam)
 document.getElementById('dash-save-job-btn').addEventListener('click', saveJobToTeam);
 
 // ── Sub Tabs ──────────────────────────────────────────────
-document.querySelectorAll('.sub-tab').forEach(btn => {
-  btn.addEventListener('click', () => {
+document.querySelectorAll('.sub-tab').forEach(function(btn) {
+  btn.addEventListener('click', function() {
     activeSubTab = btn.dataset.subtab;
-    document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.dataset.subtab === activeSubTab));
-    ['dashboard','jobs','activity'].forEach(t => {
-      document.getElementById(`subtab-${t}`).classList.toggle('hidden', t !== activeSubTab);
+    document.querySelectorAll('.sub-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.subtab === activeSubTab); });
+    ['dashboard','jobs','activity'].forEach(function(t) {
+      document.getElementById('subtab-' + t).classList.toggle('hidden', t !== activeSubTab);
     });
   });
 });
 
 // ── Job Filters ───────────────────────────────────────────
-const FILTERS = [
+var FILTERS = [
   { val: 'all', label: 'All' },
   { val: 'quote_sent', label: 'Quoted' },
   { val: 'accepted', label: 'Accepted' },
   { val: 'in_progress', label: 'In Progress' },
   { val: 'completed', label: 'Completed' },
-  { val: 'cancelled', label: 'Cancelled' },
+  { val: 'cancelled', label: 'Cancelled' }
 ];
 function buildJobFilters() {
-  const strip = document.getElementById('job-filters');
+  var strip = document.getElementById('job-filters');
   strip.innerHTML = '';
-  FILTERS.forEach(({ val, label }) => {
-    const chip = document.createElement('button');
-    chip.className = `filter-chip${val === jobFilter ? ' active' : ''}`;
-    chip.textContent = label;
-    chip.addEventListener('click', () => {
-      jobFilter = val;
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  FILTERS.forEach(function(f) {
+    var chip = document.createElement('button');
+    chip.className = 'filter-chip' + (f.val === jobFilter ? ' active' : '');
+    chip.textContent = f.label;
+    chip.addEventListener('click', function() {
+      jobFilter = f.val;
+      document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
       chip.classList.add('active');
       renderJobsList();
     });
@@ -1766,15 +1440,15 @@ function buildJobFilters() {
 
 // ── KPIs ──────────────────────────────────────────────────
 function updateKPIs() {
-  const jobs = proState.jobs;
-  const count = s => jobs.filter(j => j.status === s).length;
+  var jobs = proState.jobs;
+  function count(s) { return jobs.filter(function(j) { return j.status === s; }).length; }
   document.getElementById('kpi-quoted').textContent = count('quote_sent');
   document.getElementById('kpi-accepted').textContent = count('accepted');
   document.getElementById('kpi-progress').textContent = count('in_progress');
   document.getElementById('kpi-completed').textContent = count('completed');
   if (proState.teamRole === 'owner') {
-    const paid = jobs.reduce((s, j) => s + (j.paid_amount || 0), 0);
-    const quoted = jobs.reduce((s, j) => s + (j.quoted_price || 0), 0);
+    var paid = jobs.reduce(function(s, j) { return s + (j.paid_amount || 0); }, 0);
+    var quoted = jobs.reduce(function(s, j) { return s + (j.quoted_price || 0); }, 0);
     document.getElementById('rev-paid').textContent = money(paid);
     document.getElementById('rev-quoted').textContent = money(quoted);
   }
@@ -1782,7 +1456,7 @@ function updateKPIs() {
 
 // ── Jobs List ─────────────────────────────────────────────
 function statusLabel(s) {
-  const map = { quote_sent:'Quoted', accepted:'Accepted', in_progress:'In Progress', completed:'Completed', cancelled:'Cancelled' };
+  var map = { quote_sent:'Quoted', accepted:'Accepted', in_progress:'In Progress', completed:'Completed', cancelled:'Cancelled' };
   return map[s] || s;
 }
 function nextStatuses(s, role) {
@@ -1792,7 +1466,7 @@ function nextStatuses(s, role) {
   return [];
 }
 function statusBtnLabel(s) {
-  const map = { accepted:'Accept Job', in_progress:'Start Job', completed:'Mark Complete', cancelled:'Cancel' };
+  var map = { accepted:'Accept Job', in_progress:'Start Job', completed:'Mark Complete', cancelled:'Cancel' };
   return map[s] || s;
 }
 function statusBtnClass(s) {
@@ -1804,146 +1478,181 @@ function statusBtnClass(s) {
 }
 
 function renderJobsList() {
-  const list = document.getElementById('jobs-list');
-  const jobs = jobFilter === 'all' ? proState.jobs : proState.jobs.filter(j => j.status === jobFilter);
+  var list = document.getElementById('jobs-list');
+  var jobs = jobFilter === 'all' ? proState.jobs : proState.jobs.filter(function(j) { return j.status === jobFilter; });
   if (!jobs.length) {
-    list.innerHTML = `<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><div class="empty-title">No jobs yet</div><div class="empty-sub">Save a quote to create a team job.</div></div>`;
+    list.innerHTML = '<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg><div class="empty-title">No jobs yet</div><div class="empty-sub">Save a quote to create a team job.</div></div>';
     return;
   }
   list.innerHTML = '';
-  jobs.forEach(job => {
-    const card = document.createElement('div');
+  jobs.forEach(function(job) {
+    var card = document.createElement('div');
     card.className = 'job-card';
     card.setAttribute('data-status', job.status);
-    const nexts = nextStatuses(job.status, proState.teamRole);
-    const actionBtns = nexts.map(ns => `<button class="job-action-btn ${statusBtnClass(ns)}" data-job="${job.id}" data-next="${ns}">${statusBtnLabel(ns)}</button>`).join('');
-    const cancelBtn = proState.teamRole === 'owner' && job.status !== 'completed' && job.status !== 'cancelled'
-      ? `<button class="job-action-btn btn btn-danger-soft btn-sm" data-job="${job.id}" data-next="cancelled">Cancel</button>` : '';
-    const paidSection = proState.teamRole === 'owner' && job.status === 'completed' ? `
-      <div class="paid-box">
-        <div class="paid-box-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Record Payment</div>
-        <div class="paid-input-row">
-          <div class="paid-input-wrap"><span>$</span><input type="number" class="paid-amount-input" data-job="${job.id}" value="${job.paid_amount || ''}" placeholder="0" min="0" step="1" /></div>
-          <button class="btn btn-success btn-sm save-paid-btn" data-job="${job.id}">Save</button>
-        </div>
-        ${job.paid_amount ? `<div class="paid-current">Recorded: ${money(job.paid_amount)}</div>` : ''}
-      </div>` : '';
-    card.innerHTML = `
-      <button class="job-card-header" data-expand="${job.id}">
-        <div class="job-card-top">
-          <div>
-            <div class="job-card-name">${job.customer_name || 'Unknown'}</div>
-            <div class="job-card-addr">${job.service_address || ''}</div>
-          </div>
-          <div class="job-card-right">
-            <div class="job-card-price">${money(job.quoted_price)}</div>
-            <span class="status-badge status-${job.status}">${statusLabel(job.status)}</span>
-          </div>
-        </div>
-        <div class="job-card-meta">
-          <span class="job-card-date">${prettyDateShort(job.created_at)}</span>
-          <span class="job-card-items">${job.items_summary || ''}</span>
-        </div>
-      </button>
-      <div class="job-card-body hidden" id="job-body-${job.id}">
-        <div class="job-detail-grid">
-          <div><div class="job-detail-label">Phone</div><div class="job-detail-val">${job.customer_phone || '—'}</div></div>
-          <div><div class="job-detail-label">Email</div><div class="job-detail-val">${job.customer_email || '—'}</div></div>
-          <div><div class="job-detail-label">Service</div><div class="job-detail-val">${job.service_type === 'external' ? 'Ext Only' : 'Int + Ext'}</div></div>
-          <div><div class="job-detail-label">Storeys</div><div class="job-detail-val">${job.storeys === 'two' ? '2 Storey' : '1 Storey'}</div></div>
-          <div><div class="job-detail-label">Builder's</div><div class="job-detail-val">${job.builders_clean ? 'Yes' : 'No'}</div></div>
-          <div><div class="job-detail-label">Created</div><div class="job-detail-val">${prettyDate(job.created_at)}</div></div>
-        </div>
-        ${job.notes ? `<div class="job-notes"><span class="job-notes-label">Notes</span>${job.notes}</div>` : ''}
-        <div class="job-actions">${actionBtns}${cancelBtn}</div>
-        ${paidSection}
-      </div>`;
+    var nexts = nextStatuses(job.status, proState.teamRole);
+    var actionBtns = nexts.map(function(ns) {
+      return '<button class="job-action-btn ' + statusBtnClass(ns) + '" data-job="' + job.id + '" data-next="' + ns + '">' + statusBtnLabel(ns) + '</button>';
+    }).join('');
+    var cancelBtn = (proState.teamRole === 'owner' && job.status !== 'completed' && job.status !== 'cancelled' && nexts.indexOf('cancelled') === -1)
+      ? '<button class="job-action-btn btn btn-danger-soft btn-sm" data-job="' + job.id + '" data-next="cancelled">Cancel</button>' : '';
+    var paidSection = (proState.teamRole === 'owner' && job.status === 'completed') ?
+      '<div class="paid-box">' +
+        '<div class="paid-box-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Record Payment</div>' +
+        '<div class="paid-input-row">' +
+          '<div class="paid-input-wrap"><span>$</span><input type="number" class="paid-amount-input" data-job="' + job.id + '" value="' + (job.paid_amount || '') + '" placeholder="0" min="0" step="1" /></div>' +
+          '<button class="btn btn-success btn-sm save-paid-btn" data-job="' + job.id + '">Save</button>' +
+        '</div>' +
+        (job.paid_amount ? '<div class="paid-current">Recorded: ' + money(job.paid_amount) + '</div>' : '') +
+      '</div>' : '';
+
+    card.innerHTML =
+      '<button class="job-card-header" data-expand="' + job.id + '">' +
+        '<div class="job-card-top">' +
+          '<div>' +
+            '<div class="job-card-name">' + (job.customer_name || 'Unknown') + '</div>' +
+            '<div class="job-card-addr">' + (job.service_address || '') + '</div>' +
+          '</div>' +
+          '<div class="job-card-right">' +
+            '<div class="job-card-price">' + money(job.quoted_price) + '</div>' +
+            '<span class="status-badge status-' + job.status + '">' + statusLabel(job.status) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="job-card-meta">' +
+          '<span class="job-card-date">' + prettyDateShort(job.created_at) + '</span>' +
+          '<span class="job-card-items">' + (job.items_summary || '') + '</span>' +
+        '</div>' +
+      '</button>' +
+      '<div class="job-card-body hidden" id="job-body-' + job.id + '">' +
+        '<div class="job-detail-grid">' +
+          '<div><div class="job-detail-label">Phone</div><div class="job-detail-val">' + (job.customer_phone || '\u2014') + '</div></div>' +
+          '<div><div class="job-detail-label">Email</div><div class="job-detail-val">' + (job.customer_email || '\u2014') + '</div></div>' +
+          '<div><div class="job-detail-label">Service</div><div class="job-detail-val">' + (job.service_type === 'external' ? 'Ext Only' : 'Int + Ext') + '</div></div>' +
+          '<div><div class="job-detail-label">Storeys</div><div class="job-detail-val">' + (job.storeys === 'two' ? '2 Storey' : '1 Storey') + '</div></div>' +
+          '<div><div class="job-detail-label">Builder\'s</div><div class="job-detail-val">' + (job.builders_clean ? 'Yes' : 'No') + '</div></div>' +
+          '<div><div class="job-detail-label">Created</div><div class="job-detail-val">' + prettyDate(job.created_at) + '</div></div>' +
+        '</div>' +
+        (job.notes ? '<div class="job-notes"><span class="job-notes-label">Notes</span>' + job.notes + '</div>' : '') +
+        '<div class="job-actions">' + actionBtns + cancelBtn + '</div>' +
+        paidSection +
+      '</div>';
     list.appendChild(card);
   });
 
   // Expand/collapse
-  list.querySelectorAll('[data-expand]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const body = document.getElementById(`job-body-${btn.dataset.expand}`);
+  list.querySelectorAll('[data-expand]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var body = document.getElementById('job-body-' + btn.dataset.expand);
       if (body) body.classList.toggle('hidden');
     });
   });
 
   // Status actions
-  list.querySelectorAll('.job-action-btn[data-next]').forEach(btn => {
-    btn.addEventListener('click', async e => {
+  list.querySelectorAll('.job-action-btn[data-next]').forEach(function(btn) {
+    btn.addEventListener('click', async function(e) {
       e.stopPropagation();
-      const jobId = btn.dataset.job;
-      const nextStatus = btn.dataset.next;
+      var jobId = btn.dataset.job;
+      var nextStatus = btn.dataset.next;
       await updateJobStatus(jobId, nextStatus);
     });
   });
 
   // Paid amount
-  list.querySelectorAll('.save-paid-btn').forEach(btn => {
-    btn.addEventListener('click', async e => {
+  list.querySelectorAll('.save-paid-btn').forEach(function(btn) {
+    btn.addEventListener('click', async function(e) {
       e.stopPropagation();
-      const jobId = btn.dataset.job;
-      const input = list.querySelector(`.paid-amount-input[data-job="${jobId}"]`);
-      const amount = parseFloat(input?.value) || 0;
-      await savePaidAmount(jobId, amount);
+      var jobId = btn.dataset.job;
+      var input = list.querySelector('.paid-amount-input[data-job="' + jobId + '"]');
+      var amount = parseFloat(input ? input.value : 0) || 0;
+      await savePaidAmountForJob(jobId, amount);
     });
   });
 }
 
 async function updateJobStatus(jobId, newStatus) {
   try {
-    const sb = await getSb();
-    const { error } = await sb.from('jobs').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', jobId);
-    if (error) throw error;
-    const job = proState.jobs.find(j => j.id === jobId);
-    await logActivity(proState.teamId, proState.user.id, `Job ${statusLabel(newStatus)}`, `${job?.customer_name || 'Job'} — ${money(job?.quoted_price)}`);
-    const [jobs, feed] = await Promise.all([fetchJobs(proState.teamId), fetchActivity(proState.teamId)]);
-    proState.jobs = jobs; proState.feed = feed;
+    var sb = await getSb();
+    if (!sb) throw new Error('Not connected.');
+
+    // Use RPCs for standard transitions, direct update for cancel
+    if (newStatus === 'accepted') {
+      var r = await sb.rpc('mark_job_accepted', { p_job_id: jobId });
+      if (r.error) throw r.error;
+    } else if (newStatus === 'in_progress') {
+      var r = await sb.rpc('mark_job_started', { p_job_id: jobId });
+      if (r.error) throw r.error;
+    } else if (newStatus === 'completed') {
+      var r = await sb.rpc('mark_job_completed', { p_job_id: jobId });
+      if (r.error) throw r.error;
+    } else if (newStatus === 'cancelled') {
+      var r = await sb.from('jobs').update({ status: 'cancelled' }).eq('id', jobId);
+      if (r.error) throw r.error;
+    } else {
+      var r = await sb.from('jobs').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', jobId);
+      if (r.error) throw r.error;
+    }
+
+    var job = proState.jobs.find(function(j) { return j.id === jobId; });
+    await logActivity(proState.teamId, proState.user.id, 'Job ' + statusLabel(newStatus), (job ? job.customer_name : 'Job') + ' \u2014 ' + money(job ? job.quoted_price : 0));
+    var results = await Promise.all([fetchJobs(proState.teamId), fetchActivity(proState.teamId)]);
+    proState.jobs = results[0]; proState.feed = results[1];
     renderJobsList(); renderActivity(); updateKPIs();
-    showToast(`Job marked as ${statusLabel(newStatus)}.`, 'success');
-  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+    showToast('Job marked as ' + statusLabel(newStatus) + '.', 'success');
+  } catch(err) { showToast(getFriendlyError(err), 'error'); }
 }
 
-async function savePaidAmount(jobId, amount) {
+async function savePaidAmountForJob(jobId, amount) {
   try {
-    const sb = await getSb();
-    const { error } = await sb.from('jobs').update({ paid_amount: amount }).eq('id', jobId);
-    if (error) throw error;
-    const [jobs] = await Promise.all([fetchJobs(proState.teamId)]);
-    proState.jobs = jobs;
+    var sb = await getSb();
+    if (!sb) throw new Error('Not connected.');
+    var r = await sb.from('jobs').update({ paid_amount: amount }).eq('id', jobId);
+    if (r.error) throw r.error;
+    await logActivity(proState.teamId, proState.user.id, 'Payment Recorded', money(amount));
+    var results = await Promise.all([fetchJobs(proState.teamId), fetchActivity(proState.teamId)]);
+    proState.jobs = results[0]; proState.feed = results[1];
     renderJobsList(); updateKPIs();
-    showToast(`Payment of ${money(amount)} recorded.`, 'success');
-  } catch (err) { showToast(getFriendlyError(err), 'error'); }
+    showToast('Payment of ' + money(amount) + ' recorded.', 'success');
+  } catch(err) { showToast(getFriendlyError(err), 'error'); }
 }
 
 // ── Activity Feed ─────────────────────────────────────────
 function activityIcon(action) {
-  if (action.includes('sent') || action.includes('Quote')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`;
-  if (action.includes('Accept')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
-  if (action.includes('Progress') || action.includes('Start')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>`;
-  if (action.includes('Complet')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
-  if (action.includes('Cancel')) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>`;
-  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`;
-}
-function renderActivity() {
-  const list = document.getElementById('activity-list');
-  if (!proState.feed.length) {
-    list.innerHTML = `<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><div class="empty-title">No activity yet</div><div class="empty-sub">Team actions will appear here in real time.</div></div>`;
-    return;
-  }
-  list.innerHTML = proState.feed.map(item => `
-    <div class="activity-item">
-      <div class="activity-icon">${activityIcon(item.action || '')}</div>
-      <div>
-        <div class="activity-action">${item.action || ''}</div>
-        <div class="activity-details">${item.details || ''}</div>
-        <div class="activity-time">${prettyDate(item.created_at)}</div>
-      </div>
-    </div>`).join('');
+  if (!action) action = '';
+  if (action.indexOf('sent') >= 0 || action.indexOf('Quote') >= 0 || action.indexOf('Created') >= 0)
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>';
+  if (action.indexOf('Accept') >= 0)
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+  if (action.indexOf('Progress') >= 0 || action.indexOf('Start') >= 0)
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>';
+  if (action.indexOf('Complet') >= 0)
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+  if (action.indexOf('Cancel') >= 0)
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>';
+  if (action.indexOf('Payment') >= 0 || action.indexOf('Paid') >= 0)
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>';
+  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
 }
 
-// ── Init ──────────────────────────────────────────────────
+function renderActivity() {
+  var list = document.getElementById('activity-list');
+  if (!proState.feed.length) {
+    list.innerHTML = '<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><div class="empty-title">No activity yet</div><div class="empty-sub">Team actions will appear here in real time.</div></div>';
+    return;
+  }
+  list.innerHTML = proState.feed.map(function(item) {
+    return '<div class="activity-item">' +
+      '<div class="activity-icon">' + activityIcon(item.action || '') + '</div>' +
+      '<div>' +
+        '<div class="activity-action">' + (item.action || '') + '</div>' +
+        '<div class="activity-details">' + (item.details || '') + '</div>' +
+        '<div class="activity-time">' + prettyDate(item.created_at) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
 buildSteppers();
 syncSettingsToForm();
 updateQuoteDisplay();
