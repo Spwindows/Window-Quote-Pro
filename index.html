@@ -1260,9 +1260,774 @@ async function emailAndSaveQuote(){
     $("logoutBtn").addEventListener("click", async () => {
       try{
         unsubscribeRealtime();
-        await signOut();
-        appState.proEnabled = false;
-        appState.user = null;
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const SUPABASE_URL = "https://cwrlnfcgryhmohopdwrs.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM";
+  const hasSupabaseKeys = !!SUPABASE_URL && !!SUPABASE_ANON_KEY;
+  const supabase = hasSupabaseKeys ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  const $ = (id) => document.getElementById(id);
+  const n = (v) => {
+    const x = Number(v);
+    return Number.isFinite(x) ? x : 0;
+  };
+  const money = (v) => `$${Number(v || 0).toFixed(2)}`;
+
+  const appState = {
+    proEnabled: false,
+    user: null,
+    teamId: null,
+    teamName: "",
+    teamRole: "",
+    jobs: [],
+    feed: [],
+    jobFilter: "all",
+    jobsChannel: null
+  };
+
+  const SETTINGS_KEY = "wqp_settings_v3";
+
+  function defaultSettings(){
+    return {
+      businessName:"",
+      contactName:"",
+      businessPhone:"",
+      businessEmail:"",
+      customMessage:`Hi, thanks for your enquiry 😊
+
+This quote includes the selected services as discussed.
+
+Additional items such as tracks, flyscreens, or detailing can be added if required.
+
+Let me know if you'd like to proceed or make any changes.
+
+Thanks,`,
+      pricingMode:"per_item",
+      roundingRule:"10",
+      rateWindow:18,
+      rateTrack:6,
+      rateFlyscreen:4,
+      rateBalustrade:35,
+      rateSolar:12,
+      rateGutter:6,
+      hourlyRate:135,
+      minsPerWindow:8,
+      minsPerTrack:7,
+      minsPerFlyscreen:1.5,
+      minsPerBalustrade:6,
+      minsPerSolar:2,
+      minsPerGutterMetre:0.8,
+      over6HoursFee:100,
+      externalOnlyFactor:0.52,
+      twoStoreyFactor:0.15,
+      buildersCleanFactor:1,
+      minimumFee:165,
+      gstRate:0.10,
+      gstIncluded:"true"
+    };
+  }
+
+  function roundUp(value, step){
+    if (!step || step <= 0 || Number.isNaN(step)) return value;
+    return Math.ceil(value / step) * step;
+  }
+
+  function statusLabel(status){
+    return ({
+      quote_sent:"Quote Sent",
+      accepted:"Accepted",
+      in_progress:"In Progress",
+      completed:"Completed",
+      cancelled:"Cancelled"
+    })[status] || status || "";
+  }
+
+  function prettyDate(ts){
+    return ts ? new Date(ts).toLocaleString() : "";
+  }
+
+  function escapeHtml(str){
+    return String(str ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[m]));
+  }
+
+  function setActiveTab(name){
+    document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
+    document.querySelectorAll(".panel").forEach(panel => panel.classList.remove("active"));
+    const panel = $(name + "Panel");
+    if (panel) panel.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function updatePricingModeUI(){
+    const mode = $("pricingMode").value;
+    $("perItemFields").classList.toggle("hidden", mode !== "per_item");
+    $("timeBasedFields").classList.toggle("hidden", mode !== "time_based");
+    buildQuotePreview();
+  }
+
+  function loadSettings(){
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    const data = raw ? JSON.parse(raw) : {};
+    const s = { ...defaultSettings(), ...data };
+    Object.entries(s).forEach(([key, val]) => {
+      const el = $(key);
+      if (el) el.value = val;
+    });
+    updatePricingModeUI();
+  }
+
+  function saveSettings(){
+    const data = {};
+    Object.keys(defaultSettings()).forEach(key => {
+      const el = $(key);
+      if (el) data[key] = el.value;
+    });
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
+    alert("Settings saved on this device.");
+  }
+
+  function getQuoteInput(){
+    return {
+      customerName: $("customerName").value.trim(),
+      customerEmail: $("customerEmail").value.trim(),
+      customerPhone: $("customerPhone").value.trim(),
+      serviceAddress: $("serviceAddress").value.trim(),
+      windows: n($("windows").value),
+      tracks: n($("tracks").value),
+      flyscreens: n($("flyscreens").value),
+      balustrades: n($("balustrades").value),
+      solarPanels: n($("solarPanels").value),
+      gutterMetres: n($("gutterMetres").value),
+      serviceType: $("serviceType").value,
+      storeys: $("storeys").value,
+      buildersClean: $("buildersClean").value === "true",
+      notes: $("jobNotes").value.trim()
+    };
+  }
+
+  function getSettings(){
+    const s = {};
+    Object.keys(defaultSettings()).forEach(key => {
+      const el = $(key);
+      s[key] = el ? el.value : defaultSettings()[key];
+    });
+    return s;
+  }
+
+  function calculateQuote(){
+    const q = getQuoteInput();
+    const s = getSettings();
+    let base = 0;
+    let hours = 0;
+
+    if (s.pricingMode === "per_item"){
+      base =
+        q.windows * n(s.rateWindow) +
+        q.tracks * n(s.rateTrack) +
+        q.flyscreens * n(s.rateFlyscreen) +
+        q.balustrades * n(s.rateBalustrade) +
+        q.solarPanels * n(s.rateSolar) +
+        q.gutterMetres * n(s.rateGutter);
+    } else {
+      const mins =
+        q.windows * n(s.minsPerWindow) +
+        q.tracks * n(s.minsPerTrack) +
+        q.flyscreens * n(s.minsPerFlyscreen) +
+        q.balustrades * n(s.minsPerBalustrade) +
+        q.solarPanels * n(s.minsPerSolar) +
+        q.gutterMetres * n(s.minsPerGutterMetre);
+
+      hours = mins / 60;
+      base = hours * n(s.hourlyRate);
+      if (hours > 6) base += n(s.over6HoursFee);
+    }
+
+    if (q.serviceType === "external") base *= n(s.externalOnlyFactor);
+    if (q.storeys === "two") base *= (1 + n(s.twoStoreyFactor));
+    if (q.buildersClean) base *= (1 + n(s.buildersCleanFactor));
+
+    let finalPrice = Math.max(base, n(s.minimumFee));
+
+    if (s.gstIncluded === "false"){
+      finalPrice *= (1 + n(s.gstRate));
+    }
+
+    const roundingRule = s.roundingRule === "none" ? 0 : n(s.roundingRule);
+    if (roundingRule > 0) finalPrice = roundUp(finalPrice, roundingRule);
+
+    const gstText = s.gstIncluded === "true" ? "includes GST" : "includes GST added on top";
+    return { ...q, ...s, hours, finalPrice, gstText };
+  }
+
+  function buildQuotePreview(){
+    const d = calculateQuote();
+    $("priceDisplay").textContent = money(d.finalPrice);
+    $("stickyPrice").textContent = money(d.finalPrice);
+    $("priceNote").textContent = `Final price shown ${d.gstText}`;
+
+    const serviceLabel = d.serviceType === "external" ? "External Only" : "Internal + External";
+    const storeysLabel = d.storeys === "two" ? "Two Storey" : "Single Storey";
+
+    const body = `Hi ${d.customerName || "there"},
+
+Thanks for your enquiry.
+
+Here is your window cleaning quote:
+
+Windows: ${d.windows}
+Tracks: ${d.tracks}
+Flyscreens: ${d.flyscreens}
+Balustrades: ${d.balustrades}
+Solar Panels: ${d.solarPanels}
+Gutter Metres: ${d.gutterMetres}
+
+Service: ${serviceLabel}
+Storeys: ${storeysLabel}
+Builder's Clean: ${d.buildersClean ? "Yes" : "No"}
+
+Total Price: ${money(d.finalPrice)} (${d.gstText})
+
+${d.customMessage || ""}
+
+${d.notes ? "Notes: " + d.notes + "\n\n" : ""}Please let us know if you'd like to go ahead.
+
+Kind regards,
+${d.contactName || ""}
+${d.businessName || ""}
+${d.businessPhone || ""}
+${d.businessEmail || ""}
+
+Sent using Window Quote Pro`;
+
+    $("quotePreview").textContent = body;
+    return body;
+  }
+
+  function openEmailQuote(){
+    const d = calculateQuote();
+    const subject = encodeURIComponent(`Window Cleaning Quote - ${d.businessName || "Window Quote Pro"}`);
+    const body = encodeURIComponent(buildQuotePreview());
+    const to = encodeURIComponent(d.customerEmail || "");
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+  }
+
+  function getQuoteFingerprint(){
+    const d = calculateQuote();
+    return JSON.stringify({
+      customer_name: d.customerName || "",
+      customer_email: d.customerEmail || "",
+      customer_phone: d.customerPhone || "",
+      service_address: d.serviceAddress || "",
+      windows: d.windows || 0,
+      tracks: d.tracks || 0,
+      flyscreens: d.flyscreens || 0,
+      balustrades: d.balustrades || 0,
+      solar_panels: d.solarPanels || 0,
+      gutter_metres: d.gutterMetres || 0,
+      service_type: d.serviceType || "",
+      storeys: d.storeys || "",
+      builders_clean: !!d.buildersClean,
+      notes: d.notes || "",
+      quoted_price: Number(d.finalPrice || 0)
+    });
+  }
+
+  function showProJobsAll(){
+    setActiveTab("pro");
+
+    document.querySelectorAll(".subtab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".subpanel").forEach(panel => panel.classList.remove("active"));
+
+    const jobsTab = document.querySelector('.subtab[data-subtab="jobs"]');
+    const jobsPanel = document.getElementById("jobsSubpanel");
+    if (jobsTab) jobsTab.classList.add("active");
+    if (jobsPanel) jobsPanel.classList.add("active");
+
+    document.querySelectorAll(".jobFilter").forEach(b => {
+      b.classList.remove("active");
+      b.classList.remove("secondary");
+      b.classList.add("ghost");
+    });
+
+    const allBtn = document.querySelector('.jobFilter[data-job-filter="all"]');
+    if (allBtn){
+      allBtn.classList.add("active");
+      allBtn.classList.add("secondary");
+      allBtn.classList.remove("ghost");
+    }
+
+    appState.jobFilter = "all";
+    renderJobs();
+  }
+
+  async function logActivity(action, details = ""){
+    if (!appState.teamId || !appState.user || !supabase) return;
+
+    try{
+      await supabase.from("activity_logs").insert({
+        team_id: appState.teamId,
+        user_id: appState.user.id,
+        action,
+        details
+      });
+    } catch {
+    }
+  }
+
+  async function loadActivity(){
+    if (!supabase || !appState.teamId){
+      appState.feed = [];
+      renderFeed();
+      return;
+    }
+
+    try{
+      const { data, error } = await supabase
+        .from("activity_logs")
+        .select("*")
+        .eq("team_id", appState.teamId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      appState.feed = data || [];
+    } catch {
+      appState.feed = [];
+    }
+
+    renderFeed();
+  }
+
+  function setModeUI(){
+    $("modePill").textContent = appState.proEnabled ? "Pro Mode" : "Free Mode";
+    $("logoutBtn").classList.toggle("hidden", !appState.user);
+    $("saveTeamJobBtn").classList.toggle("hidden", !appState.proEnabled || !appState.teamId);
+  }
+
+  function renderAuthState(){
+    $("proStatusText").textContent = appState.user ? appState.user.email : "Not signed in";
+    $("authView").classList.toggle("hidden", !!appState.user);
+    $("teamSetupView").classList.toggle("hidden", !appState.user || !!appState.teamId);
+    $("teamView").classList.toggle("hidden", !appState.teamId);
+
+    if (appState.teamId){
+      $("teamName").textContent = appState.teamName || "Your Team";
+      $("memberRolePill").textContent = appState.teamRole
+        ? appState.teamRole.charAt(0).toUpperCase() + appState.teamRole.slice(1)
+        : "Worker";
+    }
+
+    setModeUI();
+  }
+
+  function renderJobs(){
+    const list = $("jobsList");
+    list.innerHTML = "";
+
+    const jobs = appState.jobs.filter(job =>
+      appState.jobFilter === "all" ? true : job.status === appState.jobFilter
+    );
+
+    if (!jobs.length){
+      list.innerHTML = `<div class="mini">No jobs yet.</div>`;
+    }
+
+    jobs.forEach(job => {
+      const card = document.createElement("div");
+      card.className = "job-card";
+
+      const serviceLabel = job.service_type === "external" ? "External Only" : "Internal + External";
+      const storeysLabel = job.storeys === "two" ? "Two Storey" : "Single Storey";
+      const buildersLabel = job.builders_clean ? "Yes" : "No";
+      const paidAmount = job.paid_amount == null ? "" : money(job.paid_amount);
+
+      card.innerHTML = `
+        <div class="job-top">
+          <div>
+            <div class="job-title">${escapeHtml(job.customer_name || "Unnamed Customer")}</div>
+            <p class="job-sub">${escapeHtml(job.service_address || "No address added")}</p>
+          </div>
+          <span class="status ${job.status}">${statusLabel(job.status)}</span>
+        </div>
+
+        <div class="job-meta">
+          <div><strong>Quoted Price</strong><br>${money(job.quoted_price || 0)}</div>
+          <div><strong>Paid Amount</strong><br>${paidAmount || "Not entered"}</div>
+        </div>
+
+        <div class="mini" style="margin-bottom:10px;line-height:1.5">
+          ${job.customer_phone ? `<strong>Phone:</strong> ${escapeHtml(job.customer_phone)}<br>` : ""}
+          ${job.customer_email ? `<strong>Email:</strong> ${escapeHtml(job.customer_email)}<br>` : ""}
+          <strong>Quoted:</strong> ${prettyDate(job.quoted_at || job.created_at)}<br>
+          <strong>Service:</strong> ${serviceLabel}<br>
+          <strong>Storeys:</strong> ${storeysLabel}<br>
+          <strong>Builder's Clean:</strong> ${buildersLabel}<br>
+          <strong>Windows:</strong> ${job.windows || 0},
+          <strong>Tracks:</strong> ${job.tracks || 0},
+          <strong>Flyscreens:</strong> ${job.flyscreens || 0},
+          <strong>Balustrades:</strong> ${job.balustrades || 0},
+          <strong>Solar Panels:</strong> ${job.solar_panels || 0},
+          <strong>Gutter Metres:</strong> ${job.gutter_metres || 0}
+          ${job.notes ? `<br><strong>Notes:</strong> ${escapeHtml(job.notes)}` : ""}
+        </div>
+
+        <div class="btn-row" style="margin-bottom:8px">
+          ${job.status === "quote_sent" ? `<button class="btn secondary" type="button" data-action="accept" data-id="${job.id}">Mark Accepted</button>` : ""}
+          ${job.status === "accepted" ? `<button class="btn warn" type="button" data-action="start" data-id="${job.id}">Start Job</button>` : ""}
+          ${job.status === "in_progress" ? `<button class="btn good" type="button" data-action="complete" data-id="${job.id}">Complete Job</button>` : ""}
+          ${job.status !== "completed" && job.status !== "cancelled" ? `<button class="btn ghost" type="button" data-action="cancel" data-id="${job.id}">Cancel Job</button>` : ""}
+        </div>
+
+        ${job.status === "completed" ? `
+          <div class="btn-row">
+            <input type="number" step="0.01" min="0" placeholder="Enter paid amount" value="${job.paid_amount ?? ""}" data-paid-input="${job.id}" />
+            <button class="btn secondary" type="button" data-action="save-paid" data-id="${job.id}">Save Paid</button>
+          </div>
+        ` : ""}
+      `;
+
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll("button[data-action]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+
+        try{
+          if (action === "accept") await markJobAccepted(id);
+          if (action === "start") await markJobStarted(id);
+          if (action === "complete") await markJobCompleted(id);
+          if (action === "cancel") await cancelJob(id);
+
+          if (action === "save-paid"){
+            const input = list.querySelector(`[data-paid-input="${id}"]`);
+            const paid = Number(input?.value || 0);
+            await savePaidAmount(id, paid);
+          }
+
+          await getJobs();
+          await loadActivity();
+        } catch(err){
+          alert(err.message);
+        }
+      });
+    });
+
+    $("kpiQuoteSent").textContent = appState.jobs.filter(j => j.status === "quote_sent").length;
+    $("kpiAccepted").textContent = appState.jobs.filter(j => j.status === "accepted").length;
+    $("kpiInProgress").textContent = appState.jobs.filter(j => j.status === "in_progress").length;
+    $("kpiCompleted").textContent = appState.jobs.filter(j => j.status === "completed").length;
+    $("kpiCancelled").textContent = appState.jobs.filter(j => j.status === "cancelled").length;
+
+    const paidTotal = appState.jobs
+      .filter(j => j.status === "completed" && j.paid_amount != null)
+      .reduce((sum, j) => sum + Number(j.paid_amount || 0), 0);
+
+    $("kpiPaidTotal").textContent = money(paidTotal);
+  }
+
+  function renderFeed(){
+    const feed = $("activityFeed");
+    feed.innerHTML = "";
+
+    if (!appState.feed.length){
+      feed.innerHTML = `<div class="mini">No activity yet.</div>`;
+      return;
+    }
+
+    appState.feed.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "feed-row";
+      row.innerHTML = `
+        <p><strong>${escapeHtml(item.action || "Activity")}</strong></p>
+        ${item.details ? `<p class="mini">${escapeHtml(item.details)}</p>` : ""}
+        <small>${prettyDate(item.created_at)}</small>
+      `;
+      feed.appendChild(row);
+    });
+  }
+
+  async function signUp(email, password, fullName){
+    if (!supabase) throw new Error("Supabase is not configured.");
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName || "" } }
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  async function signIn(email, password){
+    if (!supabase) throw new Error("Supabase is not configured.");
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
+  }
+
+  async function signOut(){
+    if (!supabase) return;
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  }
+
+  async function getCurrentUser(){
+    if (!supabase) return null;
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return data.user;
+  }
+
+  async function getMyTeams(){
+    const { data, error } = await supabase
+      .from("team_members")
+      .select("id, role, status, team_id, team:teams(id, business_name)")
+      .eq("user_id", appState.user.id)
+      .eq("status", "active");
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function getTeamMembersCount(teamId){
+    const { count, error } = await supabase
+      .from("team_members")
+      .select("*", { count: "exact", head: true })
+      .eq("team_id", teamId)
+      .eq("status", "active");
+
+    if (error) throw error;
+    return count || 0;
+  }
+
+  async function createTeamAndMakeOwner(name){
+    const { data, error } = await supabase.rpc("create_team_and_make_owner", { p_business_name: name });
+    if (error) throw error;
+    return data;
+  }
+
+  async function joinTeamWithInvite(code){
+    const { data, error } = await supabase.rpc("join_team_with_invite", { p_invite_code: code });
+    if (error) throw error;
+    return data;
+  }
+
+  async function createTeamInvite(teamId, role = "worker"){
+    const { data, error } = await supabase.rpc("create_team_invite", { p_team_id: teamId, p_role: role });
+    if (error) throw error;
+    return data;
+  }
+
+  async function findExistingRecentJob(){
+    if (!supabase || !appState.teamId) return null;
+
+    const currentFingerprint = getQuoteFingerprint();
+    const { data, error } = await supabase
+      .from("jobs")
+      .select("*")
+      .eq("team_id", appState.teamId)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    const recent = (data || []).find(job => {
+      const jobFingerprint = JSON.stringify({
+        customer_name: job.customer_name || "",
+        customer_email: job.customer_email || "",
+        customer_phone: job.customer_phone || "",
+        service_address: job.service_address || "",
+        windows: job.windows || 0,
+        tracks: job.tracks || 0,
+        flyscreens: job.flyscreens || 0,
+        balustrades: job.balustrades || 0,
+        solar_panels: job.solar_panels || 0,
+        gutter_metres: job.gutter_metres || 0,
+        service_type: job.service_type || "",
+        storeys: job.storeys || "",
+        builders_clean: !!job.builders_clean,
+        notes: job.notes || "",
+        quoted_price: Number(job.quoted_price || 0)
+      });
+
+      const ageMs = Date.now() - new Date(job.created_at).getTime();
+      return jobFingerprint === currentFingerprint && ageMs < 120000;
+    });
+
+    return recent || null;
+  }
+
+  async function createJob(){
+    const existing = await findExistingRecentJob();
+    if (existing) return [existing];
+
+    const d = calculateQuote();
+
+    const payload = {
+      team_id: appState.teamId,
+      customer_name: d.customerName,
+      customer_email: d.customerEmail,
+      customer_phone: d.customerPhone,
+      service_address: d.serviceAddress,
+      windows: d.windows,
+      tracks: d.tracks,
+      flyscreens: d.flyscreens,
+      balustrades: d.balustrades,
+      solar_panels: d.solarPanels,
+      gutter_metres: d.gutterMetres,
+      service_type: d.serviceType,
+      storeys: d.storeys,
+      builders_clean: d.buildersClean,
+      notes: d.notes,
+      quoted_price: d.finalPrice,
+      paid_amount: null,
+      status: "quote_sent",
+      quoted_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase
+      .from("jobs")
+      .insert([payload])
+      .select();
+
+    if (error) throw error;
+
+    await logActivity(
+      "Job Created",
+      `${payload.customer_name || "Unnamed Customer"} - ${money(payload.quoted_price)}`
+    );
+
+    return data;
+  }
+
+  async function getJobs(){
+    if (!appState.teamId){
+      appState.jobs = [];
+      renderJobs();
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("jobs")
+      .select("*")
+      .eq("team_id", appState.teamId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    appState.jobs = data || [];
+    renderJobs();
+  }
+
+  async function markJobAccepted(id){
+    const { error } = await supabase.rpc("mark_job_accepted", { p_job_id: id });
+    if (error) throw error;
+    await logActivity("Job Accepted", `Job ID: ${id}`);
+    await getJobs();
+  }
+
+  async function markJobStarted(id){
+    const { error } = await supabase.rpc("mark_job_started", { p_job_id: id });
+    if (error) throw error;
+    await logActivity("Job Started", `Job ID: ${id}`);
+    await getJobs();
+  }
+
+  async function markJobCompleted(id){
+    const { error } = await supabase.rpc("mark_job_completed", { p_job_id: id });
+    if (error) throw error;
+    await logActivity("Job Completed", `Job ID: ${id}`);
+    await getJobs();
+  }
+
+  async function cancelJob(id){
+    const { error } = await supabase
+      .from("jobs")
+      .update({ status: "cancelled" })
+      .eq("id", id);
+
+    if (error) throw error;
+    await logActivity("Job Cancelled", `Job ID: ${id}`);
+  }
+
+  async function savePaidAmount(id, paidAmount){
+    if (!Number.isFinite(paidAmount) || paidAmount < 0){
+      throw new Error("Please enter a valid paid amount.");
+    }
+
+    const { error } = await supabase
+      .from("jobs")
+      .update({ paid_amount: paidAmount })
+      .eq("id", id);
+
+    if (error) throw error;
+    await logActivity("Paid Amount Updated", `Job ID: ${id} - ${money(paidAmount)}`);
+  }
+
+  async function saveCurrentQuoteToTeam(showAlert = true){
+    if (!appState.teamId) throw new Error("Create or join a Pro team first.");
+
+    await createJob();
+    await getJobs();
+    await loadActivity();
+    showProJobsAll();
+
+    if (showAlert) alert("Quote saved to team jobs.");
+  }
+
+  async function emailAndSaveQuote(){
+    if (!appState.teamId) throw new Error("Create or join a Pro team first.");
+
+    await createJob();
+    await getJobs();
+    await loadActivity();
+    showProJobsAll();
+    openEmailQuote();
+  }
+
+  function unsubscribeRealtime(){
+    if (!supabase) return;
+    if (appState.jobsChannel){
+      supabase.removeChannel(appState.jobsChannel);
+      appState.jobsChannel = null;
+    }
+  }
+
+  function subscribeRealtime(){
+    if (!supabase || !appState.teamId) return;
+
+    unsubscribeRealtime();
+
+    appState.jobsChannel = supabase.channel(`jobs-${appState.teamId}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "jobs",
+        filter: `team_id=eq.${appState.teamId}`
+      }, async () => {
+        await getJobs();
+        await loadActivity();
+      })
+      .subscribe();
+  }
+
+  async function bootProMode(){
+    if (!supabase) return;
+
+    try{
+      appState.user = await getCurrentUser();
+      appState.proEnabled = !!appState.user;
+
+      if (!appState.user){
         appState.teamId = null;
         appState.teamName = "";
         appState.teamRole = "";
@@ -1271,93 +2036,224 @@ async function emailAndSaveQuote(){
         renderAuthState();
         renderJobs();
         renderFeed();
-        setModeUI();
-      } catch(err){
-        alert(err.message);
+        return;
       }
-    });
 
-    $("createTeamBtn").addEventListener("click", async () => {
-      try{
-        const teamName = $("teamBusinessName").value.trim();
-        if (!teamName) throw new Error("Please enter a business name.");
-        const teamId = await createTeamAndMakeOwner(teamName);
-        if (teamId) appState.teamId = teamId;
-        await bootProMode();
-        await logActivity("Team Created", teamName);
-      } catch(err){
-        alert(err.message);
-      }
-    });
+      const teams = await getMyTeams();
 
-    $("joinTeamBtn").addEventListener("click", async () => {
-      try{
-        const code = $("inviteCode").value.trim();
-        if (!code) throw new Error("Please enter an invite code.");
-        const teamId = await joinTeamWithInvite(code);
-        if (teamId) appState.teamId = teamId;
-        await bootProMode();
-        await logActivity("Joined Team", `Invite code used: ${code}`);
-      } catch(err){
-        alert(err.message);
-      }
-    });
-
-    $("makeInviteBtn").addEventListener("click", async () => {
-      try{
-        const code = await createTeamInvite(appState.teamId, "worker");
-        $("inviteOutput").textContent = `Invite code: ${code}`;
-        await logActivity("Invite Created", `Code: ${code}`);
-        await loadActivity();
-      } catch(err){
-        alert(err.message);
-      }
-    });
-
-    $("saveTeamJobBtn").addEventListener("click", async () => {
-      try{
-        if (!appState.teamId) throw new Error("Create or join a Pro team first.");
-        await createJob();
+      if (teams.length){
+        const t = teams[0];
+        appState.teamId = t.team.id;
+        appState.teamName = t.team.business_name;
+        appState.teamRole = t.role;
+        $("teamCountPill").textContent = `${await getTeamMembersCount(appState.teamId)} members`;
         await getJobs();
         await loadActivity();
-        setActiveTab("pro");
-        alert("Job saved to team.");
-      } catch(err){
-        alert(err.message);
+        subscribeRealtime();
+      } else {
+        appState.teamId = null;
+        appState.teamName = "";
+        appState.teamRole = "";
+        appState.jobs = [];
+        appState.feed = [];
+        renderJobs();
+        renderFeed();
       }
-    });
 
-    [
-      "businessName","contactName","businessPhone","businessEmail","customMessage",
-      "pricingMode","roundingRule","rateWindow","rateTrack","rateFlyscreen","rateBalustrade",
-      "rateSolar","rateGutter","hourlyRate","minsPerWindow","minsPerTrack","minsPerFlyscreen",
-      "minsPerBalustrade","minsPerSolar","minsPerGutterMetre","over6HoursFee","externalOnlyFactor",
-      "twoStoreyFactor","buildersCleanFactor","minimumFee","gstRate","gstIncluded",
-      "customerName","customerEmail","customerPhone","serviceAddress","windows","tracks","flyscreens",
-      "balustrades","solarPanels","gutterMetres","serviceType","storeys","buildersClean","jobNotes"
-    ].forEach(id => {
-      const el = $(id);
-      if (!el) return;
-      el.addEventListener("input", buildQuotePreview);
-      el.addEventListener("change", buildQuotePreview);
-    });
-
-    loadSettings();
-    buildQuotePreview();
-    setModeUI();
-    renderJobs();
-    renderFeed();
-
-    if (hasSupabaseKeys) bootProMode();
-$("saveLocalBtn").addEventListener("click", saveSettings);
-$("stickySaveBtn").addEventListener("click", saveSettings);
-$("stickyEmailBtn").addEventListener("click", openEmailQuote);
-$("pricingMode").addEventListener("change", updatePricingModeUI);
-    if ("serviceWorker" in navigator){
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
-      });
+      renderAuthState();
+      setModeUI();
+    } catch(err){
+      console.error(err);
+      alert(err.message);
     }
-  </script>
+  }
+
+  document.querySelectorAll(".tab[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+  });
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".subtab");
+    if (!btn) return;
+
+    document.querySelectorAll(".subtab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const name = btn.dataset.subtab;
+    document.querySelectorAll(".subpanel").forEach(panel => panel.classList.remove("active"));
+    const panel = document.getElementById(name + "Subpanel");
+    if (panel) panel.classList.add("active");
+  });
+
+  document.querySelectorAll(".authTab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".authTab").forEach(b => {
+        b.classList.remove("active");
+        b.classList.remove("secondary");
+        b.classList.add("ghost");
+      });
+      btn.classList.add("active");
+      btn.classList.add("secondary");
+      btn.classList.remove("ghost");
+
+      const tab = btn.dataset.authTab;
+      $("signinPanel").classList.toggle("hidden", tab !== "signin");
+      $("signupPanel").classList.toggle("hidden", tab !== "signup");
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".jobFilter");
+    if (!btn) return;
+
+    document.querySelectorAll(".jobFilter").forEach(b => {
+      b.classList.remove("active");
+      b.classList.remove("secondary");
+      b.classList.add("ghost");
+    });
+
+    btn.classList.add("active");
+    btn.classList.add("secondary");
+    btn.classList.remove("ghost");
+    appState.jobFilter = btn.dataset.jobFilter;
+    renderJobs();
+  });
+
+  $("saveLocalBtn").addEventListener("click", saveSettings);
+
+  $("stickySaveBtn").addEventListener("click", async () => {
+    try{
+      await saveCurrentQuoteToTeam(true);
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  $("stickyEmailBtn").addEventListener("click", async () => {
+    try{
+      await emailAndSaveQuote();
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  $("pricingMode").addEventListener("change", updatePricingModeUI);
+
+  $("signinBtn").addEventListener("click", async () => {
+    try{
+      await signIn($("signinEmail").value.trim(), $("signinPassword").value);
+      await bootProMode();
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  $("signupBtn").addEventListener("click", async () => {
+    try{
+      await signUp(
+        $("signupEmail").value.trim(),
+        $("signupPassword").value,
+        $("signupName").value.trim()
+      );
+      alert("Account created. If email confirmation is enabled, check your inbox first.");
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  $("logoutBtn").addEventListener("click", async () => {
+    try{
+      unsubscribeRealtime();
+      await signOut();
+      appState.proEnabled = false;
+      appState.user = null;
+      appState.teamId = null;
+      appState.teamName = "";
+      appState.teamRole = "";
+      appState.jobs = [];
+      appState.feed = [];
+      renderAuthState();
+      renderJobs();
+      renderFeed();
+      setModeUI();
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  $("createTeamBtn").addEventListener("click", async () => {
+    try{
+      const teamName = $("teamBusinessName").value.trim();
+      if (!teamName) throw new Error("Please enter a business name.");
+      const teamId = await createTeamAndMakeOwner(teamName);
+      if (teamId) appState.teamId = teamId;
+      await bootProMode();
+      await logActivity("Team Created", teamName);
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  $("joinTeamBtn").addEventListener("click", async () => {
+    try{
+      const code = $("inviteCode").value.trim();
+      if (!code) throw new Error("Please enter an invite code.");
+      const teamId = await joinTeamWithInvite(code);
+      if (teamId) appState.teamId = teamId;
+      await bootProMode();
+      await logActivity("Joined Team", `Invite code used: ${code}`);
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  $("makeInviteBtn").addEventListener("click", async () => {
+    try{
+      const code = await createTeamInvite(appState.teamId, "worker");
+      $("inviteOutput").textContent = `Invite code: ${code}`;
+      await logActivity("Invite Created", `Code: ${code}`);
+      await loadActivity();
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  $("saveTeamJobBtn").addEventListener("click", async () => {
+    try{
+      await saveCurrentQuoteToTeam(true);
+    } catch(err){
+      alert(err.message);
+    }
+  });
+
+  [
+    "businessName","contactName","businessPhone","businessEmail","customMessage",
+    "pricingMode","roundingRule","rateWindow","rateTrack","rateFlyscreen","rateBalustrade",
+    "rateSolar","rateGutter","hourlyRate","minsPerWindow","minsPerTrack","minsPerFlyscreen",
+    "minsPerBalustrade","minsPerSolar","minsPerGutterMetre","over6HoursFee","externalOnlyFactor",
+    "twoStoreyFactor","buildersCleanFactor","minimumFee","gstRate","gstIncluded",
+    "customerName","customerEmail","customerPhone","serviceAddress","windows","tracks","flyscreens",
+    "balustrades","solarPanels","gutterMetres","serviceType","storeys","buildersClean","jobNotes"
+  ].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", buildQuotePreview);
+    el.addEventListener("change", buildQuotePreview);
+  });
+
+  loadSettings();
+  buildQuotePreview();
+  setModeUI();
+  renderJobs();
+  renderFeed();
+
+  if (hasSupabaseKeys) bootProMode();
+
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
+</script>
 </body>
 </html>
