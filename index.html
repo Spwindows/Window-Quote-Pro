@@ -814,6 +814,16 @@ Sent using Window Quote Pro`;
       if (error) throw error;
       return data;
     }
+    async function logActivity(action, details = "") {
+  if (!appState.teamId || !appState.user) return;
+
+  await supabase.from("activity_logs").insert({
+    team_id: appState.teamId,
+    user_id: appState.user.id,
+    action,
+    details
+  });
+}
 
     async function createJob(){
       const d = calculateQuote();
