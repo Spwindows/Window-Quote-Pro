@@ -475,8 +475,8 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    const SUPABASE_URL = "YOUR_SUPABASE_URL";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+    const SUPABASE_URL = "https://cwrlnfcgryhmohopdwrs.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM";
     const hasSupabaseKeys = !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
     const supabase = hasSupabaseKeys ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
