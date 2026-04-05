@@ -1456,7 +1456,12 @@ async function saveJobToTeam() {
     showToast('Job saved to team board!', 'success');
   } catch(err) {
     console.error('Save job failed:', err);
-    showToast('Job failed to save. Check connection or permissions.', 'error');
+    var errMsg = 'Job failed to save.';
+    if (err && err.message) errMsg += ' ' + err.message;
+    if (err && err.code) errMsg += ' [' + err.code + ']';
+    if (err && err.details) errMsg += ' ' + err.details;
+    if (err && err.hint) errMsg += ' Hint: ' + err.hint;
+    showToast(errMsg, 'error');
   }
   finally { saveBusy = false; }
 }
