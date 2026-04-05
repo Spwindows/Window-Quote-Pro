@@ -7,69 +7,148 @@
   <meta name="theme-color" content="#1e66ff" />
   <link rel="manifest" href="manifest.webmanifest" />
   <style>
-    :root{--blue:#1e66ff;--blue-dark:#0f4ed6;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--bg:#f3f6fb;--card:#fff;--shadow:0 10px 28px rgba(0,0,0,.08);--radius:18px}
+    :root{
+      --blue:#1e66ff;
+      --blue-dark:#1247bd;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --bg:#f3f6fb;
+      --card:#ffffff;
+      --shadow:0 10px 30px rgba(0,0,0,.08);
+      --radius:18px;
+      --ok:#16a34a;
+      --warn:#d97706;
+    }
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:1180px;margin:0 auto;padding:18px}
-    .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:18px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:56px;height:56px;flex:0 0 56px;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:760px;margin:0 auto;padding:14px 14px 110px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      margin-bottom:12px;
+    }
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .logo{
+      width:52px;height:52px;flex:0 0 52px;border-radius:14px;overflow:hidden;
+      background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.08)
+    }
     .logo img{width:100%;height:100%;object-fit:cover;display:block}
-    .brand h1{font-size:22px;margin:0;line-height:1.1}
+    .brand h1{margin:0;font-size:24px;line-height:1.1}
     .brand p{margin:4px 0 0;color:var(--muted);font-size:13px}
-    .top-actions{display:flex;gap:10px;flex-wrap:wrap}
-    .btn,button{border:0;border-radius:12px;padding:12px 14px;font-weight:700;cursor:pointer;font-size:15px}
-    .btn.primary{background:var(--blue);color:#fff}.btn.primary:hover{background:var(--blue-dark)}
-    .btn.secondary{background:#eef3ff;color:#163c97}
-    .btn.ghost{background:#fff;border:1px solid var(--border);color:var(--text)}
+    .mode-pill{
+      border:1px solid var(--border);
+      background:#fff;border-radius:999px;padding:8px 10px;font-size:12px;
+      font-weight:800;white-space:nowrap
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+    .tabs{
+      position:sticky;top:0;z-index:20;
+      display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+      background:var(--bg);padding:8px 0 12px;margin-bottom:12px;
+    }
+    .tab{
+      border:1px solid var(--border);
+      background:#fff;color:var(--text);
+      border-radius:14px;padding:12px 10px;font-size:14px;font-weight:800;
+      cursor:pointer
+    }
+    .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .panel{display:none}
+    .panel.active{display:block}
+    label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
+    input,select,textarea{
+      width:100%;padding:13px 14px;border:1px solid var(--border);
+      border-radius:14px;background:#fff;font-size:16px;font-family:inherit
+    }
+    textarea{min-height:92px;resize:vertical}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .section-title{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      margin-bottom:6px
+    }
+    h2{margin:0 0 6px;font-size:18px}
+    h3{margin:0 0 8px;font-size:16px}
+    .sub{color:var(--muted);font-size:13px;margin:0 0 8px}
+    .mini{font-size:12px;color:var(--muted)}
+    .divider{height:1px;background:var(--border);margin:14px 0}
+    .btn,button{
+      border:0;border-radius:14px;padding:13px 14px;font-size:15px;font-weight:800;
+      cursor:pointer
+    }
+    .btn.primary{background:var(--blue);color:#fff}
+    .btn.primary:hover{background:var(--blue-dark)}
+    .btn.secondary{background:#eaf1ff;color:#173b96}
+    .btn.ghost{background:#fff;color:var(--text);border:1px solid var(--border)}
     .btn.good{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}
     .btn.warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
-    .pill{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:#fff;border:1px solid var(--border);font-size:13px;font-weight:700}
-    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
-    .stack{display:grid;gap:18px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-    .card h2,.card h3{margin:0 0 12px;line-height:1.15}
-    .muted{color:var(--muted)}
-    .section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
-    label{display:block;font-weight:700;margin:12px 0 6px;font-size:14px}
-    input,select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff;font-size:15px;font-family:inherit}
-    textarea{min-height:90px;resize:vertical}
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-    .quote-price{font-size:42px;font-weight:900;text-align:center;margin:10px 0 4px}
-    .quote-note{font-size:13px;text-align:center;color:var(--muted);margin-bottom:14px}
-    .preview{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:14px;line-height:1.5;font-size:14px}
-    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
-    .kpi{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
-    .kpi .label{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase}
-    .kpi .value{font-size:26px;font-weight:900;margin-top:6px}
-    .job-list,.feed-list{display:grid;gap:12px;margin-top:12px}
-    .job-card{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff}
-    .job-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-    .job-title{font-size:18px;font-weight:800;margin:0 0 4px}
-    .job-sub{font-size:13px;color:var(--muted);margin:0}
-    .status{display:inline-flex;align-items:center;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800;white-space:nowrap;border:1px solid var(--border);background:#fff}
+    .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+    .quote-box{
+      background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:14px
+    }
+    .quote-total{font-size:40px;font-weight:900;line-height:1;margin:0}
+    .quote-note{margin-top:6px;color:var(--muted);font-size:13px}
+    .preview{
+      white-space:pre-wrap;background:#fff;border:1px solid var(--border);
+      border-radius:16px;padding:14px;font-size:14px;line-height:1.5
+    }
+    .auth-box,.team-box,.jobs-box,.feed-box{margin-top:12px}
+    .pill{
+      display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;
+      border:1px solid var(--border);background:#fff;font-size:12px;font-weight:800
+    }
+    .status{display:inline-flex;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid var(--border)}
     .status.quote_sent{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
     .status.accepted{background:#fffbeb;color:#b45309;border-color:#fde68a}
     .status.in_progress{background:#eef2ff;color:#4338ca;border-color:#c7d2fe}
     .status.completed{background:#ecfdf5;color:#15803d;border-color:#bbf7d0}
-    .job-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;font-size:13px}
-    .job-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .feed-row{border:1px solid var(--border);border-radius:14px;background:#fff;padding:12px 14px}
-    .feed-row p{margin:0 0 4px}.feed-row small{color:var(--muted)}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .tab{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#fff;font-weight:800;font-size:14px;cursor:pointer}
-    .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .kpi{border:1px solid var(--border);background:#fff;border-radius:16px;padding:12px}
+    .kpi .label{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase}
+    .kpi .value{font-size:28px;font-weight:900;margin-top:6px}
+    .job-card,.feed-row{
+      border:1px solid var(--border);background:#fff;border-radius:16px;padding:14px
+    }
+    .job-list,.feed-list{display:grid;gap:10px;margin-top:10px}
+    .job-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .job-title{font-weight:900;font-size:17px;margin:0 0 4px}
+    .job-sub{margin:0;color:var(--muted);font-size:13px}
+    .job-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;font-size:13px}
+    .feed-row p{margin:0 0 4px}
+    .feed-row small{color:var(--muted)}
     .hidden{display:none !important}
-    .banner{margin-bottom:16px;border-radius:16px;padding:14px 16px;border:1px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#fff)}
-    .banner strong{display:block;margin-bottom:4px}
-    .mini{font-size:12px;color:var(--muted)}
-    .footer-note{margin-top:14px;text-align:center;color:var(--muted);font-size:12px}
-    .toggle{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
-    .hr{height:1px;background:var(--border);margin:14px 0}
-    @media (max-width:960px){.grid{grid-template-columns:1fr}.kpi-row{grid-template-columns:1fr 1fr}}
-    @media (max-width:860px){.topbar{align-items:flex-start;flex-direction:column}.brand{flex-direction:row;align-items:center}}
-    @media (max-width:640px){.two-col,.three-col,.job-meta,.kpi-row{grid-template-columns:1fr}.quote-price{font-size:34px}}
+    .sticky-actions{
+      position:fixed;left:0;right:0;bottom:0;z-index:30;
+      padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+      background:linear-gradient(180deg,rgba(243,246,251,0),rgba(243,246,251,1) 28%);
+    }
+    .sticky-inner{
+      max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--border);
+      box-shadow:var(--shadow);border-radius:18px;padding:10px 12px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px
+    }
+    .sticky-price{font-size:28px;font-weight:900;line-height:1}
+    .sticky-note{font-size:12px;color:var(--muted);margin-top:4px}
+    .footer-note{text-align:center;color:var(--muted);font-size:12px;margin-top:12px}
+    @media (max-width:640px){
+      .two,.three,.job-meta,.kpis{grid-template-columns:1fr}
+      .brand h1{font-size:22px}
+      .wrap{padding:12px 12px 116px}
+      .sticky-inner{align-items:stretch;flex-direction:column}
+      .sticky-inner .btn-row{width:100%}
+      .sticky-inner .btn{flex:1}
+    }
   </style>
 </head>
 <body>
@@ -77,304 +156,994 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo"><img src="logo.png" alt="Window Quote Pro" /></div>
-        <div><h1>Window Quote Pro</h1><p>Offline-friendly quoting app for window cleaners</p></div>
+        <div>
+          <h1>Window Quote Pro</h1>
+          <p>Fast quoting for window cleaners</p>
+        </div>
       </div>
-      <div class="top-actions">
-        <span class="pill" id="modePill">Free Mode</span>
-        <button class="btn secondary" id="proToggleBtn">Upgrade to Pro</button>
-        <button class="btn ghost hidden" id="logoutBtn">Sign Out</button>
-      </div>
+      <div class="mode-pill" id="modePill">Free Mode</div>
     </div>
 
-    <div class="banner" id="proBanner">
-      <strong>Free mode is local-only.</strong>
-      <div class="muted">Quotes, pricing, and business details stay on this device. Upgrade to Pro for team login, shared jobs, live statuses, and activity feed.</div>
+    <div class="tabs">
+      <button class="tab active" data-tab="quote">Quote</button>
+      <button class="tab" data-tab="pricing">Pricing</button>
+      <button class="tab" data-tab="pro">Pro</button>
     </div>
 
-    <div class="grid">
-      <div class="stack">
-        <div class="card">
-          <div class="section-title"><h2>Business Settings</h2><span class="mini">Saved locally on this device</span></div>
-          <div class="two-col">
-            <div><label for="businessName">Business Name</label><input id="businessName" type="text" placeholder="Crystal Clear Windows" /></div>
-            <div><label for="contactName">Contact Name</label><input id="contactName" type="text" placeholder="Mike" /></div>
-          </div>
-          <div class="two-col">
-            <div><label for="businessPhone">Phone</label><input id="businessPhone" type="text" placeholder="0412 345 678" /></div>
-            <div><label for="businessEmail">Email</label><input id="businessEmail" type="email" placeholder="quotes@yourbusiness.com.au" /></div>
-          </div>
-          <label for="customMessage">Quote Message</label>
-          <textarea id="customMessage" placeholder="This includes a full clean of glass, frames, tracks and screens."></textarea>
-          <div class="hr"></div>
-          <div class="section-title"><h3>Pricing Setup</h3><span class="mini">Choose how this business quotes</span></div>
-          <div class="two-col">
-            <div><label for="pricingMode">Pricing Mode</label><select id="pricingMode"><option value="per_item">Per Item</option><option value="time_based">Time Based</option></select></div>
-            <div><label for="roundingRule">Rounding</label><select id="roundingRule"><option value="none">No rounding</option><option value="10" selected>Round up to nearest $10</option><option value="5">Round up to nearest $5</option></select></div>
-          </div>
-          <div id="perItemFields">
-            <div class="three-col">
-              <div><label for="rateWindow">Window Price</label><input id="rateWindow" type="number" step="0.01" value="18" /></div>
-              <div><label for="rateTrack">Track Price</label><input id="rateTrack" type="number" step="0.01" value="6" /></div>
-              <div><label for="rateFlyscreen">Flyscreen Price</label><input id="rateFlyscreen" type="number" step="0.01" value="4" /></div>
-            </div>
-            <div class="three-col">
-              <div><label for="rateBalustrade">Balustrade Price</label><input id="rateBalustrade" type="number" step="0.01" value="35" /></div>
-              <div><label for="rateSolar">Solar Panel Price</label><input id="rateSolar" type="number" step="0.01" value="12" /></div>
-              <div><label for="rateGutter">Gutter Price / metre</label><input id="rateGutter" type="number" step="0.01" value="6" /></div>
-            </div>
-          </div>
-          <div id="timeBasedFields" class="hidden">
-            <div class="three-col">
-              <div><label for="hourlyRate">Hourly Rate</label><input id="hourlyRate" type="number" step="0.01" value="135" /></div>
-              <div><label for="minsPerWindow">Mins / Window</label><input id="minsPerWindow" type="number" step="0.1" value="8" /></div>
-              <div><label for="minsPerTrack">Mins / Track</label><input id="minsPerTrack" type="number" step="0.1" value="7" /></div>
-            </div>
-            <div class="three-col">
-              <div><label for="minsPerFlyscreen">Mins / Flyscreen</label><input id="minsPerFlyscreen" type="number" step="0.1" value="1.5" /></div>
-              <div><label for="minsPerBalustrade">Mins / Balustrade</label><input id="minsPerBalustrade" type="number" step="0.1" value="6" /></div>
-              <div><label for="minsPerSolar">Mins / Solar Panel</label><input id="minsPerSolar" type="number" step="0.1" value="2" /></div>
-            </div>
-            <div class="three-col">
-              <div><label for="minsPerGutterMetre">Mins / Gutter metre</label><input id="minsPerGutterMetre" type="number" step="0.1" value="0.8" /></div>
-              <div><label for="over6HoursFee">Extra over 6 hrs</label><input id="over6HoursFee" type="number" step="0.01" value="100" /></div>
-              <div></div>
-            </div>
-          </div>
-          <div class="three-col">
-            <div><label for="externalOnlyFactor">External Only %</label><input id="externalOnlyFactor" type="number" step="0.01" value="0.52" /></div>
-            <div><label for="twoStoreyFactor">Two Storey %</label><input id="twoStoreyFactor" type="number" step="0.01" value="0.15" /></div>
-            <div><label for="buildersCleanFactor">Builder's Clean %</label><input id="buildersCleanFactor" type="number" step="0.01" value="1" /></div>
-          </div>
-          <div class="three-col">
-            <div><label for="minimumFee">Minimum Fee</label><input id="minimumFee" type="number" step="0.01" value="165" /></div>
-            <div><label for="gstRate">GST Rate</label><input id="gstRate" type="number" step="0.01" value="0.10" /></div>
-            <div><label for="gstIncluded">GST Handling</label><select id="gstIncluded"><option value="true">Price includes GST</option><option value="false">Add GST on top</option></select></div>
+    <section class="panel active" id="quotePanel">
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Create Quote</h2>
+            <p class="sub">Use this screen on the job. Pricing updates instantly.</p>
           </div>
         </div>
 
-        <div class="card">
-          <div class="section-title"><h2>Create Quote</h2><span class="mini">Free mode emails manually · Pro mode can also save as live team job</span></div>
-          <div class="two-col">
-            <div><label for="customerName">Customer Name</label><input id="customerName" type="text" placeholder="John Smith" /></div>
-            <div><label for="customerEmail">Customer Email</label><input id="customerEmail" type="email" placeholder="john@email.com" /></div>
+        <div class="two">
+          <div>
+            <label for="customerName">Customer Name</label>
+            <input id="customerName" type="text" placeholder="John Smith" />
           </div>
-          <div class="two-col">
-            <div><label for="customerPhone">Customer Phone</label><input id="customerPhone" type="text" placeholder="0400 000 000" /></div>
-            <div><label for="serviceAddress">Service Address</label><input id="serviceAddress" type="text" placeholder="12 Smith St, Melbourne" /></div>
+          <div>
+            <label for="customerPhone">Phone</label>
+            <input id="customerPhone" type="text" placeholder="0400 000 000" />
           </div>
-          <div class="three-col">
-            <div><label for="windows">Windows</label><input id="windows" type="number" min="0" value="0" /></div>
-            <div><label for="tracks">Tracks</label><input id="tracks" type="number" min="0" value="0" /></div>
-            <div><label for="flyscreens">Flyscreens</label><input id="flyscreens" type="number" min="0" value="0" /></div>
+        </div>
+
+        <label for="customerEmail">Customer Email</label>
+        <input id="customerEmail" type="email" placeholder="john@email.com" />
+
+        <label for="serviceAddress">Address</label>
+        <input id="serviceAddress" type="text" placeholder="12 Smith St, Melbourne" />
+
+        <div class="divider"></div>
+
+        <div class="three">
+          <div><label for="windows">Windows</label><input id="windows" type="number" min="0" value="0" /></div>
+          <div><label for="tracks">Tracks</label><input id="tracks" type="number" min="0" value="0" /></div>
+          <div><label for="flyscreens">Flyscreens</label><input id="flyscreens" type="number" min="0" value="0" /></div>
+        </div>
+
+        <div class="three">
+          <div><label for="balustrades">Balustrades</label><input id="balustrades" type="number" min="0" value="0" /></div>
+          <div><label for="solarPanels">Solar Panels</label><input id="solarPanels" type="number" min="0" value="0" /></div>
+          <div><label for="gutterMetres">Gutter Metres</label><input id="gutterMetres" type="number" min="0" step="0.1" value="0" /></div>
+        </div>
+
+        <div class="three">
+          <div>
+            <label for="serviceType">Service Type</label>
+            <select id="serviceType">
+              <option value="full">Internal + External</option>
+              <option value="external">External Only</option>
+            </select>
           </div>
-          <div class="three-col">
-            <div><label for="balustrades">Balustrades</label><input id="balustrades" type="number" min="0" value="0" /></div>
-            <div><label for="solarPanels">Solar Panels</label><input id="solarPanels" type="number" min="0" value="0" /></div>
-            <div><label for="gutterMetres">Gutter Metres</label><input id="gutterMetres" type="number" min="0" step="0.1" value="0" /></div>
+          <div>
+            <label for="storeys">Storeys</label>
+            <select id="storeys">
+              <option value="single">Single Storey</option>
+              <option value="two">Two Storey</option>
+            </select>
           </div>
-          <div class="three-col">
-            <div><label for="serviceType">Service Type</label><select id="serviceType"><option value="full">Internal + External</option><option value="external">External Only</option></select></div>
-            <div><label for="storeys">Storeys</label><select id="storeys"><option value="single">Single Storey</option><option value="two">Two Storey</option></select></div>
-            <div><label for="buildersClean">Builder's Clean</label><select id="buildersClean"><option value="false">No</option><option value="true">Yes</option></select></div>
+          <div>
+            <label for="buildersClean">Builder's Clean</label>
+            <select id="buildersClean">
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </select>
           </div>
-          <label for="jobNotes">Notes</label>
-          <textarea id="jobNotes" placeholder="Access notes, scope notes, exclusions, etc."></textarea>
-          <div class="quote-price" id="priceDisplay">$165</div>
+        </div>
+
+        <label for="jobNotes">Notes</label>
+        <textarea id="jobNotes" placeholder="Access notes, scope notes, exclusions, etc."></textarea>
+
+        <div class="divider"></div>
+
+        <div class="quote-box">
+          <div class="quote-total" id="priceDisplay">$165.00</div>
           <div class="quote-note" id="priceNote">Final price shown includes GST</div>
-          <div class="job-actions">
-            <button class="btn secondary" id="saveLocalBtn">Save Settings</button>
-            <button class="btn primary" id="openEmailBtn">Open Email Quote</button>
-            <button class="btn good hidden" id="saveTeamJobBtn">Save as Team Job</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>Quote Preview</h3>
+        <div class="preview" id="quotePreview"></div>
+        <div class="footer-note">Sent using Window Quote Pro</div>
+      </div>
+    </section>
+
+    <section class="panel" id="pricingPanel">
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Business & Pricing</h2>
+            <p class="sub">Set this once. Keep it out of the way on jobs.</p>
           </div>
-          <div class="hr"></div>
-          <h3>Quote Preview</h3>
-          <div class="preview" id="quotePreview"></div>
-          <div class="footer-note">Sent using Window Quote Pro</div>
+          <button class="btn secondary" id="saveLocalBtn">Save Settings</button>
+        </div>
+
+        <label for="businessName">Business Name</label>
+        <input id="businessName" type="text" placeholder="Crystal Clear Windows" />
+
+        <div class="two">
+          <div>
+            <label for="contactName">Contact Name</label>
+            <input id="contactName" type="text" placeholder="Mike" />
+          </div>
+          <div>
+            <label for="businessPhone">Phone</label>
+            <input id="businessPhone" type="text" placeholder="0412 345 678" />
+          </div>
+        </div>
+
+        <label for="businessEmail">Email</label>
+        <input id="businessEmail" type="email" placeholder="quotes@yourbusiness.com.au" />
+
+        <label for="customMessage">Quote Message</label>
+        <textarea id="customMessage" placeholder="This includes a full clean of glass, frames, tracks and screens."></textarea>
+
+        <div class="divider"></div>
+
+        <div class="two">
+          <div>
+            <label for="pricingMode">Pricing Mode</label>
+            <select id="pricingMode">
+              <option value="per_item">Per Item</option>
+              <option value="time_based">Time Based</option>
+            </select>
+          </div>
+          <div>
+            <label for="roundingRule">Rounding</label>
+            <select id="roundingRule">
+              <option value="none">No rounding</option>
+              <option value="10" selected>Round up to nearest $10</option>
+              <option value="5">Round up to nearest $5</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="perItemFields">
+          <div class="three">
+            <div><label for="rateWindow">Window Price</label><input id="rateWindow" type="number" step="0.01" value="18" /></div>
+            <div><label for="rateTrack">Track Price</label><input id="rateTrack" type="number" step="0.01" value="6" /></div>
+            <div><label for="rateFlyscreen">Flyscreen Price</label><input id="rateFlyscreen" type="number" step="0.01" value="4" /></div>
+          </div>
+          <div class="three">
+            <div><label for="rateBalustrade">Balustrade Price</label><input id="rateBalustrade" type="number" step="0.01" value="35" /></div>
+            <div><label for="rateSolar">Solar Panel Price</label><input id="rateSolar" type="number" step="0.01" value="12" /></div>
+            <div><label for="rateGutter">Gutter / metre</label><input id="rateGutter" type="number" step="0.01" value="6" /></div>
+          </div>
+        </div>
+
+        <div id="timeBasedFields" class="hidden">
+          <div class="three">
+            <div><label for="hourlyRate">Hourly Rate</label><input id="hourlyRate" type="number" step="0.01" value="135" /></div>
+            <div><label for="minsPerWindow">Mins / Window</label><input id="minsPerWindow" type="number" step="0.1" value="8" /></div>
+            <div><label for="minsPerTrack">Mins / Track</label><input id="minsPerTrack" type="number" step="0.1" value="7" /></div>
+          </div>
+          <div class="three">
+            <div><label for="minsPerFlyscreen">Mins / Flyscreen</label><input id="minsPerFlyscreen" type="number" step="0.1" value="1.5" /></div>
+            <div><label for="minsPerBalustrade">Mins / Balustrade</label><input id="minsPerBalustrade" type="number" step="0.1" value="6" /></div>
+            <div><label for="minsPerSolar">Mins / Solar Panel</label><input id="minsPerSolar" type="number" step="0.1" value="2" /></div>
+          </div>
+          <div class="three">
+            <div><label for="minsPerGutterMetre">Mins / Gutter metre</label><input id="minsPerGutterMetre" type="number" step="0.1" value="0.8" /></div>
+            <div><label for="over6HoursFee">Extra over 6 hrs</label><input id="over6HoursFee" type="number" step="0.01" value="100" /></div>
+            <div></div>
+          </div>
+        </div>
+
+        <div class="three">
+          <div><label for="externalOnlyFactor">External Only %</label><input id="externalOnlyFactor" type="number" step="0.01" value="0.52" /></div>
+          <div><label for="twoStoreyFactor">Two Storey %</label><input id="twoStoreyFactor" type="number" step="0.01" value="0.15" /></div>
+          <div><label for="buildersCleanFactor">Builder's Clean %</label><input id="buildersCleanFactor" type="number" step="0.01" value="1" /></div>
+        </div>
+
+        <div class="three">
+          <div><label for="minimumFee">Minimum Fee</label><input id="minimumFee" type="number" step="0.01" value="165" /></div>
+          <div><label for="gstRate">GST Rate</label><input id="gstRate" type="number" step="0.01" value="0.10" /></div>
+          <div>
+            <label for="gstIncluded">GST Handling</label>
+            <select id="gstIncluded">
+              <option value="true">Price includes GST</option>
+              <option value="false">Add GST on top</option>
+            </select>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="stack">
-        <div class="card" id="proPanel">
-          <div class="section-title"><h2>Pro Teams</h2><span class="mini" id="proStatusText">Not signed in</span></div>
-          <div id="authView">
-            <div class="tabs">
-              <button class="tab active" data-auth-tab="signin">Sign In</button>
-              <button class="tab" data-auth-tab="signup">Sign Up</button>
-            </div>
-            <div id="signinPanel">
-              <label for="signinEmail">Email</label><input id="signinEmail" type="email" placeholder="you@email.com" />
-              <label for="signinPassword">Password</label><input id="signinPassword" type="password" placeholder="Password" />
-              <div class="job-actions" style="margin-top:14px"><button class="btn primary" id="signinBtn">Sign In</button></div>
-            </div>
-            <div id="signupPanel" class="hidden">
-              <label for="signupName">Full Name</label><input id="signupName" type="text" placeholder="Your name" />
-              <label for="signupEmail">Email</label><input id="signupEmail" type="email" placeholder="you@email.com" />
-              <label for="signupPassword">Password</label><input id="signupPassword" type="password" placeholder="Password" />
-              <div class="job-actions" style="margin-top:14px"><button class="btn primary" id="signupBtn">Create Account</button></div>
+    <section class="panel" id="proPanel">
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Pro Teams</h2>
+            <p class="sub" id="proStatusText">Not signed in</p>
+          </div>
+          <button class="btn ghost hidden" id="logoutBtn">Sign Out</button>
+        </div>
+
+        <div id="authView" class="auth-box">
+          <div class="btn-row" style="margin-bottom:10px">
+            <button class="btn secondary authTab active" data-auth-tab="signin">Sign In</button>
+            <button class="btn ghost authTab" data-auth-tab="signup">Sign Up</button>
+          </div>
+
+          <div id="signinPanel">
+            <label for="signinEmail">Email</label>
+            <input id="signinEmail" type="email" placeholder="you@email.com" />
+            <label for="signinPassword">Password</label>
+            <input id="signinPassword" type="password" placeholder="Password" />
+            <div class="btn-row" style="margin-top:12px">
+              <button class="btn primary" id="signinBtn">Sign In</button>
             </div>
           </div>
-          <div id="teamSetupView" class="hidden">
-            <h3>Set Up Pro Team</h3>
-            <div class="two-col">
-              <div>
-                <label for="teamBusinessName">Create Team</label>
-                <input id="teamBusinessName" type="text" placeholder="Business name" />
-                <div class="job-actions" style="margin-top:12px"><button class="btn primary" id="createTeamBtn">Create Team</button></div>
-              </div>
-              <div>
-                <label for="inviteCode">Join With Invite Code</label>
-                <input id="inviteCode" type="text" placeholder="ABCD1234" />
-                <div class="job-actions" style="margin-top:12px"><button class="btn secondary" id="joinTeamBtn">Join Team</button></div>
-              </div>
-            </div>
-          </div>
-          <div id="teamView" class="hidden">
-            <div class="section-title"><h3 id="teamName">Your Team</h3><button class="btn secondary" id="makeInviteBtn">Create Invite Code</button></div>
-            <div class="mini" id="inviteOutput"></div>
-            <div class="toggle">
-              <span class="pill" id="memberRolePill">Worker</span>
-              <span class="pill" id="teamCountPill">0 members</span>
+
+          <div id="signupPanel" class="hidden">
+            <label for="signupName">Full Name</label>
+            <input id="signupName" type="text" placeholder="Your name" />
+            <label for="signupEmail">Email</label>
+            <input id="signupEmail" type="email" placeholder="you@email.com" />
+            <label for="signupPassword">Password</label>
+            <input id="signupPassword" type="password" placeholder="Password" />
+            <div class="btn-row" style="margin-top:12px">
+              <button class="btn primary" id="signupBtn">Create Account</button>
             </div>
           </div>
         </div>
 
-        <div class="card hidden" id="proDashboardCard">
-          <div class="section-title"><h2>Live Dashboard</h2><span class="mini">Realtime team activity</span></div>
-          <div class="kpi-row">
+        <div id="teamSetupView" class="team-box hidden">
+          <div class="divider"></div>
+          <h3>Set Up Team</h3>
+          <label for="teamBusinessName">Create Team</label>
+          <input id="teamBusinessName" type="text" placeholder="Business name" />
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn primary" id="createTeamBtn">Create Team</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <label for="inviteCode">Join With Invite Code</label>
+          <input id="inviteCode" type="text" placeholder="ABCD1234" />
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn secondary" id="joinTeamBtn">Join Team</button>
+          </div>
+        </div>
+
+        <div id="teamView" class="team-box hidden">
+          <div class="divider"></div>
+          <div class="section-title">
+            <h3 id="teamName">Your Team</h3>
+            <button class="btn secondary" id="makeInviteBtn">Create Invite Code</button>
+          </div>
+          <div class="btn-row">
+            <span class="pill" id="memberRolePill">Worker</span>
+            <span class="pill" id="teamCountPill">0 members</span>
+          </div>
+          <p class="sub" id="inviteOutput" style="margin-top:10px"></p>
+
+          <div class="divider"></div>
+
+          <div class="section-title">
+            <h3>Live Dashboard</h3>
+            <button class="btn good" id="saveTeamJobBtn">Save Current Quote as Team Job</button>
+          </div>
+
+          <div class="kpis">
             <div class="kpi"><div class="label">Quote Sent</div><div class="value" id="kpiQuoteSent">0</div></div>
             <div class="kpi"><div class="label">Accepted</div><div class="value" id="kpiAccepted">0</div></div>
             <div class="kpi"><div class="label">In Progress</div><div class="value" id="kpiInProgress">0</div></div>
             <div class="kpi"><div class="label">Completed</div><div class="value" id="kpiCompleted">0</div></div>
           </div>
-          <div class="tabs" id="jobTabs">
-            <button class="tab active" data-job-filter="all">All</button>
-            <button class="tab" data-job-filter="quote_sent">Quote Sent</button>
-            <button class="tab" data-job-filter="accepted">Accepted</button>
-            <button class="tab" data-job-filter="in_progress">In Progress</button>
-            <button class="tab" data-job-filter="completed">Completed</button>
+
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn secondary jobFilter active" data-job-filter="all">All</button>
+            <button class="btn ghost jobFilter" data-job-filter="quote_sent">Quote Sent</button>
+            <button class="btn ghost jobFilter" data-job-filter="accepted">Accepted</button>
+            <button class="btn ghost jobFilter" data-job-filter="in_progress">In Progress</button>
+            <button class="btn ghost jobFilter" data-job-filter="completed">Completed</button>
           </div>
-          <div class="job-list" id="jobsList"></div>
-          <div class="hr"></div>
+
+          <div class="jobs-box">
+            <div class="job-list" id="jobsList"></div>
+          </div>
+
+          <div class="divider"></div>
+
           <h3>Activity Feed</h3>
-          <div class="feed-list" id="activityFeed"></div>
+          <div class="feed-box">
+            <div class="feed-list" id="activityFeed"></div>
+          </div>
         </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="sticky-actions">
+    <div class="sticky-inner">
+      <div>
+        <div class="sticky-price" id="stickyPrice">$165.00</div>
+        <div class="sticky-note">Quick actions for quoting on-site</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn secondary" id="stickySaveBtn">Save</button>
+        <button class="btn primary" id="stickyEmailBtn">Open Email</button>
       </div>
     </div>
   </div>
 
-<script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-const hasSupabaseKeys = !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
-const supabase = hasSupabaseKeys ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-const $ = (id) => document.getElementById(id);
-const n = (v) => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
-const money = (v) => `$${Number(v || 0).toFixed(2)}`;
-const appState = { proEnabled:false, user:null, teamId:null, teamName:"", teamRole:"", jobs:[], feed:[], jobFilter:"all", jobsChannel:null, feedChannel:null };
-function roundUp(value, step){ if (!step || step <= 0) return value; return Math.ceil(value / step) * step; }
-function statusLabel(status){ return ({quote_sent:"Quote Sent",accepted:"Accepted",in_progress:"In Progress",completed:"Completed",cancelled:"Cancelled"})[status] || status || ""; }
-function prettyDate(ts){ return ts ? new Date(ts).toLocaleString() : ""; }
-function escapeHtml(str){ return String(str ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-const SETTINGS_KEY = "wqp_settings_v1";
-function defaultSettings(){ return {businessName:"",contactName:"",businessPhone:"",businessEmail:"",customMessage:"This includes a full clean of glass, frames, tracks and screens.",pricingMode:"per_item",roundingRule:"10",rateWindow:18,rateTrack:6,rateFlyscreen:4,rateBalustrade:35,rateSolar:12,rateGutter:6,hourlyRate:135,minsPerWindow:8,minsPerTrack:7,minsPerFlyscreen:1.5,minsPerBalustrade:6,minsPerSolar:2,minsPerGutterMetre:0.8,over6HoursFee:100,externalOnlyFactor:0.52,twoStoreyFactor:0.15,buildersCleanFactor:1,minimumFee:165,gstRate:0.10,gstIncluded:"true"}; }
-function loadSettings(){ const raw = localStorage.getItem(SETTINGS_KEY); const data = raw ? JSON.parse(raw) : {}; const s = { ...defaultSettings(), ...data }; Object.entries(s).forEach(([k,v]) => { const el=$(k); if(el) el.value=v; }); updatePricingModeUI(); }
-function saveSettings(){ const data={}; Object.keys(defaultSettings()).forEach(k=>{ const el=$(k); if(el) data[k]=el.value; }); localStorage.setItem(SETTINGS_KEY, JSON.stringify(data)); alert("Settings saved on this device."); }
-function getQuoteInput(){ return {customerName:$("customerName").value.trim(),customerEmail:$("customerEmail").value.trim(),customerPhone:$("customerPhone").value.trim(),serviceAddress:$("serviceAddress").value.trim(),windows:n($("windows").value),tracks:n($("tracks").value),flyscreens:n($("flyscreens").value),balustrades:n($("balustrades").value),solarPanels:n($("solarPanels").value),gutterMetres:n($("gutterMetres").value),serviceType:$("serviceType").value,storeys:$("storeys").value,buildersClean:$("buildersClean").value==="true",notes:$("jobNotes").value.trim()}; }
-function getSettings(){ const s={}; Object.keys(defaultSettings()).forEach(k=>{ const el=$(k); s[k]=el ? el.value : defaultSettings()[k]; }); return s; }
-function calculateQuote(){
-  const q=getQuoteInput(), s=getSettings(); let base=0, hours=0;
-  if (s.pricingMode==="per_item"){
-    base = q.windows*n(s.rateWindow)+q.tracks*n(s.rateTrack)+q.flyscreens*n(s.rateFlyscreen)+q.balustrades*n(s.rateBalustrade)+q.solarPanels*n(s.rateSolar)+q.gutterMetres*n(s.rateGutter);
-  } else {
-    const mins = q.windows*n(s.minsPerWindow)+q.tracks*n(s.minsPerTrack)+q.flyscreens*n(s.minsPerFlyscreen)+q.balustrades*n(s.minsPerBalustrade)+q.solarPanels*n(s.minsPerSolar)+q.gutterMetres*n(s.minsPerGutterMetre);
-    hours = mins/60; base = hours*n(s.hourlyRate); if (hours>6) base += n(s.over6HoursFee);
-  }
-  if (q.serviceType==="external") base *= n(s.externalOnlyFactor);
-  if (q.storeys==="two") base *= (1+n(s.twoStoreyFactor));
-  if (q.buildersClean) base *= (1+n(s.buildersCleanFactor));
-  let finalPrice = Math.max(base, n(s.minimumFee));
-  if (s.gstIncluded==="false") finalPrice *= (1+n(s.gstRate));
-  const rr = n(s.roundingRule); if (rr>0) finalPrice = roundUp(finalPrice, rr);
-  const gstText = s.gstIncluded==="true" ? "includes GST" : "includes GST added on top";
-  return { ...q, ...s, hours, finalPrice, gstText };
-}
-function buildQuotePreview(){
-  const d = calculateQuote();
-  $("priceDisplay").textContent = money(d.finalPrice);
-  $("priceNote").textContent = `Final price shown ${d.gstText}`;
-  const serviceLabel = d.serviceType==="external" ? "External Only" : "Internal + External";
-  const storeysLabel = d.storeys==="two" ? "Two Storey" : "Single Storey";
-  const body = `Hi ${d.customerName || "there"},\n\nThanks for your enquiry.\n\nHere is your window cleaning quote:\n\nWindows: ${d.windows}\nTracks: ${d.tracks}\nFlyscreens: ${d.flyscreens}\nBalustrades: ${d.balustrades}\nSolar Panels: ${d.solarPanels}\nGutter Metres: ${d.gutterMetres}\n\nService: ${serviceLabel}\nStoreys: ${storeysLabel}\nBuilder's Clean: ${d.buildersClean ? "Yes" : "No"}\n\nTotal Price: ${money(d.finalPrice)} (${d.gstText})\n\n${d.customMessage || ""}\n\n${d.notes ? "Notes: " + d.notes + "\n\n" : ""}Please let us know if you'd like to go ahead.\n\nKind regards,\n${d.contactName || ""}\n${d.businessName || ""}\n${d.businessPhone || ""}\n${d.businessEmail || ""}\n\nSent using Window Quote Pro`;
-  $("quotePreview").textContent = body; return body;
-}
-function openEmailQuote(){ const d=calculateQuote(); window.location.href = `mailto:${encodeURIComponent(d.customerEmail || "")}?subject=${encodeURIComponent(`Window Cleaning Quote - ${d.businessName || "Window Quote Pro"}`)}&body=${encodeURIComponent(buildQuotePreview())}`; }
-function updatePricingModeUI(){ const mode=$("pricingMode").value; $("perItemFields").classList.toggle("hidden", mode!=="per_item"); $("timeBasedFields").classList.toggle("hidden", mode!=="time_based"); buildQuotePreview(); }
-function setModeUI(){ $("modePill").textContent = appState.proEnabled ? "Pro Mode" : "Free Mode"; $("proBanner").classList.toggle("hidden", appState.proEnabled); $("saveTeamJobBtn").classList.toggle("hidden", !appState.proEnabled || !appState.teamId); $("logoutBtn").classList.toggle("hidden", !appState.user); $("proToggleBtn").textContent = appState.proEnabled ? "Pro Active" : "Upgrade to Pro"; }
-function renderAuthState(){ $("proStatusText").textContent = appState.user ? appState.user.email : "Not signed in"; $("authView").classList.toggle("hidden", !!appState.user); $("teamSetupView").classList.toggle("hidden", !appState.user || !!appState.teamId); $("teamView").classList.toggle("hidden", !appState.teamId); $("proDashboardCard").classList.toggle("hidden", !appState.teamId); if(appState.teamId){ $("teamName").textContent = appState.teamName || "Your Team"; $("memberRolePill").textContent = appState.teamRole ? appState.teamRole.charAt(0).toUpperCase()+appState.teamRole.slice(1) : "Worker"; } setModeUI(); }
-function renderJobs(){
-  const list=$("jobsList"); list.innerHTML=""; const jobs=appState.jobs.filter(j=>appState.jobFilter==="all"?true:j.status===appState.jobFilter);
-  if(!jobs.length) list.innerHTML='<div class="muted">No jobs yet.</div>';
-  jobs.forEach(job=>{ const card=document.createElement("div"); card.className="job-card"; card.innerHTML = `<div class="job-top"><div><div class="job-title">${escapeHtml(job.customer_name || "Unnamed Customer")}</div><p class="job-sub">${escapeHtml(job.service_address || "")}</p></div><span class="status ${job.status}">${statusLabel(job.status)}</span></div><div class="job-meta"><div><strong>Price</strong><br>${money(job.quoted_price)}</div><div><strong>Quoted</strong><br>${prettyDate(job.quoted_at)}</div><div><strong>Assigned</strong><br>${escapeHtml(job.assigned_to || "—")}</div></div><div class="job-actions">${job.status==="quote_sent" ? `<button class="btn secondary" data-action="accept" data-id="${job.id}">Mark Accepted</button>` : ""}${job.status==="accepted" ? `<button class="btn warn" data-action="start" data-id="${job.id}">Start Job</button>` : ""}${job.status==="in_progress" ? `<button class="btn good" data-action="complete" data-id="${job.id}">Complete Job</button>` : ""}</div>`; list.appendChild(card); });
-  list.querySelectorAll("button[data-action]").forEach(btn=>btn.addEventListener("click", async ()=>{ const id=btn.dataset.id, action=btn.dataset.action; try{ if(action==="accept") await markJobAccepted(id); if(action==="start") await markJobStarted(id); if(action==="complete") await markJobCompleted(id); }catch(err){ alert(err.message); }}));
-  $("kpiQuoteSent").textContent = appState.jobs.filter(j=>j.status==="quote_sent").length;
-  $("kpiAccepted").textContent = appState.jobs.filter(j=>j.status==="accepted").length;
-  $("kpiInProgress").textContent = appState.jobs.filter(j=>j.status==="in_progress").length;
-  $("kpiCompleted").textContent = appState.jobs.filter(j=>j.status==="completed").length;
-}
-function renderFeed(){ const list=$("activityFeed"); list.innerHTML=""; if(!appState.feed.length){ list.innerHTML='<div class="muted">No activity yet.</div>'; return; } appState.feed.forEach(item=>{ const row=document.createElement("div"); row.className="feed-row"; row.innerHTML = `<p><strong>${escapeHtml(item.user_name || "Someone")}</strong> ${escapeHtml(item.message || item.event_type || "")}</p><small>${prettyDate(item.created_at)}</small>`; list.appendChild(row); }); }
-async function signUp(email,password,fullName){ if(!supabase) throw new Error("Add your Supabase URL and anon key first."); const {data,error}=await supabase.auth.signUp({ email,password,options:{data:{full_name:fullName || ""}}}); if(error) throw error; return data; }
-async function signIn(email,password){ if(!supabase) throw new Error("Add your Supabase URL and anon key first."); const {data,error}=await supabase.auth.signInWithPassword({email,password}); if(error) throw error; return data; }
-async function signOut(){ if(!supabase) return; const {error}=await supabase.auth.signOut(); if(error) throw error; }
-async function getCurrentUser(){ if(!supabase) return null; const {data,error}=await supabase.auth.getUser(); if(error) throw error; return data.user; }
-async function getMyTeams(){ const {data,error}=await supabase.from("team_members").select("id, role, status, team_id, team:teams (id, business_name, owner_user_id, created_at)").eq("user_id", appState.user.id).eq("status","active"); if(error) throw error; return data || []; }
-async function createTeamAndMakeOwner(name){ const {data,error}=await supabase.rpc("create_team_and_make_owner",{p_business_name:name}); if(error) throw error; return data; }
-async function createTeamInvite(teamId, role="worker"){ const {data,error}=await supabase.rpc("create_team_invite",{p_team_id:teamId,p_role:role}); if(error) throw error; return data; }
-async function joinTeamWithInvite(code){ const {data,error}=await supabase.rpc("join_team_with_invite",{p_invite_code:code}); if(error) throw error; return data; }
-async function getTeamMembersCount(teamId){ const {count,error}=await supabase.from("team_members").select("*",{count:"exact",head:true}).eq("team_id",teamId).eq("status","active"); if(error) throw error; return count || 0; }
-async function createJob(){ const d=calculateQuote(); const {data,error}=await supabase.rpc("create_job",{p_team_id:appState.teamId,p_customer_name:d.customerName,p_customer_email:d.customerEmail,p_customer_phone:d.customerPhone,p_service_address:d.serviceAddress,p_windows:d.windows,p_tracks:d.tracks,p_flyscreens:d.flyscreens,p_balustrades:d.balustrades,p_solar_panels:d.solarPanels,p_gutter_metres:d.gutterMetres,p_service_type:d.serviceType,p_storeys:d.storeys,p_notes:d.notes,p_quoted_price:d.finalPrice,p_gst_included:d.gstIncluded==="true"}); if(error) throw error; return data; }
-async function getJobs(){ const {data,error}=await supabase.from("jobs").select("*").eq("team_id",appState.teamId).order("created_at",{ascending:false}); if(error) throw error; appState.jobs=data || []; renderJobs(); }
-async function getFeed(){ const {data,error}=await supabase.from("v_job_feed").select("*").eq("team_id",appState.teamId).order("created_at",{ascending:false}).limit(100); if(error) throw error; appState.feed=data || []; renderFeed(); }
-async function markJobAccepted(id){ const {error}=await supabase.rpc("mark_job_accepted",{p_job_id:id}); if(error) throw error; }
-async function markJobStarted(id){ const {error}=await supabase.rpc("mark_job_started",{p_job_id:id}); if(error) throw error; }
-async function markJobCompleted(id){ const {error}=await supabase.rpc("mark_job_completed",{p_job_id:id}); if(error) throw error; }
-function unsubscribeRealtime(){ if(!supabase) return; if(appState.jobsChannel){ supabase.removeChannel(appState.jobsChannel); appState.jobsChannel=null; } if(appState.feedChannel){ supabase.removeChannel(appState.feedChannel); appState.feedChannel=null; } }
-function subscribeRealtime(){
-  if(!supabase || !appState.teamId) return; unsubscribeRealtime();
-  appState.jobsChannel = supabase.channel(`jobs-${appState.teamId}`).on("postgres_changes",{event:"*",schema:"public",table:"jobs",filter:`team_id=eq.${appState.teamId}`}, async ()=>{ await getJobs(); }).subscribe();
-  appState.feedChannel = supabase.channel(`feed-${appState.teamId}`).on("postgres_changes",{event:"*",schema:"public",table:"job_events",filter:`team_id=eq.${appState.teamId}`}, async ()=>{ await getFeed(); }).subscribe();
-}
-async function bootProMode(){
-  if(!supabase) return;
-  try{
-    appState.user = await getCurrentUser();
-    appState.proEnabled = !!appState.user;
-    if(!appState.user){ appState.teamId=null; appState.teamName=""; appState.teamRole=""; renderAuthState(); return; }
-    const teams = await getMyTeams();
-    if(teams.length){
-      const t=teams[0]; appState.teamId=t.team.id; appState.teamName=t.team.business_name; appState.teamRole=t.role;
-      $("teamCountPill").textContent = `${await getTeamMembersCount(appState.teamId)} members`;
-      await getJobs(); await getFeed(); subscribeRealtime();
-    } else { appState.teamId=null; appState.teamName=""; appState.teamRole=""; }
-    renderAuthState();
-  }catch(err){ console.error(err); alert(err.message); }
-}
-$("saveLocalBtn").addEventListener("click", saveSettings);
-$("openEmailBtn").addEventListener("click", openEmailQuote);
-$("pricingMode").addEventListener("change", updatePricingModeUI);
-$("proToggleBtn").addEventListener("click", ()=>{ document.getElementById("proPanel").scrollIntoView({behavior:"smooth", block:"start"}); });
-$("logoutBtn").addEventListener("click", async ()=>{ try{ unsubscribeRealtime(); await signOut(); appState.proEnabled=false; appState.user=null; appState.teamId=null; appState.jobs=[]; appState.feed=[]; renderAuthState(); renderJobs(); renderFeed(); }catch(err){ alert(err.message); } });
-document.querySelectorAll("[data-auth-tab]").forEach(btn=>btn.addEventListener("click", ()=>{ document.querySelectorAll("[data-auth-tab]").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); const tab=btn.dataset.authTab; $("signinPanel").classList.toggle("hidden", tab!=="signin"); $("signupPanel").classList.toggle("hidden", tab!=="signup"); }));
-$("signinBtn").addEventListener("click", async ()=>{ try{ await signIn($("signinEmail").value.trim(), $("signinPassword").value); await bootProMode(); }catch(err){ alert(err.message); } });
-$("signupBtn").addEventListener("click", async ()=>{ try{ await signUp($("signupEmail").value.trim(), $("signupPassword").value, $("signupName").value.trim()); alert("Account created. If email confirmation is enabled, check your inbox first."); }catch(err){ alert(err.message); } });
-$("createTeamBtn").addEventListener("click", async ()=>{ try{ appState.teamId = await createTeamAndMakeOwner($("teamBusinessName").value.trim()); await bootProMode(); }catch(err){ alert(err.message); } });
-$("joinTeamBtn").addEventListener("click", async ()=>{ try{ appState.teamId = await joinTeamWithInvite($("inviteCode").value.trim()); await bootProMode(); }catch(err){ alert(err.message); } });
-$("makeInviteBtn").addEventListener("click", async ()=>{ try{ $("inviteOutput").textContent = `Invite code: ${await createTeamInvite(appState.teamId, "worker")}`; }catch(err){ alert(err.message); } });
-$("saveTeamJobBtn").addEventListener("click", async ()=>{ try{ if(!appState.teamId) throw new Error("Create or join a Pro team first."); await createJob(); alert("Job saved to team."); }catch(err){ alert(err.message); } });
-document.querySelectorAll("#jobTabs .tab").forEach(btn=>btn.addEventListener("click", ()=>{ document.querySelectorAll("#jobTabs .tab").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); appState.jobFilter=btn.dataset.jobFilter; renderJobs(); }));
-["businessName","contactName","businessPhone","businessEmail","customMessage","pricingMode","roundingRule","rateWindow","rateTrack","rateFlyscreen","rateBalustrade","rateSolar","rateGutter","hourlyRate","minsPerWindow","minsPerTrack","minsPerFlyscreen","minsPerBalustrade","minsPerSolar","minsPerGutterMetre","over6HoursFee","externalOnlyFactor","twoStoreyFactor","buildersCleanFactor","minimumFee","gstRate","gstIncluded","customerName","customerEmail","customerPhone","serviceAddress","windows","tracks","flyscreens","balustrades","solarPanels","gutterMetres","serviceType","storeys","buildersClean","jobNotes"].forEach(id=>{ const el=$(id); if(!el) return; el.addEventListener("input", buildQuotePreview); el.addEventListener("change", buildQuotePreview); });
-loadSettings(); buildQuotePreview(); setModeUI(); renderJobs(); renderFeed(); if(hasSupabaseKeys) bootProMode();
-if("serviceWorker" in navigator){ window.addEventListener("load", ()=>{ navigator.serviceWorker.register("./sw.js").catch(()=>{}); }); }
-</script>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+    const hasSupabaseKeys = !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
+    const supabase = hasSupabaseKeys ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    const $ = (id) => document.getElementById(id);
+    const n = (v) => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
+    const money = (v) => `$${Number(v || 0).toFixed(2)}`;
+
+    const appState = {
+      proEnabled:false,
+      user:null,
+      teamId:null,
+      teamName:"",
+      teamRole:"",
+      jobs:[],
+      feed:[],
+      jobFilter:"all",
+      jobsChannel:null,
+      feedChannel:null
+    };
+
+    const SETTINGS_KEY = "wqp_settings_v2";
+
+    function defaultSettings(){
+      return {
+        businessName:"",
+        contactName:"",
+        businessPhone:"",
+        businessEmail:"",
+        customMessage:"This includes a full clean of glass, frames, tracks and screens.",
+        pricingMode:"per_item",
+        roundingRule:"10",
+        rateWindow:18,
+        rateTrack:6,
+        rateFlyscreen:4,
+        rateBalustrade:35,
+        rateSolar:12,
+        rateGutter:6,
+        hourlyRate:135,
+        minsPerWindow:8,
+        minsPerTrack:7,
+        minsPerFlyscreen:1.5,
+        minsPerBalustrade:6,
+        minsPerSolar:2,
+        minsPerGutterMetre:0.8,
+        over6HoursFee:100,
+        externalOnlyFactor:0.52,
+        twoStoreyFactor:0.15,
+        buildersCleanFactor:1,
+        minimumFee:165,
+        gstRate:0.10,
+        gstIncluded:"true"
+      };
+    }
+
+    function roundUp(value, step){
+      if (!step || step <= 0) return value;
+      return Math.ceil(value / step) * step;
+    }
+
+    function statusLabel(status){
+      return ({
+        quote_sent:"Quote Sent",
+        accepted:"Accepted",
+        in_progress:"In Progress",
+        completed:"Completed",
+        cancelled:"Cancelled"
+      })[status] || status || "";
+    }
+
+    function prettyDate(ts){
+      return ts ? new Date(ts).toLocaleString() : "";
+    }
+
+    function escapeHtml(str){
+      return String(str ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
+
+    function setActiveTab(name){
+      document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
+      document.querySelectorAll(".panel").forEach(panel => panel.classList.remove("active"));
+      $(name + "Panel").classList.add("active");
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    function updatePricingModeUI(){
+      const mode = $("pricingMode").value;
+      $("perItemFields").classList.toggle("hidden", mode !== "per_item");
+      $("timeBasedFields").classList.toggle("hidden", mode !== "time_based");
+      buildQuotePreview();
+    }
+
+    function loadSettings(){
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      const data = raw ? JSON.parse(raw) : {};
+      const s = { ...defaultSettings(), ...data };
+      Object.entries(s).forEach(([key,val]) => {
+        const el = $(key);
+        if (el) el.value = val;
+      });
+      updatePricingModeUI();
+    }
+
+    function saveSettings(){
+      const data = {};
+      Object.keys(defaultSettings()).forEach(key => {
+        const el = $(key);
+        if (el) data[key] = el.value;
+      });
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
+      alert("Settings saved on this device.");
+    }
+
+    function getQuoteInput(){
+      return {
+        customerName:$("customerName").value.trim(),
+        customerEmail:$("customerEmail").value.trim(),
+        customerPhone:$("customerPhone").value.trim(),
+        serviceAddress:$("serviceAddress").value.trim(),
+        windows:n($("windows").value),
+        tracks:n($("tracks").value),
+        flyscreens:n($("flyscreens").value),
+        balustrades:n($("balustrades").value),
+        solarPanels:n($("solarPanels").value),
+        gutterMetres:n($("gutterMetres").value),
+        serviceType:$("serviceType").value,
+        storeys:$("storeys").value,
+        buildersClean:$("buildersClean").value === "true",
+        notes:$("jobNotes").value.trim()
+      };
+    }
+
+    function getSettings(){
+      const s = {};
+      Object.keys(defaultSettings()).forEach(key => {
+        const el = $(key);
+        s[key] = el ? el.value : defaultSettings()[key];
+      });
+      return s;
+    }
+
+    function calculateQuote(){
+      const q = getQuoteInput();
+      const s = getSettings();
+      let base = 0;
+      let hours = 0;
+
+      if (s.pricingMode === "per_item"){
+        base =
+          q.windows * n(s.rateWindow) +
+          q.tracks * n(s.rateTrack) +
+          q.flyscreens * n(s.rateFlyscreen) +
+          q.balustrades * n(s.rateBalustrade) +
+          q.solarPanels * n(s.rateSolar) +
+          q.gutterMetres * n(s.rateGutter);
+      } else {
+        const mins =
+          q.windows * n(s.minsPerWindow) +
+          q.tracks * n(s.minsPerTrack) +
+          q.flyscreens * n(s.minsPerFlyscreen) +
+          q.balustrades * n(s.minsPerBalustrade) +
+          q.solarPanels * n(s.minsPerSolar) +
+          q.gutterMetres * n(s.minsPerGutterMetre);
+
+        hours = mins / 60;
+        base = hours * n(s.hourlyRate);
+        if (hours > 6) base += n(s.over6HoursFee);
+      }
+
+      if (q.serviceType === "external") base *= n(s.externalOnlyFactor);
+      if (q.storeys === "two") base *= (1 + n(s.twoStoreyFactor));
+      if (q.buildersClean) base *= (1 + n(s.buildersCleanFactor));
+
+      let finalPrice = Math.max(base, n(s.minimumFee));
+
+      if (s.gstIncluded === "false"){
+        finalPrice *= (1 + n(s.gstRate));
+      }
+
+      const roundingRule = n(s.roundingRule);
+      if (roundingRule > 0) finalPrice = roundUp(finalPrice, roundingRule);
+
+      const gstText = s.gstIncluded === "true" ? "includes GST" : "includes GST added on top";
+      return { ...q, ...s, hours, finalPrice, gstText };
+    }
+
+    function buildQuotePreview(){
+      const d = calculateQuote();
+
+      $("priceDisplay").textContent = money(d.finalPrice);
+      $("stickyPrice").textContent = money(d.finalPrice);
+      $("priceNote").textContent = `Final price shown ${d.gstText}`;
+
+      const serviceLabel = d.serviceType === "external" ? "External Only" : "Internal + External";
+      const storeysLabel = d.storeys === "two" ? "Two Storey" : "Single Storey";
+
+      const body =
+`Hi ${d.customerName || "there"},
+
+Thanks for your enquiry.
+
+Here is your window cleaning quote:
+
+Windows: ${d.windows}
+Tracks: ${d.tracks}
+Flyscreens: ${d.flyscreens}
+Balustrades: ${d.balustrades}
+Solar Panels: ${d.solarPanels}
+Gutter Metres: ${d.gutterMetres}
+
+Service: ${serviceLabel}
+Storeys: ${storeysLabel}
+Builder's Clean: ${d.buildersClean ? "Yes" : "No"}
+
+Total Price: ${money(d.finalPrice)} (${d.gstText})
+
+${d.customMessage || ""}
+
+${d.notes ? "Notes: " + d.notes + "\n\n" : ""}Please let us know if you'd like to go ahead.
+
+Kind regards,
+${d.contactName || ""}
+${d.businessName || ""}
+${d.businessPhone || ""}
+${d.businessEmail || ""}
+
+Sent using Window Quote Pro`;
+
+      $("quotePreview").textContent = body;
+      return body;
+    }
+
+    function openEmailQuote(){
+      const d = calculateQuote();
+      const subject = encodeURIComponent(`Window Cleaning Quote - ${d.businessName || "Window Quote Pro"}`);
+      const body = encodeURIComponent(buildQuotePreview());
+      const to = encodeURIComponent(d.customerEmail || "");
+      window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+    }
+
+    function setModeUI(){
+      $("modePill").textContent = appState.proEnabled ? "Pro Mode" : "Free Mode";
+      $("saveTeamJobBtn").classList.toggle("hidden", !appState.proEnabled || !appState.teamId);
+      $("logoutBtn").classList.toggle("hidden", !appState.user);
+    }
+
+    function renderAuthState(){
+      $("proStatusText").textContent = appState.user ? appState.user.email : "Not signed in";
+      $("authView").classList.toggle("hidden", !!appState.user);
+      $("teamSetupView").classList.toggle("hidden", !appState.user || !!appState.teamId);
+      $("teamView").classList.toggle("hidden", !appState.teamId);
+
+      if (appState.teamId){
+        $("teamName").textContent = appState.teamName || "Your Team";
+        $("memberRolePill").textContent = appState.teamRole ? appState.teamRole.charAt(0).toUpperCase() + appState.teamRole.slice(1) : "Worker";
+      }
+      setModeUI();
+    }
+
+    function renderJobs(){
+      const list = $("jobsList");
+      list.innerHTML = "";
+      const jobs = appState.jobs.filter(job => appState.jobFilter === "all" ? true : job.status === appState.jobFilter);
+
+      if (!jobs.length){
+        list.innerHTML = `<div class="mini">No jobs yet.</div>`;
+      }
+
+      jobs.forEach(job => {
+        const card = document.createElement("div");
+        card.className = "job-card";
+        card.innerHTML = `
+          <div class="job-top">
+            <div>
+              <div class="job-title">${escapeHtml(job.customer_name || "Unnamed Customer")}</div>
+              <p class="job-sub">${escapeHtml(job.service_address || "")}</p>
+            </div>
+            <span class="status ${job.status}">${statusLabel(job.status)}</span>
+          </div>
+          <div class="job-meta">
+            <div><strong>Price</strong><br>${money(job.quoted_price)}</div>
+            <div><strong>Quoted</strong><br>${prettyDate(job.quoted_at)}</div>
+          </div>
+          <div class="btn-row">
+            ${job.status === "quote_sent" ? `<button class="btn secondary" data-action="accept" data-id="${job.id}">Mark Accepted</button>` : ""}
+            ${job.status === "accepted" ? `<button class="btn warn" data-action="start" data-id="${job.id}">Start Job</button>` : ""}
+            ${job.status === "in_progress" ? `<button class="btn good" data-action="complete" data-id="${job.id}">Complete Job</button>` : ""}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+      list.querySelectorAll("button[data-action]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const action = btn.dataset.action;
+          try{
+            if (action === "accept") await markJobAccepted(id);
+            if (action === "start") await markJobStarted(id);
+            if (action === "complete") await markJobCompleted(id);
+          }catch(err){
+            alert(err.message);
+          }
+        });
+      });
+
+      $("kpiQuoteSent").textContent = appState.jobs.filter(j => j.status === "quote_sent").length;
+      $("kpiAccepted").textContent = appState.jobs.filter(j => j.status === "accepted").length;
+      $("kpiInProgress").textContent = appState.jobs.filter(j => j.status === "in_progress").length;
+      $("kpiCompleted").textContent = appState.jobs.filter(j => j.status === "completed").length;
+    }
+
+    function renderFeed(){
+      const list = $("activityFeed");
+      list.innerHTML = "";
+      if (!appState.feed.length){
+        list.innerHTML = `<div class="mini">No activity yet.</div>`;
+        return;
+      }
+      appState.feed.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "feed-row";
+        row.innerHTML = `
+          <p><strong>${escapeHtml(item.user_name || "Someone")}</strong> ${escapeHtml(item.message || item.event_type || "")}</p>
+          <small>${prettyDate(item.created_at)}</small>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    async function signUp(email,password,fullName){
+      if (!supabase) throw new Error("Add your Supabase URL and anon key first.");
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options:{ data:{ full_name: fullName || "" } }
+      });
+      if (error) throw error;
+      return data;
+    }
+
+    async function signIn(email,password){
+      if (!supabase) throw new Error("Add your Supabase URL and anon key first.");
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return data;
+    }
+
+    async function signOut(){
+      if (!supabase) return;
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    }
+
+    async function getCurrentUser(){
+      if (!supabase) return null;
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      return data.user;
+    }
+
+    async function getMyTeams(){
+      const { data, error } = await supabase
+        .from("team_members")
+        .select("id, role, status, team_id, team:teams (id, business_name, owner_user_id, created_at)")
+        .eq("user_id", appState.user.id)
+        .eq("status","active");
+      if (error) throw error;
+      return data || [];
+    }
+
+    async function createTeamAndMakeOwner(name){
+      const { data, error } = await supabase.rpc("create_team_and_make_owner", { p_business_name:name });
+      if (error) throw error;
+      return data;
+    }
+
+    async function createTeamInvite(teamId, role="worker"){
+      const { data, error } = await supabase.rpc("create_team_invite", { p_team_id:teamId, p_role:role });
+      if (error) throw error;
+      return data;
+    }
+
+    async function joinTeamWithInvite(code){
+      const { data, error } = await supabase.rpc("join_team_with_invite", { p_invite_code:code });
+      if (error) throw error;
+      return data;
+    }
+
+    async function getTeamMembersCount(teamId){
+      const { count, error } = await supabase
+        .from("team_members")
+        .select("*", { count:"exact", head:true })
+        .eq("team_id", teamId)
+        .eq("status", "active");
+      if (error) throw error;
+      return count || 0;
+    }
+
+    async function createJob(){
+      const d = calculateQuote();
+      const { data, error } = await supabase.rpc("create_job", {
+        p_team_id:appState.teamId,
+        p_customer_name:d.customerName,
+        p_customer_email:d.customerEmail,
+        p_customer_phone:d.customerPhone,
+        p_service_address:d.serviceAddress,
+        p_windows:d.windows,
+        p_tracks:d.tracks,
+        p_flyscreens:d.flyscreens,
+        p_balustrades:d.balustrades,
+        p_solar_panels:d.solarPanels,
+        p_gutter_metres:d.gutterMetres,
+        p_service_type:d.serviceType,
+        p_storeys:d.storeys,
+        p_notes:d.notes,
+        p_quoted_price:d.finalPrice,
+        p_gst_included:d.gstIncluded === "true"
+      });
+      if (error) throw error;
+      return data;
+    }
+
+    async function getJobs(){
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("team_id", appState.teamId)
+        .order("created_at", { ascending:false });
+      if (error) throw error;
+      appState.jobs = data || [];
+      renderJobs();
+    }
+
+    async function getFeed(){
+      const { data, error } = await supabase
+        .from("v_job_feed")
+        .select("*")
+        .eq("team_id", appState.teamId)
+        .order("created_at", { ascending:false })
+        .limit(100);
+      if (error) throw error;
+      appState.feed = data || [];
+      renderFeed();
+    }
+
+    async function markJobAccepted(id){
+      const { error } = await supabase.rpc("mark_job_accepted", { p_job_id:id });
+      if (error) throw error;
+    }
+
+    async function markJobStarted(id){
+      const { error } = await supabase.rpc("mark_job_started", { p_job_id:id });
+      if (error) throw error;
+    }
+
+    async function markJobCompleted(id){
+      const { error } = await supabase.rpc("mark_job_completed", { p_job_id:id });
+      if (error) throw error;
+    }
+
+    function unsubscribeRealtime(){
+      if (!supabase) return;
+      if (appState.jobsChannel){ supabase.removeChannel(appState.jobsChannel); appState.jobsChannel = null; }
+      if (appState.feedChannel){ supabase.removeChannel(appState.feedChannel); appState.feedChannel = null; }
+    }
+
+    function subscribeRealtime(){
+      if (!supabase || !appState.teamId) return;
+      unsubscribeRealtime();
+
+      appState.jobsChannel = supabase.channel(`jobs-${appState.teamId}`)
+        .on("postgres_changes", {
+          event:"*",
+          schema:"public",
+          table:"jobs",
+          filter:`team_id=eq.${appState.teamId}`
+        }, async () => { await getJobs(); })
+        .subscribe();
+
+      appState.feedChannel = supabase.channel(`feed-${appState.teamId}`)
+        .on("postgres_changes", {
+          event:"*",
+          schema:"public",
+          table:"job_events",
+          filter:`team_id=eq.${appState.teamId}`
+        }, async () => { await getFeed(); })
+        .subscribe();
+    }
+
+    async function bootProMode(){
+      if (!supabase) return;
+      try{
+        appState.user = await getCurrentUser();
+        appState.proEnabled = !!appState.user;
+
+        if (!appState.user){
+          appState.teamId = null;
+          appState.teamName = "";
+          appState.teamRole = "";
+          renderAuthState();
+          return;
+        }
+
+        const teams = await getMyTeams();
+        if (teams.length){
+          const t = teams[0];
+          appState.teamId = t.team.id;
+          appState.teamName = t.team.business_name;
+          appState.teamRole = t.role;
+          $("teamCountPill").textContent = `${await getTeamMembersCount(appState.teamId)} members`;
+          await getJobs();
+          await getFeed();
+          subscribeRealtime();
+        } else {
+          appState.teamId = null;
+          appState.teamName = "";
+          appState.teamRole = "";
+        }
+
+        renderAuthState();
+      } catch(err){
+        console.error(err);
+        alert(err.message);
+      }
+    }
+
+    document.querySelectorAll(".tab[data-tab]").forEach(btn => {
+      btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+    });
+
+    document.querySelectorAll(".authTab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".authTab").forEach(b => {
+          b.classList.remove("active");
+          b.classList.remove("secondary");
+          b.classList.add("ghost");
+        });
+        btn.classList.add("active");
+        btn.classList.add("secondary");
+        btn.classList.remove("ghost");
+        const tab = btn.dataset.authTab;
+        $("signinPanel").classList.toggle("hidden", tab !== "signin");
+        $("signupPanel").classList.toggle("hidden", tab !== "signup");
+      });
+    });
+
+    document.querySelectorAll(".jobFilter").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".jobFilter").forEach(b => {
+          b.classList.remove("active");
+          b.classList.remove("secondary");
+          b.classList.add("ghost");
+        });
+        btn.classList.add("active");
+        btn.classList.add("secondary");
+        btn.classList.remove("ghost");
+        appState.jobFilter = btn.dataset.jobFilter;
+        renderJobs();
+      });
+    });
+
+    $("saveLocalBtn").addEventListener("click", saveSettings);
+    $("stickySaveBtn").addEventListener("click", saveSettings);
+    $("openEmailBtn")?.addEventListener("click", openEmailQuote);
+    $("stickyEmailBtn").addEventListener("click", openEmailQuote);
+    $("pricingMode").addEventListener("change", updatePricingModeUI);
+
+    $("signinBtn").addEventListener("click", async () => {
+      try{
+        await signIn($("signinEmail").value.trim(), $("signinPassword").value);
+        await bootProMode();
+      } catch(err){
+        alert(err.message);
+      }
+    });
+
+    $("signupBtn").addEventListener("click", async () => {
+      try{
+        await signUp($("signupEmail").value.trim(), $("signupPassword").value, $("signupName").value.trim());
+        alert("Account created. If email confirmation is enabled, check your inbox first.");
+      } catch(err){
+        alert(err.message);
+      }
+    });
+
+    $("logoutBtn").addEventListener("click", async () => {
+      try{
+        unsubscribeRealtime();
+        await signOut();
+        appState.proEnabled = false;
+        appState.user = null;
+        appState.teamId = null;
+        appState.jobs = [];
+        appState.feed = [];
+        renderAuthState();
+        renderJobs();
+        renderFeed();
+      } catch(err){
+        alert(err.message);
+      }
+    });
+
+    $("createTeamBtn").addEventListener("click", async () => {
+      try{
+        appState.teamId = await createTeamAndMakeOwner($("teamBusinessName").value.trim());
+        await bootProMode();
+      } catch(err){
+        alert(err.message);
+      }
+    });
+
+    $("joinTeamBtn").addEventListener("click", async () => {
+      try{
+        appState.teamId = await joinTeamWithInvite($("inviteCode").value.trim());
+        await bootProMode();
+      } catch(err){
+        alert(err.message);
+      }
+    });
+
+    $("makeInviteBtn").addEventListener("click", async () => {
+      try{
+        $("inviteOutput").textContent = `Invite code: ${await createTeamInvite(appState.teamId, "worker")}`;
+      } catch(err){
+        alert(err.message);
+      }
+    });
+
+    $("saveTeamJobBtn").addEventListener("click", async () => {
+      try{
+        if (!appState.teamId) throw new Error("Create or join a Pro team first.");
+        await createJob();
+        alert("Job saved to team.");
+      } catch(err){
+        alert(err.message);
+      }
+    });
+
+    [
+      "businessName","contactName","businessPhone","businessEmail","customMessage",
+      "pricingMode","roundingRule","rateWindow","rateTrack","rateFlyscreen","rateBalustrade",
+      "rateSolar","rateGutter","hourlyRate","minsPerWindow","minsPerTrack","minsPerFlyscreen",
+      "minsPerBalustrade","minsPerSolar","minsPerGutterMetre","over6HoursFee","externalOnlyFactor",
+      "twoStoreyFactor","buildersCleanFactor","minimumFee","gstRate","gstIncluded",
+      "customerName","customerEmail","customerPhone","serviceAddress","windows","tracks","flyscreens",
+      "balustrades","solarPanels","gutterMetres","serviceType","storeys","buildersClean","jobNotes"
+    ].forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener("input", buildQuotePreview);
+      el.addEventListener("change", buildQuotePreview);
+    });
+
+    loadSettings();
+    buildQuotePreview();
+    setModeUI();
+    renderJobs();
+    renderFeed();
+    if (hasSupabaseKeys) bootProMode();
+
+    if ("serviceWorker" in navigator){
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>
