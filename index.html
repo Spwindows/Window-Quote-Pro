@@ -1232,11 +1232,48 @@
       const estimatedHours = totalMinutes / 60;
 
       let subtotal = 0;
-      if (settings.pricingMode === 'per-window') {
-        subtotal = services.reduce((sum, service) => sum + (service.count * (Number(service.rate) || 0)), 0);
-      } else {
-        subtotal = estimatedHours * (Number(settings.hourlyRate) || 0);
-      }
+let windowSubtotal = 0;
+let nonWindowSubtotal = 0;
+
+const externalWindowIds = ['sw', 'lw', 'sd'];
+
+if (settings.pricingMode === 'per-window') {
+  services.forEach(service => {
+    const lineTotal = service.count * (Number(service.rate) || 0);
+    subtotal += lineTotal;
+
+    if (externalWindowIds.includes(service.id)) {
+      windowSubtotal += lineTotal;
+    } else {
+      nonWindowSubtotal += lineTotal;
+    }
+  });
+} else {
+  subtotal = estimatedHours * (Number(settings.hourlyRate) || 0);
+
+  // In hourly mode, external-only should only reduce the window-related time.
+  let windowMinutes = 0;
+  let nonWindowMinutes = 0;
+
+  services.forEach(service => {
+    const lineMinutes = service.count * (Number(service.minutes) || 0);
+    if (externalWindowIds.includes(service.id)) {
+      windowMinutes += lineMinutes;
+    } else {
+      nonWindowMinutes += lineMinutes;
+    }
+  });
+
+  windowSubtotal = (windowMinutes / 60) * (Number(settings.hourlyRate) || 0);
+  nonWindowSubtotal = (nonWindowMinutes / 60) * (Number(settings.hourlyRate) || 0);
+}
+
+const externalMultiplier = quoteState.externalOnly
+  ? ((Number(settings.externalOnlyPercent) || 70) / 100)
+  : 1;
+
+const adjustedWindowSubtotal = windowSubtotal * externalMultiplier;
+const adjustedSubtotal = adjustedWindowSubtotal + nonWindowSubtotal;
 
       const externalMultiplier = quoteState.externalOnly ? ((Number(settings.externalOnlyPercent) || 70) / 100) : 1;
       const adjustedSubtotal = subtotal * externalMultiplier;
@@ -1247,17 +1284,20 @@
       const total = baseTotal + gstAmount;
 
       return {
-        itemCount,
-        totalMinutes,
-        estimatedHours,
-        subtotal,
-        adjustedSubtotal,
-        travelFee,
-        discount,
-        baseTotal,
-        gstAmount,
-        total
-      };
+  itemCount,
+  totalMinutes,
+  estimatedHours,
+  subtotal,
+  windowSubtotal,
+  nonWindowSubtotal,
+  adjustedWindowSubtotal,
+  adjustedSubtotal,
+  travelFee,
+  discount,
+  baseTotal,
+  gstAmount,
+  total
+};
     }
 
     function updateServiceRate(id, value) {
@@ -1341,9 +1381,13 @@
       if (address) summary += `Address: ${address}\n`;
 
       if (quoteState.externalOnly) {
-        summary += `Quote Type: External only (${settings.externalOnlyPercent}% of full price)\n`;
-      }
+  summary += `• Full Window Price: $${data.windowSubtotal.toFixed(2)}\n`;
+  summary += `• External Window Price (${settings.externalOnlyPercent}%): $${data.adjustedWindowSubtotal.toFixed(2)}\n`;
 
+  if (data.nonWindowSubtotal > 0) {
+    summary += `• Non-Window Services: $${data.nonWindowSubtotal.toFixed(2)}\n`;
+  }
+}
       summary += `\n*SERVICES:*\n`;
 
       if (settings.pricingMode === 'per-window') {
