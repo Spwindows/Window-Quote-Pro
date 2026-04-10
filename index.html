@@ -1635,30 +1635,45 @@ function getQuoteData() {
     }
 
     function renderProPanel() {
-      const { user, teamId, teamName, teamRole } = proState;
+  const { user, teamId, teamName, teamRole } = proState;
 
-      document.getElementById('pro-auth-panel').classList.toggle('hidden', !!user);
-      document.getElementById('pro-team-setup').classList.toggle('hidden', !user || !!teamId);
-      document.getElementById('pro-dashboard').classList.toggle('hidden', !user || !teamId);
+  document.getElementById('pro-auth-panel').classList.toggle('hidden', !!user);
+  document.getElementById('pro-team-setup').classList.toggle('hidden', !user || !!teamId);
+  document.getElementById('pro-dashboard').classList.toggle('hidden', !user || !teamId);
 
-      const badge = document.getElementById('pro-badge');
-      badge.className = teamId ? 'badge-pro' : 'badge-free';
-      badge.textContent = teamId ? 'PRO' : 'FREE';
+  const badge = document.getElementById('pro-badge');
+  badge.className = teamId ? 'badge-pro' : 'badge-free';
+  badge.textContent = teamId ? 'PRO' : 'FREE';
 
-      document.getElementById('header-sub').textContent = teamName || 'Fast quoting for window cleaners';
+  document.getElementById('header-sub').textContent =
+    teamName || 'Fast quoting for window cleaners';
 
-      if (user && teamId) {
-        document.getElementById('team-name-display').textContent = teamName;
-        document.getElementById('team-email-display').textContent = user.email || '';
-        const roleBadge = document.getElementById('team-role-badge');
-        roleBadge.textContent = teamRole === 'owner' ? 'Owner' : 'Staff';
-        roleBadge.className = 'role-badge ' + (teamRole === 'owner' ? 'role-owner' : 'role-staff');
-        buildJobFilters();
-        updateKPIs();
-        renderJobsList();
-      }
+  const roleBadge = document.getElementById('team-role-badge');
+  const settingsTabBtn = document.getElementById('settings-tab-btn');
+  const isOwner = String(teamRole || '').toLowerCase() === 'owner';
+
+  if (user && teamId) {
+    document.getElementById('team-name-display').textContent = teamName || 'My Business';
+    document.getElementById('team-email-display').textContent = user.email || '';
+
+    roleBadge.textContent = isOwner ? 'Owner' : 'Staff';
+    roleBadge.className = 'role-badge ' + (isOwner ? 'role-owner' : 'role-staff');
+
+    if (settingsTabBtn) {
+      settingsTabBtn.classList.toggle('hidden', !isOwner);
     }
 
+    buildJobFilters();
+    updateKPIs();
+    renderJobsList();
+  } else {
+    roleBadge.textContent = '';
+    roleBadge.className = 'role-badge hidden';
+    if (settingsTabBtn) settingsTabBtn.classList.add('hidden');
+  }
+
+  renderSettingsAccess();
+}
     function updateKPIs() {
       const jobs = proState.jobs || [];
       const active = jobs.filter(job => !['completed', 'cancelled'].includes(job.status)).length;
@@ -1694,72 +1709,81 @@ function getQuoteData() {
     }
 
     function renderJobsList() {
-      const container = document.getElementById('jobs-list-container');
-      let jobs = [...(proState.jobs || [])];
+  const container = document.getElementById('jobs-list-container');
+  const isOwner = String(proState.teamRole || '').toLowerCase() === 'owner';
 
-      if (jobFilter !== 'all') {
-        jobs = jobs.filter(job => job.status === jobFilter);
-      }
+  let jobs = [...(proState.jobs || [])];
 
-      if (!jobs.length) {
-        container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
-        return;
-      }
+  if (jobFilter !== 'all') {
+    jobs = jobs.filter(job => job.status === jobFilter);
+  }
 
-      container.innerHTML = jobs.map(job => `
-        <div class="job-card">
-          <div class="job-card-header" onclick="toggleJobCard('${job.id}')">
-            <div>
-              <div class="job-card-name">${escapeHtml(job.customer_name || 'Customer')}</div>
-              <div class="job-card-meta">
-                <span>$${(parseFloat(job.quoted_price) || 0).toFixed(2)}</span>
-                <span>•</span>
-                <span style="text-transform:capitalize;">${String(job.status || 'quote_sent').replaceAll('_', ' ')}</span>
-              </div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="m6 9 6 6 6-6"></path>
-            </svg>
-          </div>
+  if (!jobs.length) {
+    container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
+    return;
+  }
 
-          <div class="job-card-body hidden" id="job-body-${job.id}">
-            <div class="job-detail-grid">
-              <div>
-                <div class="job-detail-label">Address</div>
-                <div class="job-detail-val">${escapeHtml(job.service_address || 'N/A')}</div>
-              </div>
-              <div>
-                <div class="job-detail-label">Phone</div>
-                <div class="job-detail-val">${escapeHtml(job.customer_phone || 'N/A')}</div>
-              </div>
-              <div>
-                <div class="job-detail-label">Items</div>
-                <div class="job-detail-val">${escapeHtml(job.items_summary || 'N/A')}</div>
-              </div>
-              <div>
-                <div class="job-detail-label">Accepted</div>
-                <div class="job-detail-val">${job.accepted_at ? new Date(job.accepted_at).toLocaleString() : '—'}</div>
-              </div>
-              <div>
-                <div class="job-detail-label">Started</div>
-                <div class="job-detail-val">${job.started_at ? new Date(job.started_at).toLocaleString() : '—'}</div>
-              </div>
-              <div>
-                <div class="job-detail-label">Completed</div>
-                <div class="job-detail-val">${job.completed_at ? new Date(job.completed_at).toLocaleString() : '—'}</div>
-              </div>
-            </div>
-
-            <div class="job-actions">
-              <button class="btn btn-secondary btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'accepted')">Accept</button>
-              <button class="btn btn-primary btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'in_progress')">Start</button>
-              <button class="btn btn-success btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'completed')">Complete</button>
-            </div>
+  container.innerHTML = jobs.map(job => `
+    <div class="job-card">
+      <div class="job-card-header" ${isOwner ? `onclick="toggleJobCard('${job.id}')"` : ''} style="${isOwner ? 'cursor:pointer;' : 'cursor:default;'}">
+        <div>
+          <div class="job-card-name">${escapeHtml(job.customer_name || 'Customer')}</div>
+          <div class="job-card-meta">
+            <span>$${(parseFloat(job.quoted_price) || 0).toFixed(2)}</span>
+            <span>•</span>
+            <span style="text-transform:capitalize;">${String(job.status || 'quote_sent').replaceAll('_', ' ')}</span>
           </div>
         </div>
-      `).join('');
-    }
+        ${isOwner ? `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="m6 9 6 6 6-6"></path>
+          </svg>
+        ` : ''}
+      </div>
 
+      <div class="job-card-body ${isOwner ? 'hidden' : ''}" id="job-body-${job.id}">
+        <div class="job-detail-grid">
+          <div>
+            <div class="job-detail-label">Address</div>
+            <div class="job-detail-val">${escapeHtml(job.service_address || 'N/A')}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Phone</div>
+            <div class="job-detail-val">${escapeHtml(job.customer_phone || 'N/A')}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Items</div>
+            <div class="job-detail-val">${escapeHtml(job.items_summary || 'N/A')}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Status</div>
+            <div class="job-detail-val" style="text-transform:capitalize;">${escapeHtml(String(job.status || 'quote_sent').replaceAll('_', ' '))}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Accepted</div>
+            <div class="job-detail-val">${job.accepted_at ? new Date(job.accepted_at).toLocaleString() : '—'}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Started</div>
+            <div class="job-detail-val">${job.started_at ? new Date(job.started_at).toLocaleString() : '—'}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Completed</div>
+            <div class="job-detail-val">${job.completed_at ? new Date(job.completed_at).toLocaleString() : '—'}</div>
+          </div>
+        </div>
+
+        ${isOwner ? `
+          <div class="job-actions">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'accepted')">Accept</button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'in_progress')">Start</button>
+            <button class="btn btn-success btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'completed')">Complete</button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
     function toggleJobCard(id) {
       const body = document.getElementById('job-body-' + id);
       if (body) body.classList.toggle('hidden');
