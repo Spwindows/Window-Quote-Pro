@@ -14,9 +14,9 @@
       font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
       background: #f3f4f6;
       color: #111827;
-      -webkit-tap-highlight-color: transparent;
       min-height: 100vh;
       line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
     }
 
     input, textarea, select, button { font-family: inherit; }
@@ -42,6 +42,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 0.75rem 0;
+      gap: 0.75rem;
     }
 
     .header-brand {
@@ -64,10 +65,11 @@
     }
 
     .header-logo svg { color: #fff; }
+
     .header-title {
       font-weight: 900;
       font-size: 1rem;
-      line-height: 1.1;
+      line-height: 1.05;
       color: #111827;
     }
 
@@ -79,15 +81,16 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 200px;
+      max-width: 180px;
     }
 
     .badge-free,
     .badge-pro {
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 0.25rem 0.625rem;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.35rem 0.7rem;
       border-radius: 9999px;
+      line-height: 1;
     }
 
     .badge-free {
@@ -104,62 +107,11 @@
     .main-content {
       max-width: 680px;
       margin: 0 auto;
-      padding: 1rem 1rem 10rem;
       width: 100%;
+      padding: 1rem 1rem 10rem;
       flex: 1;
     }
 
-    .tab-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 50;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid #e5e7eb;
-      padding-bottom: env(safe-area-inset-bottom);
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-    }
-
-    .tab-bar-inner {
-      max-width: 680px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      padding: 0.5rem 1rem;
-      gap: 0.25rem;
-    }
-
-    .tab-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.5rem;
-      border-radius: 0.75rem;
-      border: none;
-      background: none;
-      cursor: pointer;
-      transition: all 0.15s;
-      color: #9ca3af;
-    }
-
-    .tab-btn.active { color: #2563eb; }
-
-    .tab-btn-icon {
-      width: 2.5rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0.75rem;
-      transition: all 0.15s;
-    }
-
-    .tab-btn.active .tab-btn-icon { background: #eff6ff; }
-    .tab-btn-label { font-size: 0.6875rem; font-weight: 700; line-height: 1; }
     .hidden { display: none !important; }
 
     .card {
@@ -172,41 +124,38 @@
     }
 
     .card-title {
-      font-weight: 700;
-      font-size: 0.9375rem;
+      font-weight: 800;
+      font-size: 0.95rem;
       color: #1f2937;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
     }
 
     .field-label {
       display: block;
-      font-size: 0.6875rem;
-      font-weight: 600;
+      font-size: 0.68rem;
+      font-weight: 700;
       color: #6b7280;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.28rem;
     }
 
     .field-input {
       width: 100%;
-      padding: 0.625rem 0.75rem;
-      border-radius: 0.75rem;
+      padding: 0.72rem 0.8rem;
+      border-radius: 0.8rem;
       border: 1px solid #e5e7eb;
       background: #f9fafb;
-      font-size: 0.875rem;
+      font-size: 0.92rem;
       font-weight: 500;
       color: #111827;
       outline: none;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
     }
 
     .field-input:focus {
-      border-color: #2563eb;
       background: #fff;
+      border-color: #2563eb;
       box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
 
@@ -217,18 +166,83 @@
     }
 
     .field-full { grid-column: 1 / -1; }
-    .field-stack { display: flex; flex-direction: column; gap: 0.625rem; }
+    .field-stack { display: flex; flex-direction: column; gap: 0.7rem; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      padding: 0.68rem 1rem;
+      border-radius: 0.8rem;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+    }
+
+    .btn-primary:hover { background: #1d4ed8; }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover { background: #e5e7eb; }
+
+    .btn-success {
+      background: #059669;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(5,150,105,0.2);
+    }
+
+    .btn-danger-soft {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .btn-full { width: 100%; }
+    .btn-sm { padding: 0.5rem 0.75rem; font-size: 0.82rem; }
+
+    .chip-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
 
     .stepper-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem;
-      border-radius: 0.75rem;
+      gap: 0.75rem;
+      padding: 0.8rem;
+      border-radius: 0.85rem;
       border: 1px solid #e5e7eb;
       background: #fff;
-      margin-bottom: 0.5rem;
-      gap: 0.75rem;
+      margin-bottom: 0.6rem;
     }
 
     .stepper-row.active {
@@ -239,9 +253,9 @@
     .stepper-label {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      font-weight: 600;
+      gap: 0.55rem;
+      font-size: 0.92rem;
+      font-weight: 700;
       color: #4b5563;
       min-width: 0;
     }
@@ -253,80 +267,184 @@
     .stepper-controls {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.55rem;
       flex-shrink: 0;
     }
 
     .stepper-val {
       width: 2rem;
       text-align: center;
-      font-weight: 700;
+      font-weight: 900;
       font-size: 1rem;
-      color: #9ca3af;
+      color: #6b7280;
       font-variant-numeric: tabular-nums;
     }
 
-    .stepper-row.active .stepper-val { color: #1d4ed8; }
-
     .btn-stepper {
-      width: 2.25rem;
-      height: 2.25rem;
+      width: 2.3rem;
+      height: 2.3rem;
       border-radius: 0.75rem;
       border: none;
-      font-size: 1.125rem;
-      font-weight: 700;
+      font-size: 1.2rem;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #f3f4f6;
       color: #374151;
-      user-select: none;
     }
 
-    .btn-stepper.minus:disabled { opacity: 0.35; cursor: default; }
     .btn-stepper.plus { background: #2563eb; color: #fff; }
+    .btn-stepper.minus:disabled { opacity: 0.35; cursor: default; }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.375rem;
-      padding: 0.625rem 1rem;
-      border-radius: 0.75rem;
-      border: none;
-      font-size: 0.875rem;
-      font-weight: 700;
+    .pricing-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .pricing-tab {
+      border: 1.5px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 0.85rem;
+      padding: 0.8rem;
+      text-align: left;
       cursor: pointer;
-      transition: all 0.15s;
     }
 
-    .btn-primary {
-      background: #2563eb;
+    .pricing-tab.active {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .pricing-tab-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .pricing-tab-sub {
+      font-size: 0.77rem;
+      color: #6b7280;
+      margin-top: 0.15rem;
+    }
+
+    .pricing-panel {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.9rem;
+      padding: 0.9rem;
+    }
+
+    .rate-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+
+    .rate-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.8rem;
+      padding: 0.75rem;
+    }
+
+    .rate-card-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+
+    .rate-card-input {
+      width: 100%;
+      padding: 0.55rem;
+      border-radius: 0.7rem;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #111827;
+      outline: none;
+    }
+
+    .rate-card-unit {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin-top: 0.2rem;
+    }
+
+    .quote-preview-pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.84rem;
+      color: #374151;
+      background: #f9fafb;
+      border-radius: 0.85rem;
+      padding: 1rem;
+      border: 1px solid #e5e7eb;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      line-height: 1.55;
+    }
+
+    .summary-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .summary-stat {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.85rem;
+      padding: 0.75rem;
+    }
+
+    .summary-stat-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .summary-stat-value {
+      font-size: 1rem;
+      font-weight: 900;
+      color: #111827;
+      margin-top: 0.2rem;
+    }
+
+    #toast-container {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 0.68rem 1rem;
+      border-radius: 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 700;
       color: #fff;
-      box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+      background: #1f2937;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+      pointer-events: auto;
     }
 
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-primary:disabled { opacity: 0.5; cursor: default; }
-
-    .btn-secondary { background: #f3f4f6; color: #374151; }
-    .btn-secondary:hover { background: #e5e7eb; }
-
-    .btn-danger-soft {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
-    }
-
-    .btn-success {
-      background: #059669;
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(5,150,105,0.2);
-    }
-
-    .btn-full { width: 100%; }
-    .btn-sm { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
+    .toast.success { background: #059669; }
+    .toast.error { background: #dc2626; }
 
     .quote-footer {
       position: fixed;
@@ -347,7 +465,7 @@
       border: 1px solid #e5e7eb;
       border-radius: 1rem;
       box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-      padding: 0.75rem 1rem;
+      padding: 0.8rem 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -355,152 +473,25 @@
     }
 
     .quote-price {
-      font-size: 1.875rem;
+      font-size: 1.9rem;
       font-weight: 900;
       color: #111827;
-      font-variant-numeric: tabular-nums;
       line-height: 1;
+      font-variant-numeric: tabular-nums;
     }
 
     .quote-price-sub {
-      font-size: 0.75rem;
+      font-size: 0.76rem;
       color: #9ca3af;
-      margin-top: 0.25rem;
-      font-weight: 500;
+      margin-top: 0.2rem;
+      font-weight: 600;
     }
 
-    .quote-footer-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
-
-    .chip-strip {
+    .quote-footer-actions {
       display: flex;
-      flex-wrap: wrap;
       gap: 0.5rem;
-      margin-bottom: 0.75rem;
+      flex-shrink: 0;
     }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.25rem 0.625rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      border: 1px solid #d1d5db;
-      background: #fff;
-      color: #374151;
-    }
-
-    .chip-blue {
-      background: #dbeafe;
-      color: #1d4ed8;
-      border-color: #bfdbfe;
-    }
-
-    .quote-preview-pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 0.8125rem;
-      color: #374151;
-      background: #f9fafb;
-      border-radius: 0.75rem;
-      padding: 1rem;
-      border: 1px solid #e5e7eb;
-      font-family: 'DM Sans', system-ui, sans-serif;
-      line-height: 1.5;
-    }
-
-    .pricing-mode-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .pricing-mode-btn {
-      padding: 0.75rem;
-      border-radius: 0.75rem;
-      border: 2px solid #e5e7eb;
-      background: #f9fafb;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.15s;
-    }
-
-    .pricing-mode-btn.active {
-      border-color: #2563eb;
-      background: #eff6ff;
-    }
-
-    .mode-title { font-weight: 700; font-size: 0.875rem; color: #1f2937; }
-    .pricing-mode-btn.active .mode-title { color: #1d4ed8; }
-    .mode-desc { font-size: 0.75rem; color: #6b7280; margin-top: 0.125rem; }
-
-    .rate-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-    }
-
-    .rate-card {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.75rem;
-      padding: 0.625rem;
-    }
-
-    .rate-card-label {
-      font-size: 0.6875rem;
-      font-weight: 600;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 0.25rem;
-    }
-
-    .rate-card-input {
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 0.65rem;
-      border: 1px solid #e5e7eb;
-      background: #fff;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #111827;
-      outline: none;
-    }
-
-    .rate-card-unit {
-      font-size: 0.6875rem;
-      color: #9ca3af;
-      margin-top: 0.125rem;
-    }
-
-    #toast-container {
-      position: fixed;
-      top: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      pointer-events: none;
-    }
-
-    .toast {
-      padding: 0.625rem 1rem;
-      border-radius: 0.85rem;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: #fff;
-      background: #1f2937;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.15);
-      pointer-events: auto;
-    }
-
-    .toast.success { background: #059669; }
-    .toast.error { background: #dc2626; }
 
     .auth-tabs {
       display: flex;
@@ -513,19 +504,19 @@
 
     .auth-tab {
       flex: 1;
-      padding: 0.65rem;
+      padding: 0.68rem;
       border-radius: 0.85rem;
       border: none;
       background: transparent;
-      font-size: 0.8125rem;
-      font-weight: 700;
+      font-size: 0.83rem;
+      font-weight: 800;
       color: #6b7280;
       cursor: pointer;
       text-align: center;
     }
 
     .auth-tab.active {
-      background: #ffffff;
+      background: #fff;
       color: #1d2433;
       box-shadow: 0 6px 14px rgba(0,0,0,0.08);
     }
@@ -539,18 +530,22 @@
     }
 
     .team-name {
-      font-weight: 800;
-      font-size: 1.125rem;
+      font-weight: 900;
+      font-size: 1.15rem;
       color: #111827;
       letter-spacing: -0.02em;
     }
 
-    .team-meta { font-size: 0.75rem; color: #6b7280; }
+    .team-meta {
+      font-size: 0.76rem;
+      color: #6b7280;
+      margin-top: 0.1rem;
+    }
 
     .role-badge {
-      font-size: 0.6875rem;
-      font-weight: 700;
-      padding: 0.25rem 0.625rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.28rem 0.65rem;
       border-radius: 9999px;
       white-space: nowrap;
     }
@@ -576,8 +571,8 @@
 
     .kpi-label,
     .revenue-label {
-      font-size: 0.6875rem;
-      font-weight: 700;
+      font-size: 0.68rem;
+      font-weight: 800;
       color: #6b7280;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -608,27 +603,27 @@
     }
 
     .job-card-header {
-      padding: 0.8rem 1rem;
+      padding: 0.85rem 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      cursor: pointer;
       gap: 1rem;
+      cursor: pointer;
     }
 
     .job-card-name {
       font-weight: 800;
-      font-size: 0.9375rem;
+      font-size: 0.95rem;
       color: #111827;
     }
 
     .job-card-meta {
       display: flex;
       gap: 0.75rem;
-      margin-top: 0.25rem;
-      font-size: 0.75rem;
-      color: #9ca3af;
       flex-wrap: wrap;
+      margin-top: 0.2rem;
+      font-size: 0.76rem;
+      color: #9ca3af;
     }
 
     .job-card-body {
@@ -640,19 +635,19 @@
     .job-detail-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 0.5rem;
+      gap: 0.6rem;
       margin-bottom: 0.75rem;
     }
 
     .job-detail-label {
-      font-size: 0.625rem;
-      font-weight: 700;
+      font-size: 0.64rem;
+      font-weight: 800;
       color: #9ca3af;
       text-transform: uppercase;
     }
 
     .job-detail-val {
-      font-size: 0.8125rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: #374151;
       word-break: break-word;
@@ -661,23 +656,75 @@
     .job-actions {
       display: flex;
       gap: 0.5rem;
-      margin-top: 1rem;
       flex-wrap: wrap;
+      margin-top: 1rem;
     }
+
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #e5e7eb;
+      padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    }
+
+    .tab-bar-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      gap: 0.25rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #9ca3af;
+    }
+
+    .tab-btn.active { color: #2563eb; }
+
+    .tab-btn-icon {
+      width: 2.5rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+    }
+
+    .tab-btn.active .tab-btn-icon { background: #eff6ff; }
+    .tab-btn-label { font-size: 0.69rem; font-weight: 800; line-height: 1; }
 
     @media (max-width: 520px) {
       .field-grid-2,
       .rate-grid,
-      .pricing-mode-grid,
+      .summary-stats,
       .kpi-grid,
       .revenue-grid,
-      .job-detail-grid {
+      .job-detail-grid,
+      .pricing-tabs {
         grid-template-columns: 1fr;
       }
 
       .quote-footer-card { padding: 0.8rem; }
-      .quote-price { font-size: 1.5rem; }
-      .header-sub { max-width: 140px; }
+      .quote-price { font-size: 1.55rem; }
+      .header-sub { max-width: 120px; }
+      .quote-footer-actions .btn { padding-left: 0.85rem; padding-right: 0.85rem; }
     }
   </style>
 </head>
@@ -704,7 +751,7 @@
         </div>
 
         <div style="display:flex;align-items:center;gap:0.5rem;">
-          <button class="btn btn-secondary btn-sm" id="global-reset-btn" title="Reset Quote">
+          <button class="btn btn-secondary btn-sm" id="global-reset-btn" title="Reset Quote" type="button">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
               <path d="M3 3v5h5"></path>
@@ -742,30 +789,34 @@
         </div>
 
         <div class="card">
-          <div class="card-title" style="justify-content:space-between;">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
             <span>Services & Counts</span>
-            <button class="btn btn-secondary btn-sm" id="clear-counts-btn">Clear All</button>
+            <button class="btn btn-secondary btn-sm" id="clear-counts-btn" type="button">Clear All</button>
           </div>
           <div id="steppers-container"></div>
         </div>
 
         <div class="card">
           <div class="card-title">Pricing Strategy</div>
-          <div class="pricing-mode-grid">
-            <button class="pricing-mode-btn active" id="mode-per-window" type="button">
-              <div class="mode-title">Per Item</div>
-              <div class="mode-desc">Standard unit rates</div>
+
+          <div class="pricing-tabs">
+            <button class="pricing-tab active" id="mode-per-window" type="button">
+              <div class="pricing-tab-title">Per Item</div>
+              <div class="pricing-tab-sub">Standard unit rates</div>
             </button>
-            <button class="pricing-mode-btn" id="mode-hourly" type="button">
-              <div class="mode-title">Hourly Rate</div>
-              <div class="mode-desc">Time-based estimate</div>
+
+            <button class="pricing-tab" id="mode-hourly" type="button">
+              <div class="pricing-tab-title">Hourly Estimate</div>
+              <div class="pricing-tab-sub">Minutes per service</div>
             </button>
           </div>
+
           <div id="mode-options-container"></div>
         </div>
 
         <div class="card">
           <div class="card-title">Quote Summary</div>
+          <div class="summary-stats" id="quote-summary-stats"></div>
           <pre class="quote-preview-pre" id="quote-preview-text">Start adding windows...</pre>
         </div>
       </div>
@@ -805,7 +856,9 @@
                 <input type="text" class="field-input" id="team-name-input" placeholder="My Cleaning Biz" />
               </div>
               <button class="btn btn-primary btn-full" id="create-team-btn" type="button">Create Team</button>
-              <div style="text-align:center;font-size:0.75rem;color:#9ca3af;margin:0.5rem 0;">OR</div>
+
+              <div style="text-align:center;font-size:0.76rem;color:#9ca3af;margin:0.4rem 0;">OR</div>
+
               <div>
                 <label class="field-label">Invite Code</label>
                 <input type="text" class="field-input" id="invite-code-input" placeholder="ABCD-1234" />
@@ -854,21 +907,19 @@
           <div class="chip-strip" id="job-filters" style="margin-bottom:1rem;"></div>
           <div id="jobs-list-container"></div>
         </div>
-      </div>
-
-      <div id="tab-settings" class="hidden">
+      </div>      <div id="tab-settings" class="hidden">
         <div class="card">
           <div class="card-title">Business Information</div>
           <div class="field-stack">
             <div>
               <label class="field-label">Business Name</label>
-              <input type="text" class="field-input" id="s-bizname" placeholder="Crystal Clear Windows" />
+              <input type="text" class="field-input" id="s-bizname" placeholder="SP Window Cleaning Pty Ltd" />
             </div>
 
             <div class="field-grid-2">
               <div>
                 <label class="field-label">Contact Name</label>
-                <input type="text" class="field-input" id="s-contact" placeholder="John" />
+                <input type="text" class="field-input" id="s-contact" placeholder="Sean" />
               </div>
               <div>
                 <label class="field-label">Phone</label>
@@ -878,7 +929,7 @@
 
             <div>
               <label class="field-label">Email</label>
-              <input type="email" class="field-input" id="s-email" placeholder="biz@email.com" />
+              <input type="email" class="field-input" id="s-email" placeholder="info@business.com.au" />
             </div>
 
             <div>
@@ -900,7 +951,7 @@
             <div class="quote-price-sub" id="footer-count">0 items selected</div>
           </div>
           <div class="quote-footer-actions">
-            <button class="btn btn-success" id="save-job-btn" type="button" style="display:none;">Save</button>
+            <button class="btn btn-success" id="save-job-btn" type="button">Save</button>
             <button class="btn btn-primary" id="copy-quote-btn" type="button">Copy</button>
           </div>
         </div>
@@ -952,30 +1003,29 @@
 
     let supabaseClient = null;
     let realtimeChannel = null;
-    let saveBusy = false;
     let authMode = 'signin';
     let pricingMode = 'per-window';
     let jobFilter = 'all';
-
-    let services = [
-      { id: 'sw', name: 'Standard Windows', count: 0, rate: 10, icon: '<path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
-      { id: 'lw', name: 'Large Windows', count: 0, rate: 18, icon: '<rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
-      { id: 'sd', name: 'Sliding Doors', count: 0, rate: 25, icon: '<path d="M18 3v18"></path><path d="M3 3h15"></path><path d="M3 21h15"></path><path d="M3 3v18"></path>' },
-      { id: 'fs', name: 'Fly Screens', count: 0, rate: 5, icon: '<path d="M3 3h18v18H3z"></path><path d="M9 3v18"></path><path d="M15 3v18"></path><path d="M3 9h18"></path><path d="M3 15h18"></path>' },
-      { id: 'tr', name: 'Tracks/Sills', count: 0, rate: 5, icon: '<path d="M3 21h18"></path><path d="M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"></path>' }
-    ];
+    const STORAGE_KEY = 'window-quote-pro-v2-settings';
 
     let settings = {
-      businessName: 'Crystal Clear Windows',
-      contactName: 'John',
-      businessPhone: '0400 000 000',
-      businessEmail: 'biz@email.com',
+      businessName: 'SP Window Cleaning Pty Ltd',
+      contactName: 'Sean',
+      businessPhone: '',
+      businessEmail: '',
       customMessage: 'Thank you for choosing us!',
-      hourlyRate: 80,
-      estimatedHours: 1,
+      hourlyRate: 150,
       travelFee: 0,
       discount: 0
     };
+
+    let services = [
+      { id: 'sw', name: 'Standard Windows', count: 0, rate: 10, minutes: 7, icon: '<path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
+      { id: 'lw', name: 'Large Windows', count: 0, rate: 18, minutes: 10, icon: '<rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
+      { id: 'sd', name: 'Sliding Doors', count: 0, rate: 25, minutes: 12, icon: '<path d="M18 3v18"></path><path d="M3 3h15"></path><path d="M3 21h15"></path><path d="M3 3v18"></path>' },
+      { id: 'fs', name: 'Fly Screens', count: 0, rate: 5, minutes: 4, icon: '<path d="M3 3h18v18H3z"></path><path d="M9 3v18"></path><path d="M15 3v18"></path><path d="M3 9h18"></path><path d="M3 15h18"></path>' },
+      { id: 'tr', name: 'Tracks/Sills', count: 0, rate: 5, minutes: 3, icon: '<path d="M3 21h18"></path><path d="M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"></path>' }
+    ];
 
     let proState = {
       user: null,
@@ -985,13 +1035,22 @@
       jobs: []
     };
 
-    const STORAGE_KEY = 'window-quote-pro-v1-settings';    function showToast(message, type = '') {
+    function showToast(message, type = '') {
       const container = document.getElementById('toast-container');
       const el = document.createElement('div');
       el.className = `toast ${type}`;
       el.textContent = message;
       container.appendChild(el);
       setTimeout(() => el.remove(), 3000);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
     }
 
     function loadLocalSettings() {
@@ -1001,16 +1060,19 @@
         const parsed = JSON.parse(raw);
 
         if (parsed.settings) {
-          settings = {
-            ...settings,
-            ...parsed.settings
-          };
+          settings = { ...settings, ...parsed.settings };
         }
 
         if (Array.isArray(parsed.services)) {
           services = services.map(service => {
-            const found = parsed.services.find(s => s.id === service.id);
-            return found ? { ...service, rate: Number(found.rate) || service.rate } : service;
+            const saved = parsed.services.find(item => item.id === service.id);
+            return saved
+              ? {
+                  ...service,
+                  rate: Number(saved.rate) || service.rate,
+                  minutes: Number(saved.minutes) || service.minutes
+                }
+              : service;
           });
         }
 
@@ -1025,8 +1087,12 @@
     function saveLocalSettings() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         settings,
-        services: services.map(s => ({ id: s.id, rate: s.rate })),
-        pricingMode
+        pricingMode,
+        services: services.map(service => ({
+          id: service.id,
+          rate: service.rate,
+          minutes: service.minutes
+        }))
       }));
     }
 
@@ -1039,13 +1105,297 @@
     }
 
     function applySettingsFromForm() {
-      settings.businessName = document.getElementById('s-bizname').value.trim() || 'Crystal Clear Windows';
+      settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
       settings.contactName = document.getElementById('s-contact').value.trim();
       settings.businessPhone = document.getElementById('s-phone').value.trim();
       settings.businessEmail = document.getElementById('s-email').value.trim();
       settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
       saveLocalSettings();
       updateQuoteDisplay();
+    }
+
+    function getQuoteData() {
+      const itemCount = services.reduce((sum, service) => sum + service.count, 0);
+      const totalMinutes = services.reduce((sum, service) => {
+        return sum + (service.count * (Number(service.minutes) || 0));
+      }, 0);
+      const estimatedHours = totalMinutes / 60;
+
+      let subtotal = 0;
+      if (pricingMode === 'per-window') {
+        subtotal = services.reduce((sum, service) => sum + (service.count * (Number(service.rate) || 0)), 0);
+      } else {
+        subtotal = estimatedHours * (Number(settings.hourlyRate) || 0);
+      }
+
+      const travelFee = Number(settings.travelFee) || 0;
+      const discount = Number(settings.discount) || 0;
+      const total = Math.max(0, subtotal + travelFee - discount);
+
+      return {
+        itemCount,
+        totalMinutes,
+        estimatedHours,
+        subtotal,
+        travelFee,
+        discount,
+        total
+      };
+    }
+
+    function updateServiceRate(id, value) {
+      const service = services.find(item => item.id === id);
+      if (!service) return;
+      service.rate = Math.max(0, Number(value) || 0);
+      saveLocalSettings();
+      updateQuoteDisplay();
+    }
+
+    function updateServiceMinutes(id, value) {
+      const service = services.find(item => item.id === id);
+      if (!service) return;
+      service.minutes = Math.max(0, Number(value) || 0);
+      saveLocalSettings();
+      renderPricingMode();
+      updateQuoteDisplay();
+    }
+
+    function updateSettingNumber(key, value) {
+      settings[key] = Math.max(0, Number(value) || 0);
+      saveLocalSettings();
+      renderPricingMode();
+      updateQuoteDisplay();
+    }
+
+    function updateCount(id, delta) {
+      const service = services.find(item => item.id === id);
+      if (!service) return;
+      service.count = Math.max(0, service.count + delta);
+      renderSteppers();
+      renderPricingMode();
+      updateQuoteDisplay();
+    }
+
+    function renderSteppers() {
+      document.getElementById('steppers-container').innerHTML = services.map(service => `
+        <div class="stepper-row ${service.count > 0 ? 'active' : ''}">
+          <div class="stepper-label">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              ${service.icon}
+            </svg>
+            <span>${service.name}</span>
+          </div>
+
+          <div class="stepper-controls">
+            <button class="btn-stepper minus" type="button" onclick="updateCount('${service.id}', -1)" ${service.count === 0 ? 'disabled' : ''}>-</button>
+            <div class="stepper-val">${service.count}</div>
+            <button class="btn-stepper plus" type="button" onclick="updateCount('${service.id}', 1)">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPricingMode() {
+      const perBtn = document.getElementById('mode-per-window');
+      const hourlyBtn = document.getElementById('mode-hourly');
+      const container = document.getElementById('mode-options-container');
+      const data = getQuoteData();
+
+      perBtn.classList.toggle('active', pricingMode === 'per-window');
+      hourlyBtn.classList.toggle('active', pricingMode === 'hourly');
+
+      if (pricingMode === 'per-window') {
+        container.innerHTML = `
+          <div class="pricing-panel">
+            <div class="rate-grid">
+              ${services.map(service => `
+                <div class="rate-card">
+                  <div class="rate-card-label">${service.name}</div>
+                  <input type="number" min="0" step="1" class="rate-card-input" value="${service.rate}" onchange="updateServiceRate('${service.id}', this.value)" />
+                  <div class="rate-card-unit">Rate per item</div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="field-grid-2" style="margin-top:0.8rem;">
+              <div>
+                <label class="field-label">Travel Fee</label>
+                <input type="number" min="0" step="1" class="field-input" value="${settings.travelFee || 0}" onchange="updateSettingNumber('travelFee', this.value)" />
+              </div>
+              <div>
+                <label class="field-label">Discount</label>
+                <input type="number" min="0" step="1" class="field-input" value="${settings.discount || 0}" onchange="updateSettingNumber('discount', this.value)" />
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="pricing-panel">
+            <div class="field-grid-2" style="margin-bottom:0.8rem;">
+              <div>
+                <label class="field-label">Hourly Rate</label>
+                <input type="number" min="0" step="1" class="field-input" value="${settings.hourlyRate || 0}" onchange="updateSettingNumber('hourlyRate', this.value)" />
+              </div>
+              <div>
+                <label class="field-label">Estimated Hours</label>
+                <input type="text" class="field-input" value="${data.estimatedHours.toFixed(2)} hrs" readonly />
+              </div>
+            </div>
+
+            <div class="rate-grid">
+              ${services.map(service => `
+                <div class="rate-card">
+                  <div class="rate-card-label">${service.name}</div>
+                  <input type="number" min="0" step="1" class="rate-card-input" value="${service.minutes}" onchange="updateServiceMinutes('${service.id}', this.value)" />
+                  <div class="rate-card-unit">${service.count} selected • minutes each</div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="field-grid-2" style="margin-top:0.8rem;">
+              <div>
+                <label class="field-label">Travel Fee</label>
+                <input type="number" min="0" step="1" class="field-input" value="${settings.travelFee || 0}" onchange="updateSettingNumber('travelFee', this.value)" />
+              </div>
+              <div>
+                <label class="field-label">Discount</label>
+                <input type="number" min="0" step="1" class="field-input" value="${settings.discount || 0}" onchange="updateSettingNumber('discount', this.value)" />
+              </div>
+            </div>
+
+            <div class="summary-stats" style="margin-top:0.8rem;margin-bottom:0;">
+              <div class="summary-stat">
+                <div class="summary-stat-label">Total Minutes</div>
+                <div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div>
+              </div>
+              <div class="summary-stat">
+                <div class="summary-stat-label">Labour Quote</div>
+                <div class="summary-stat-value">$${data.subtotal.toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+        function updateQuoteDisplay() {
+      const data = getQuoteData();
+
+      document.getElementById('footer-total').textContent = `$${data.total.toFixed(2)}`;
+      document.getElementById('footer-count').textContent = `${data.itemCount} items selected`;
+
+      document.getElementById('service-chips').innerHTML = services
+        .filter(service => service.count > 0)
+        .map(service => `<div class="chip">${service.count} × ${service.name}</div>`)
+        .join('');
+
+      document.getElementById('quote-summary-stats').innerHTML = `
+        <div class="summary-stat">
+          <div class="summary-stat-label">Items</div>
+          <div class="summary-stat-value">${data.itemCount}</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-stat-label">Total</div>
+          <div class="summary-stat-value">$${data.total.toFixed(2)}</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-stat-label">Minutes</div>
+          <div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-stat-label">Hours</div>
+          <div class="summary-stat-value">${data.estimatedHours.toFixed(2)}</div>
+        </div>
+      `;
+
+      let summary = `*QUOTE FROM ${String(settings.businessName || 'SP Window Cleaning Pty Ltd').toUpperCase()}*\n\n`;
+      summary += `Hi ${document.getElementById('q-name').value.trim() || 'Customer'},\n`;
+
+      const address = document.getElementById('q-address').value.trim();
+      if (address) summary += `Address: ${address}\n`;
+
+      summary += `\n*SERVICES:*\n`;
+
+      if (pricingMode === 'per-window') {
+        const selected = services.filter(service => service.count > 0);
+        if (!selected.length) {
+          summary += `• No items added yet\n`;
+        } else {
+          selected.forEach(service => {
+            summary += `• ${service.count} × ${service.name}: $${(service.count * service.rate).toFixed(2)}\n`;
+          });
+        }
+      } else {
+        const selected = services.filter(service => service.count > 0);
+        if (!selected.length) {
+          summary += `• No items added yet\n`;
+        } else {
+          selected.forEach(service => {
+            const serviceMinutes = service.count * service.minutes;
+            summary += `• ${service.count} × ${service.name} @ ${service.minutes} min each = ${serviceMinutes} min\n`;
+          });
+        }
+        summary += `• Labour: ${data.estimatedHours.toFixed(2)} hrs @ $${Number(settings.hourlyRate || 0).toFixed(2)} = $${data.subtotal.toFixed(2)}\n`;
+      }
+
+      if (data.travelFee > 0) {
+        summary += `• Travel Fee: $${data.travelFee.toFixed(2)}\n`;
+      }
+
+      if (data.discount > 0) {
+        summary += `• Discount: -$${data.discount.toFixed(2)}\n`;
+      }
+
+      summary += `\n*TOTAL: $${data.total.toFixed(2)}*\n\n${settings.customMessage || 'Thank you for choosing us!'}`;
+
+      document.getElementById('quote-preview-text').textContent =
+        data.itemCount > 0 || pricingMode === 'hourly'
+          ? summary
+          : 'Start adding windows...';
+    }
+
+    function resetQuote() {
+      document.getElementById('q-name').value = '';
+      document.getElementById('q-phone').value = '';
+      document.getElementById('q-email').value = '';
+      document.getElementById('q-address').value = '';
+      services.forEach(service => { service.count = 0; });
+      renderSteppers();
+      renderPricingMode();
+      updateQuoteDisplay();
+    }
+
+    function buildEmailSubject() {
+      const customer = document.getElementById('q-name').value.trim() || 'Customer';
+      return `Window Cleaning Quote - ${customer}`;
+    }
+
+    function buildEmailBody() {
+      return document.getElementById('quote-preview-text').textContent;
+    }
+
+    function openQuoteEmail() {
+      const email = document.getElementById('q-email').value.trim();
+      const subject = buildEmailSubject();
+      const body = buildEmailBody();
+      const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailto;
+    }
+
+    function switchTab(tab) {
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(button => button.classList.remove('active'));
+
+      if (tab === 'quote') buttons[0].classList.add('active');
+      if (tab === 'pro') buttons[1].classList.add('active');
+      if (tab === 'settings') buttons[2].classList.add('active');
+
+      ['quote', 'pro', 'settings'].forEach(name => {
+        document.getElementById('tab-' + name).classList.add('hidden');
+      });
+
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+      document.getElementById('quote-footer').style.display = tab === 'quote' ? 'block' : 'none';
+      window.scrollTo(0, 0);
     }
 
     async function getSb() {
@@ -1075,9 +1425,7 @@
       const res = await sb.auth.signUp({
         email,
         password,
-        options: {
-          data: { full_name: name || '' }
-        }
+        options: { data: { full_name: name || '' } }
       });
       if (res.error) throw res.error;
       return res.data;
@@ -1116,9 +1464,7 @@
       const memberships = membershipRes.data || [];
       if (!memberships.length) return [];
 
-      const teamIds = memberships.map(m => m.team_id).filter(Boolean);
-      if (!teamIds.length) return [];
-
+      const teamIds = memberships.map(item => item.team_id).filter(Boolean);
       const teamsRes = await sb
         .from('teams')
         .select('id, business_name, invite_code')
@@ -1126,12 +1472,8 @@
 
       if (teamsRes.error) throw teamsRes.error;
 
-      const teamsById = new Map((teamsRes.data || []).map(t => [t.id, t]));
-
-      return memberships.map(m => ({
-        ...m,
-        team: teamsById.get(m.team_id) || null
-      }));
+      const teamMap = new Map((teamsRes.data || []).map(team => [team.id, team]));
+      return memberships.map(item => ({ ...item, team: teamMap.get(item.team_id) || null }));
     }
 
     async function fetchJobs(teamId) {
@@ -1150,14 +1492,7 @@
     async function createTeamAndMakeOwner(name) {
       const sb = await getSb();
       if (!sb) throw new Error('Supabase unavailable');
-
-      const cleanName = (name || '').trim();
-      if (!cleanName) throw new Error('Business name is required');
-
-      const res = await sb.rpc('create_team_and_make_owner', {
-        p_business_name: cleanName
-      });
-
+      const res = await sb.rpc('create_team_and_make_owner', { p_business_name: name.trim() });
       if (res.error) throw res.error;
       return res.data;
     }
@@ -1165,14 +1500,7 @@
     async function joinTeamWithInvite(code) {
       const sb = await getSb();
       if (!sb) throw new Error('Supabase unavailable');
-
-      const cleanCode = (code || '').trim();
-      if (!cleanCode) throw new Error('Invite code is required');
-
-      const res = await sb.rpc('join_team_with_invite', {
-        p_invite_code: cleanCode
-      });
-
+      const res = await sb.rpc('join_team_with_invite', { p_invite_code: code.trim() });
       if (res.error) throw res.error;
       return res.data;
     }
@@ -1233,7 +1561,7 @@
 
         renderProPanel();
       } catch (error) {
-        console.error('bootPro error:', error);
+        console.error(error);
         showToast(error.message || 'Failed to load Pro area', 'error');
       }
     }
@@ -1250,7 +1578,6 @@
       badge.textContent = teamId ? 'PRO' : 'FREE';
 
       document.getElementById('header-sub').textContent = teamName || 'Fast quoting for window cleaners';
-      document.getElementById('save-job-btn').style.display = teamId ? '' : 'none';
 
       if (user && teamId) {
         document.getElementById('team-name-display').textContent = teamName;
@@ -1258,11 +1585,31 @@
         const roleBadge = document.getElementById('team-role-badge');
         roleBadge.textContent = teamRole === 'owner' ? 'Owner' : 'Staff';
         roleBadge.className = 'role-badge ' + (teamRole === 'owner' ? 'role-owner' : 'role-staff');
-
-        updateKPIs();
         buildJobFilters();
+        updateKPIs();
         renderJobsList();
       }
+    }
+
+    function updateKPIs() {
+      const jobs = proState.jobs || [];
+      const active = jobs.filter(job => !['completed', 'cancelled'].includes(job.status)).length;
+      const completed = jobs.filter(job => job.status === 'completed').length;
+      const paid = jobs.filter(job => job.status === 'completed').reduce((sum, job) => {
+        return sum + (parseFloat(job.paid_amount) || parseFloat(job.quoted_price) || 0);
+      }, 0);
+      const quoted = jobs.reduce((sum, job) => sum + (parseFloat(job.quoted_price) || 0), 0);
+
+      document.getElementById('kpi-active').textContent = String(active);
+      document.getElementById('kpi-weekly').textContent = String(completed);
+      document.getElementById('kpi-collected').textContent = `$${paid.toFixed(0)}`;
+      document.getElementById('kpi-pending').textContent = `$${quoted.toFixed(0)}`;
+    }
+
+    function setJobFilter(filter) {
+      jobFilter = filter;
+      buildJobFilters();
+      renderJobsList();
     }
 
     function buildJobFilters() {
@@ -1275,31 +1622,12 @@
       ];
 
       document.getElementById('job-filters').innerHTML = filters.map(filter => {
-        const active = jobFilter === filter.val ? 'chip chip-blue' : 'chip';
-        return `<button class="${active}" type="button" onclick="setJobFilter('${filter.val}')">${filter.label}</button>`;
+        const activeClass = jobFilter === filter.val ? 'chip' : 'chip';
+        const style = jobFilter === filter.val
+          ? 'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;'
+          : '';
+        return `<button class="${activeClass}" type="button" style="${style}" onclick="setJobFilter('${filter.val}')">${filter.label}</button>`;
       }).join('');
-    }
-
-    function setJobFilter(filter) {
-      jobFilter = filter;
-      buildJobFilters();
-      renderJobsList();
-    }
-
-    function updateKPIs() {
-      const jobs = proState.jobs || [];
-      const activeJobs = jobs.filter(job => !['completed', 'cancelled'].includes(job.status)).length;
-      const completedJobs = jobs.filter(job => job.status === 'completed').length;
-      const paid = jobs
-        .filter(job => job.status === 'completed')
-        .reduce((sum, job) => sum + (parseFloat(job.paid_amount) || parseFloat(job.quoted_price) || 0), 0);
-      const quoted = jobs
-        .reduce((sum, job) => sum + (parseFloat(job.quoted_price) || 0), 0);
-
-      document.getElementById('kpi-active').textContent = String(activeJobs);
-      document.getElementById('kpi-weekly').textContent = String(completedJobs);
-      document.getElementById('kpi-collected').textContent = `$${paid.toFixed(0)}`;
-      document.getElementById('kpi-pending').textContent = `$${quoted.toFixed(0)}`;
     }
 
     function renderJobsList() {
@@ -1367,261 +1695,15 @@
         const sb = await getSb();
         if (!sb) throw new Error('Supabase unavailable');
 
-        const res = await sb
-          .from('jobs')
-          .update({ status })
-          .eq('id', id);
-
+        const res = await sb.from('jobs').update({ status }).eq('id', id);
         if (res.error) throw res.error;
+
         showToast('Updated!', 'success');
         await bootPro();
       } catch (error) {
         console.error(error);
         showToast(error.message || 'Could not update job', 'error');
       }
-    }
-
-    async function saveJobToTeam() {
-      if (!proState.teamId || saveBusy) return;
-
-      saveBusy = true;
-      try {
-        const sb = await getSb();
-        if (!sb) throw new Error('Supabase unavailable');
-
-        const payload = {
-          team_id: proState.teamId,
-          customer_name: document.getElementById('q-name').value.trim() || 'Customer',
-          customer_phone: document.getElementById('q-phone').value.trim(),
-          customer_email: document.getElementById('q-email').value.trim(),
-          service_address: document.getElementById('q-address').value.trim(),
-          quoted_price: calculateTotal(),
-          items_summary: services
-            .filter(service => service.count > 0)
-            .map(service => `${service.count} ${service.name}`)
-            .join(', '),
-          status: 'quote_sent',
-          created_by: proState.user?.id || null
-        };
-
-        const res = await sb.from('jobs').insert(payload);
-        if (res.error) throw res.error;
-
-        showToast('Saved!', 'success');
-        await bootPro();
-        switchTab('pro');
-      } catch (error) {
-        console.error(error);
-        showToast(error.message || 'Could not save job', 'error');
-      } finally {
-        saveBusy = false;
-      }
-    }
-
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    function updateCount(id, delta) {
-      const service = services.find(item => item.id === id);
-      if (!service) return;
-      service.count = Math.max(0, service.count + delta);
-      renderSteppers();
-      updateQuoteDisplay();
-    }
-
-    function renderSteppers() {
-      document.getElementById('steppers-container').innerHTML = services.map(service => `
-        <div class="stepper-row ${service.count > 0 ? 'active' : ''}">
-          <div class="stepper-label">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              ${service.icon}
-            </svg>
-            <span>${service.name}</span>
-          </div>
-
-          <div class="stepper-controls">
-            <button class="btn-stepper minus" type="button" onclick="updateCount('${service.id}', -1)" ${service.count === 0 ? 'disabled' : ''}>-</button>
-            <div class="stepper-val">${service.count}</div>
-            <button class="btn-stepper plus" type="button" onclick="updateCount('${service.id}', 1)">+</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function calculateTotal() {
-      let total = 0;
-
-      if (pricingMode === 'per-window') {
-        total = services.reduce((sum, service) => sum + (service.count * service.rate), 0);
-      } else {
-        total = (Number(settings.hourlyRate) || 0) * (Number(settings.estimatedHours) || 0);
-      }
-
-      total += Number(settings.travelFee) || 0;
-      total -= Number(settings.discount) || 0;
-
-      return Math.max(0, total);
-    }
-
-    function updateServiceRate(id, value) {
-      const service = services.find(item => item.id === id);
-      if (!service) return;
-      service.rate = Math.max(0, Number(value) || 0);
-      saveLocalSettings();
-      updateQuoteDisplay();
-    }
-
-    function updateSettingNumber(key, value) {
-      settings[key] = Math.max(0, Number(value) || 0);
-      saveLocalSettings();
-      updateQuoteDisplay();
-    }
-
-    function renderPricingMode() {
-      const perBtn = document.getElementById('mode-per-window');
-      const hourlyBtn = document.getElementById('mode-hourly');
-      const container = document.getElementById('mode-options-container');
-
-      perBtn.classList.toggle('active', pricingMode === 'per-window');
-      hourlyBtn.classList.toggle('active', pricingMode === 'hourly');
-
-      if (pricingMode === 'per-window') {
-        container.innerHTML = `
-          <div class="rate-grid">
-            ${services.map(service => `
-              <div class="rate-card">
-                <div class="rate-card-label">${service.name}</div>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  class="rate-card-input"
-                  value="${service.rate}"
-                  onchange="updateServiceRate('${service.id}', this.value)"
-                />
-                <div class="rate-card-unit">Rate per item</div>
-              </div>
-            `).join('')}
-          </div>
-
-          <div style="margin-top:0.75rem;">
-            <label class="field-label">Travel Fee</label>
-            <input type="number" min="0" step="1" class="field-input" value="${settings.travelFee || 0}" onchange="updateSettingNumber('travelFee', this.value)" />
-          </div>
-
-          <div style="margin-top:0.75rem;">
-            <label class="field-label">Discount</label>
-            <input type="number" min="0" step="1" class="field-input" value="${settings.discount || 0}" onchange="updateSettingNumber('discount', this.value)" />
-          </div>
-        `;
-      } else {
-        container.innerHTML = `
-          <div class="field-grid-2">
-            <div>
-              <label class="field-label">Hourly Rate</label>
-              <input type="number" min="0" step="1" class="field-input" value="${settings.hourlyRate || 0}" onchange="updateSettingNumber('hourlyRate', this.value)" />
-            </div>
-            <div>
-              <label class="field-label">Estimated Hours</label>
-              <input type="number" min="0" step="0.5" class="field-input" value="${settings.estimatedHours || 1}" onchange="updateSettingNumber('estimatedHours', this.value)" />
-            </div>
-          </div>
-
-          <div style="margin-top:0.75rem;">
-            <label class="field-label">Travel Fee</label>
-            <input type="number" min="0" step="1" class="field-input" value="${settings.travelFee || 0}" onchange="updateSettingNumber('travelFee', this.value)" />
-          </div>
-
-          <div style="margin-top:0.75rem;">
-            <label class="field-label">Discount</label>
-            <input type="number" min="0" step="1" class="field-input" value="${settings.discount || 0}" onchange="updateSettingNumber('discount', this.value)" />
-          </div>
-        `;
-      }
-    }    function updateQuoteDisplay() {
-      const total = calculateTotal();
-      const count = services.reduce((sum, service) => sum + service.count, 0);
-
-      document.getElementById('footer-total').textContent = `$${total.toFixed(2)}`;
-      document.getElementById('footer-count').textContent = `${count} items selected`;
-
-      document.getElementById('service-chips').innerHTML = services
-        .filter(service => service.count > 0)
-        .map(service => `<div class="chip chip-blue">${service.count} × ${service.name}</div>`)
-        .join('');
-
-      let summary = `*QUOTE FROM ${String(settings.businessName || 'Crystal Clear Windows').toUpperCase()}*\n\n`;
-      summary += `Hi ${document.getElementById('q-name').value.trim() || 'Customer'},\n`;
-
-      const address = document.getElementById('q-address').value.trim();
-      if (address) summary += `Address: ${address}\n`;
-
-      summary += `\n*SERVICES:*\n`;
-
-      if (pricingMode === 'per-window') {
-        const activeServices = services.filter(service => service.count > 0);
-
-        if (!activeServices.length) {
-          summary += `• No items added yet\n`;
-        } else {
-          activeServices.forEach(service => {
-            summary += `• ${service.count} × ${service.name}: $${(service.count * service.rate).toFixed(2)}\n`;
-          });
-        }
-      } else {
-        summary += `• Professional Cleaning: $${((Number(settings.hourlyRate) || 0) * (Number(settings.estimatedHours) || 0)).toFixed(2)}\n`;
-      }
-
-      if ((Number(settings.travelFee) || 0) > 0) {
-        summary += `• Travel Fee: $${Number(settings.travelFee).toFixed(2)}\n`;
-      }
-
-      if ((Number(settings.discount) || 0) > 0) {
-        summary += `• Discount: -$${Number(settings.discount).toFixed(2)}\n`;
-      }
-
-      summary += `\n*TOTAL: $${total.toFixed(2)}*\n\n${settings.customMessage || 'Thank you for choosing us!'}`;
-
-      document.getElementById('quote-preview-text').textContent =
-        count > 0 || pricingMode === 'hourly' ? summary : 'Start adding windows...';
-    }
-
-    function resetQuote() {
-      document.getElementById('q-name').value = '';
-      document.getElementById('q-phone').value = '';
-      document.getElementById('q-email').value = '';
-      document.getElementById('q-address').value = '';
-      services.forEach(service => { service.count = 0; });
-      renderSteppers();
-      updateQuoteDisplay();
-    }
-
-    function switchTab(tab) {
-      const buttons = document.querySelectorAll('.tab-btn');
-      buttons.forEach(button => button.classList.remove('active'));
-
-      if (tab === 'quote') buttons[0].classList.add('active');
-      if (tab === 'pro') buttons[1].classList.add('active');
-      if (tab === 'settings') buttons[2].classList.add('active');
-
-      ['quote', 'pro', 'settings'].forEach(name => {
-        document.getElementById('tab-' + name).classList.add('hidden');
-      });
-
-      document.getElementById('tab-' + tab).classList.remove('hidden');
-
-      const quoteFooter = document.getElementById('quote-footer');
-      if (quoteFooter) {
-        quoteFooter.style.display = tab === 'quote' ? 'block' : 'none';
-      }
-
-      window.scrollTo(0, 0);
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1667,9 +1749,7 @@
           const password = document.getElementById('auth-password').value;
           const name = document.getElementById('auth-name').value.trim();
 
-          if (!email || !password) {
-            throw new Error('Please enter email and password');
-          }
+          if (!email || !password) throw new Error('Please enter email and password');
 
           if (authMode === 'signin') {
             await sbSignIn(email, password);
@@ -1691,13 +1771,9 @@
         try {
           const bizName = document.getElementById('team-name-input').value.trim();
           if (!bizName) throw new Error('Please enter a business name');
-
           await createTeamAndMakeOwner(bizName);
           showToast('Team created!', 'success');
-
-          setTimeout(() => {
-            location.reload();
-          }, 500);
+          setTimeout(() => location.reload(), 500);
         } catch (error) {
           console.error(error);
           showToast(error.message || 'Failed to create team', 'error');
@@ -1708,13 +1784,9 @@
         try {
           const code = document.getElementById('invite-code-input').value.trim();
           if (!code) throw new Error('Please enter an invite code');
-
           await joinTeamWithInvite(code);
           showToast('Joined!', 'success');
-
-          setTimeout(() => {
-            location.reload();
-          }, 500);
+          setTimeout(() => location.reload(), 500);
         } catch (error) {
           console.error(error);
           showToast(error.message || 'Failed to join team', 'error');
@@ -1734,18 +1806,8 @@
         switchTab('pro');
       };
 
-      document.getElementById('save-job-btn').onclick = saveJobToTeam;
-
-      document.getElementById('global-reset-btn').onclick = () => {
-        if (confirm('Reset current quote?')) {
-          resetQuote();
-        }
-      };
-
-      document.getElementById('clear-counts-btn').onclick = () => {
-        services.forEach(service => { service.count = 0; });
-        renderSteppers();
-        updateQuoteDisplay();
+      document.getElementById('save-job-btn').onclick = () => {
+        openQuoteEmail();
       };
 
       document.getElementById('copy-quote-btn').onclick = async () => {
@@ -1755,6 +1817,17 @@
         } catch (_) {
           showToast('Could not copy text', 'error');
         }
+      };
+
+      document.getElementById('global-reset-btn').onclick = () => {
+        if (confirm('Reset current quote?')) resetQuote();
+      };
+
+      document.getElementById('clear-counts-btn').onclick = () => {
+        services.forEach(service => { service.count = 0; });
+        renderSteppers();
+        renderPricingMode();
+        updateQuoteDisplay();
       };
 
       document.getElementById('save-settings-btn').onclick = () => {
@@ -1767,9 +1840,7 @@
       });
 
       ['s-bizname', 's-contact', 's-phone', 's-email', 's-message'].forEach(id => {
-        document.getElementById(id).addEventListener('input', () => {
-          applySettingsFromForm();
-        });
+        document.getElementById(id).addEventListener('input', applySettingsFromForm);
       });
 
       await bootPro();
@@ -1778,9 +1849,10 @@
     window.switchTab = switchTab;
     window.updateCount = updateCount;
     window.updateServiceRate = updateServiceRate;
+    window.updateServiceMinutes = updateServiceMinutes;
     window.updateSettingNumber = updateSettingNumber;
-    window.updateJobStatus = updateJobStatus;
     window.toggleJobCard = toggleJobCard;
+    window.updateJobStatus = updateJobStatus;
     window.setJobFilter = setJobFilter;
   </script>
 </body>
