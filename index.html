@@ -2039,6 +2039,74 @@
             <div>
               <div class="job-detail-label">Started</div>
               <div class="job-detail-val">${job.started_at ? new Date(job.started_at).toLocaleString() : '—'}</div>
+            </function renderJobsList() {
+  const container = document.getElementById('jobs-list-container');
+  if (!container) return;
+
+  const role = String(proState.teamRole || '').toLowerCase();
+  const canManageJobs = role === 'owner' || role === 'staff';
+
+  let jobs = [...(proState.jobs || [])];
+
+  if (jobFilter !== 'all') {
+    jobs = jobs.filter(job => job.status === jobFilter);
+  }
+
+  if (!jobs.length) {
+    container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
+    return;
+  }
+
+  container.innerHTML = jobs.map(job => {
+    const status = String(job.status || 'quoted').toLowerCase();
+
+    const canAccept = ['quoted', 'quote sent'].includes(status);
+    const canStart = ['accepted'].includes(status);
+    const canComplete = ['in_progress', 'active', 'started'].includes(status);
+
+    return `
+      <div class="job-card">
+        <div class="job-card-header" ${canManageJobs ? `onclick="toggleJobCard('${job.id}')"` : ''} style="${canManageJobs ? 'cursor:pointer;' : 'cursor:default;'}">
+          <div>
+            <div class="job-card-name">${escapeHtml(job.customer_name || 'Customer')}</div>
+            <div class="job-card-meta">
+              <span>$${(parseFloat(job.quoted_price) || 0).toFixed(2)}</span>
+              <span>•</span>
+              <span style="text-transform:capitalize;">${escapeHtml(String(job.status || 'quoted').replaceAll('_', ' '))}</span>
+            </div>
+          </div>
+          ${canManageJobs ? `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          ` : ''}
+        </div>
+
+        <div class="job-card-body ${canManageJobs ? 'hidden' : ''}" id="job-body-${job.id}">
+          <div class="job-detail-grid">
+            <div>
+              <div class="job-detail-label">Address</div>
+              <div class="job-detail-val">${escapeHtml(job.service_address || 'N/A')}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Phone</div>
+              <div class="job-detail-val">${escapeHtml(job.customer_phone || 'N/A')}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Items</div>
+              <div class="job-detail-val">${escapeHtml(job.items_summary || 'N/A')}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Status</div>
+              <div class="job-detail-val" style="text-transform:capitalize;">${escapeHtml(String(job.status || 'quoted').replaceAll('_', ' '))}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Accepted</div>
+              <div class="job-detail-val">${job.accepted_at ? new Date(job.accepted_at).toLocaleString() : '—'}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Started</div>
+              <div class="job-detail-val">${job.started_at ? new Date(job.started_at).toLocaleString() : '—'}</div>
             </div>
             <div>
               <div class="job-detail-label">Completed</div>
@@ -2046,18 +2114,18 @@
             </div>
           </div>
 
-          ${isOwner ? `
+          ${canManageJobs ? `
             <div class="job-actions">
-              <button class="btn btn-secondary btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'accepted')">Accept</button>
-              <button class="btn btn-primary btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'in_progress')">Start</button>
-              <button class="btn btn-success btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'completed')">Complete</button>
+              <button class="btn btn-secondary btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'accepted')" ${canAccept ? '' : 'disabled'}>Accept</button>
+              <button class="btn btn-primary btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'in_progress')" ${canStart ? '' : 'disabled'}>Start</button>
+              <button class="btn btn-success btn-sm" type="button" onclick="updateJobStatus('${job.id}', 'completed')" ${canComplete ? '' : 'disabled'}>Complete</button>
             </div>
           ` : ''}
         </div>
       </div>
-    `).join('');
-  }
-
+    `;
+  }).join('');
+}
   function toggleJobCard(id) {
     const body = document.getElementById('job-body-' + id);
     if (body) body.classList.toggle('hidden');
