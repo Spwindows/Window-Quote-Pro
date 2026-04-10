@@ -1848,32 +1848,35 @@ function getQuoteData() {
       };
 
       document.getElementById('share-invite-btn').onclick = async () => {
-        try {
-          if (!proState.inviteCode) throw new Error('No invite code available');
+  try {
+    if (!proState.inviteCode) throw new Error('No invite code available');
 
-          const shareText =
-            `Join my Window Quote Pro team.\n\n` +
-            `1. Sign in to the app\n` +
-            `2. Go to Pro\n` +
-            `3. Enter this invite code:\n\n` +
-            `${proState.inviteCode}`;
+    const APP_URL = 'https://YOUR-APP-URL-HERE.netlify.app';
 
-          if (navigator.share) {
-            await navigator.share({
-              title: 'Join my Window Quote Pro team',
-              text: shareText
-            });
-          } else {
-            await navigator.clipboard.writeText(shareText);
-            showToast('Join message copied!', 'success');
-          }
-        } catch (error) {
-          if (error?.name !== 'AbortError') {
-            showToast(error.message || 'Could not share invite', 'error');
-          }
-        }
-      };
+    const shareText =
+      `Join my Window Quote Pro team.\n\n` +
+      `Open the app here:\n${APP_URL}\n\n` +
+      `1. Sign in to the app\n` +
+      `2. Go to Pro\n` +
+      `3. Enter this invite code:\n\n` +
+      `${proState.inviteCode}`;
 
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Join my Window Quote Pro team',
+        text: shareText,
+        url: APP_URL
+      });
+    } else {
+      await navigator.clipboard.writeText(shareText);
+      showToast('Join message copied!', 'success');
+    }
+  } catch (error) {
+    if (error?.name !== 'AbortError') {
+      showToast(error.message || 'Could not share invite', 'error');
+    }
+  }
+};
       document.getElementById('auth-signin-tab').onclick = () => {
         authMode = 'signin';
         document.getElementById('auth-signin-tab').classList.add('active');
