@@ -342,7 +342,37 @@
   async function sbSignUp(email, password, name) { const sb = await getSb(); const res = await sb.auth.signUp({ email, password, options: { data: { full_name: name || '' } } }); if (res.error) throw res.error; return res.data; }
   async function sbSignOut() { const sb = await getSb(); await sb.auth.signOut(); }
   async function getCurrentUser() { const sb = await getSb(); if (!sb) return null; const res = await sb.auth.getUser(); return res.error ? null : res.data.user; }
-  async function getMyTeams(userId) { const sb = await getSb(); const res = await sb.from('team_members').select('id,role,status,team_id,team:teams(id,business_name)').eq('user_id', userId).eq('status', 'active'); return res.error ? [] : (res.data || []); }
+  async function getMyTeams(userId) {
+  const sb = await getSb();
+
+  const membershipRes = await sb
+    .from('team_members')
+    .select('id, role, status, team_id')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .limit(10);
+
+  if (membershipRes.error) throw membershipRes.error;
+
+  const memberships = membershipRes.data || [];
+  if (!memberships.length) return [];
+
+  const teamIds = memberships.map(m => m.team_id).filter(Boolean);
+
+  const teamsRes = await sb
+    .from('teams')
+    .select('id, business_name, invite_code')
+    .in('id', teamIds);
+
+  if (teamsRes.error) throw teamsRes.error;
+
+  const teamsById = new Map((teamsRes.data || []).map(t => [t.id, t]));
+
+  return memberships.map(m => ({
+    ...m,
+    team: teamsById.get(m.team_id) || null
+  }));
+}
   async function fetchJobs(teamId) { const sb = await getSb(); if (!sb || !teamId) return []; const res = await sb.from('jobs').select('*').eq('team_id', teamId).order('created_at', { ascending: false }); return res.error ? [] : (res.data || []); }
   async function createTeamAndMakeOwner(name) {
   const sb = await getSb();
@@ -362,24 +392,65 @@
   async function joinTeamWithInvite(code) { const sb = await getSb(); const res = await sb.rpc('join_team_with_invite', { p_invite_code: code }); if (res.error) throw res.error; return res.data; }
 
   async function bootPro() {
-    try {
-      const user = await getCurrentUser();
-      if (!user) { proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [] }; renderProPanel(); return; }
-      const teams = await getMyTeams(user.id);
-      if (teams.length) {
-        const t = teams[0];
-        const teamId = (t.team && t.team.id) || t.team_id;
-        const jobs = await fetchJobs(teamId);
-        proState = { user, teamId, teamName: (t.team && t.team.business_name) || 'Your Team', teamRole: t.role || 'worker', jobs };
-        const sb = await getSb();
-        if (sb) {
-          if (realtimeChannel) sb.removeChannel(realtimeChannel);
-          realtimeChannel = sb.channel('jobs-' + teamId).on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: 'team_id=eq.' + teamId }, async () => { proState.jobs = await fetchJobs(teamId); renderJobsList(); updateKPIs(); }).subscribe();
-        }
-      } else { proState = { user, teamId: null, teamName: '', teamRole: '', jobs: [] }; }
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [] };
       renderProPanel();
-    } catch(err) { showToast(err.message, 'error'); }
+      return;
+    }
+
+    const teams = await getMyTeams(user.id);
+
+    if (teams.length > 0) {
+      const t = teams[0];
+      const teamId = t.team_id || (t.team && t.team.id) || null;
+      const teamName = (t.team && t.team.business_name) || 'Your Team';
+      const jobs = teamId ? await fetchJobs(teamId) : [];
+
+      proState = {
+        user,
+        teamId,
+        teamName,
+        teamRole: t.role || 'staff',
+        jobs
+      };
+
+      const sb = await getSb();
+      if (sb && teamId) {
+        if (realtimeChannel) {
+          await sb.removeChannel(realtimeChannel);
+        }
+
+        realtimeChannel = sb
+          .channel('jobs-' + teamId)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'jobs',
+              filter: 'team_id=eq.' + teamId
+            },
+            async () => {
+              proState.jobs = await fetchJobs(teamId);
+              renderJobsList();
+              updateKPIs();
+            }
+          )
+          .subscribe();
+      }
+    } else {
+      proState = { user, teamId: null, teamName: '', teamRole: '', jobs: [] };
+    }
+
+    renderProPanel();
+  } catch (err) {
+    console.error('bootPro error:', err);
+    showToast(err.message || 'Failed to load Pro area', 'error');
   }
+}
 
   function renderProPanel() {
     const { user, teamId, teamName, teamRole } = proState;
@@ -481,8 +552,11 @@
 
     await createTeamAndMakeOwner(bizName);
     showToast('Team created!', 'success');
-    bootPro();
+
+    await bootPro();
+    switchTab('pro');
   } catch (e) {
+    console.error('create team error:', e);
     showToast(e.message || 'Failed to create team', 'error');
   }
 };
