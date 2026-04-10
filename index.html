@@ -42,8 +42,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem 0;
       gap: 0.75rem;
+      padding: 0.75rem 0;
     }
 
     .header-brand {
@@ -297,84 +297,6 @@
     .btn-stepper.plus { background: #2563eb; color: #fff; }
     .btn-stepper.minus:disabled { opacity: 0.35; cursor: default; }
 
-    .pricing-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      margin-bottom: 0.9rem;
-    }
-
-    .pricing-tab {
-      border: 1.5px solid #e5e7eb;
-      background: #f9fafb;
-      border-radius: 0.85rem;
-      padding: 0.8rem;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .pricing-tab.active {
-      border-color: #2563eb;
-      background: #eff6ff;
-    }
-
-    .pricing-tab-title {
-      font-size: 0.92rem;
-      font-weight: 800;
-      color: #111827;
-    }
-
-    .pricing-tab-sub {
-      font-size: 0.77rem;
-      color: #6b7280;
-      margin-top: 0.15rem;
-    }
-
-    .pricing-panel {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.9rem;
-      padding: 0.9rem;
-    }
-
-    .rate-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.65rem;
-    }
-
-    .rate-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.8rem;
-      padding: 0.75rem;
-    }
-
-    .rate-card-label {
-      font-size: 0.7rem;
-      font-weight: 800;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 0.3rem;
-    }
-
-    .rate-card-input {
-      width: 100%;
-      padding: 0.55rem;
-      border-radius: 0.7rem;
-      border: 1px solid #e5e7eb;
-      background: #fff;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #111827;
-      outline: none;
-    }    .rate-card-unit {
-      font-size: 0.7rem;
-      color: #9ca3af;
-      margin-top: 0.2rem;
-    }
-
     .quote-preview-pre {
       white-space: pre-wrap;
       word-break: break-word;
@@ -417,6 +339,56 @@
       margin-top: 0.2rem;
     }
 
+    .settings-lock {
+      padding: 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.9rem;
+      background: #f9fafb;
+      color: #4b5563;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .rate-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+
+    .rate-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.8rem;
+      padding: 0.75rem;
+    }
+
+    .rate-card-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+
+    .rate-card-input {
+      width: 100%;
+      padding: 0.55rem;
+      border-radius: 0.7rem;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #111827;
+      outline: none;
+    }
+
+    .rate-card-unit {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin-top: 0.2rem;
+    }
+Part 2 of 4
     #toast-container {
       position: fixed;
       top: 1rem;
@@ -488,6 +460,8 @@
       display: flex;
       gap: 0.5rem;
       flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .auth-tabs {
@@ -631,7 +605,7 @@
 
     .job-detail-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 0.6rem;
       margin-bottom: 0.75rem;
     }
@@ -709,12 +683,11 @@
 
     @media (max-width: 520px) {
       .field-grid-2,
-      .rate-grid,
       .summary-stats,
       .kpi-grid,
       .revenue-grid,
       .job-detail-grid,
-      .pricing-tabs {
+      .rate-grid {
         grid-template-columns: 1fr;
       }
 
@@ -783,7 +756,9 @@
               <input type="text" class="field-input" id="q-address" placeholder="12 Smith St, Melbourne" />
             </div>
           </div>
-        </div>        <div class="card">
+        </div>
+
+        <div class="card">
           <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
             <span>Services & Counts</span>
             <button class="btn btn-secondary btn-sm" id="clear-counts-btn" type="button">Clear All</button>
@@ -792,30 +767,12 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Pricing Strategy</div>
-
-          <div class="pricing-tabs">
-            <button class="pricing-tab active" id="mode-per-window" type="button">
-              <div class="pricing-tab-title">Per Item</div>
-              <div class="pricing-tab-sub">Standard unit rates</div>
-            </button>
-
-            <button class="pricing-tab" id="mode-hourly" type="button">
-              <div class="pricing-tab-title">Hourly Estimate</div>
-              <div class="pricing-tab-sub">Minutes per service</div>
-            </button>
-          </div>
-
-          <div id="mode-options-container"></div>
-        </div>
-
-        <div class="card">
           <div class="card-title">Quote Summary</div>
           <div class="summary-stats" id="quote-summary-stats"></div>
           <pre class="quote-preview-pre" id="quote-preview-text">Start adding windows...</pre>
         </div>
       </div>
-
+Part 3 of 4
       <div id="tab-pro" class="hidden">
         <div id="pro-auth-panel">
           <div class="card">
@@ -905,38 +862,75 @@
       </div>
 
       <div id="tab-settings" class="hidden">
-        <div class="card">
-          <div class="card-title">Business Information</div>
-          <div class="field-stack">
-            <div>
-              <label class="field-label">Business Name</label>
-              <input type="text" class="field-input" id="s-bizname" placeholder="SP Window Cleaning Pty Ltd" />
-            </div>
-
-            <div class="field-grid-2">
+        <div id="settings-owner-view" class="hidden">
+          <div class="card">
+            <div class="card-title">Business Information</div>
+            <div class="field-stack">
               <div>
-                <label class="field-label">Contact Name</label>
-                <input type="text" class="field-input" id="s-contact" placeholder="Sean" />
+                <label class="field-label">Business Name</label>
+                <input type="text" class="field-input" id="s-bizname" placeholder="SP Window Cleaning Pty Ltd" />
+              </div>
+
+              <div class="field-grid-2">
+                <div>
+                  <label class="field-label">Contact Name</label>
+                  <input type="text" class="field-input" id="s-contact" placeholder="Sean" />
+                </div>
+                <div>
+                  <label class="field-label">Phone</label>
+                  <input type="tel" class="field-input" id="s-phone" placeholder="0400 000 000" />
+                </div>
+              </div>
+
+              <div>
+                <label class="field-label">Email</label>
+                <input type="email" class="field-input" id="s-email" placeholder="info@business.com.au" />
+              </div>
+
+              <div>
+                <label class="field-label">Default Message</label>
+                <textarea class="field-input" id="s-message" rows="3" placeholder="Thank you for choosing us!"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Per Item Pricing</div>
+            <div class="rate-grid" id="settings-rates-grid"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Hourly Estimate Settings</div>
+            <div class="field-grid-2" style="margin-bottom:0.8rem;">
+              <div>
+                <label class="field-label">Hourly Rate</label>
+                <input type="number" min="0" step="1" class="field-input" id="settings-hourly-rate" />
               </div>
               <div>
-                <label class="field-label">Phone</label>
-                <input type="tel" class="field-input" id="s-phone" placeholder="0400 000 000" />
+                <label class="field-label">Travel Fee</label>
+                <input type="number" min="0" step="1" class="field-input" id="settings-travel-fee" />
               </div>
             </div>
 
-            <div>
-              <label class="field-label">Email</label>
-              <input type="email" class="field-input" id="s-email" placeholder="info@business.com.au" />
+            <div style="margin-bottom:0.8rem;">
+              <label class="field-label">Discount</label>
+              <input type="number" min="0" step="1" class="field-input" id="settings-discount" />
             </div>
 
-            <div>
-              <label class="field-label">Default Message</label>
-              <textarea class="field-input" id="s-message" rows="3" placeholder="Thank you for choosing us!"></textarea>
+            <div class="rate-grid" id="settings-minutes-grid"></div>
+          </div>
+
+          <button class="btn btn-primary btn-full" id="save-settings-btn" type="button">Save All Settings</button>
+        </div>
+
+        <div id="settings-staff-lock" class="hidden">
+          <div class="card">
+            <div class="card-title">Settings</div>
+            <div class="settings-lock">
+              Only the team owner can change pricing, timing, business details, and admin settings.
             </div>
           </div>
         </div>
-
-        <button class="btn btn-primary btn-full" id="save-settings-btn" type="button">Save All Settings</button>
       </div>
     </div>
 
@@ -948,6 +942,7 @@
             <div class="quote-price-sub" id="footer-count">0 items selected</div>
           </div>
           <div class="quote-footer-actions">
+            <button class="btn btn-secondary hidden" id="save-team-job-btn" type="button">Add Job</button>
             <button class="btn btn-success" id="save-job-btn" type="button">Save</button>
             <button class="btn btn-primary" id="copy-quote-btn" type="button">Copy</button>
           </div>
@@ -993,7 +988,7 @@
       </div>
     </nav>
   </div>
-
+Part 4 of 4
   <script>
     const SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM';
@@ -1003,7 +998,7 @@
     let authMode = 'signin';
     let pricingMode = 'per-window';
     let jobFilter = 'all';
-    const STORAGE_KEY = 'window-quote-pro-v3-settings';
+    const STORAGE_KEY = 'window-quote-pro-v4-settings';
 
     let settings = {
       businessName: 'SP Window Cleaning Pty Ltd',
@@ -1030,7 +1025,9 @@
       teamName: '',
       teamRole: '',
       jobs: []
-    };    function showToast(message, type = '') {
+    };
+
+    function showToast(message, type = '') {
       const container = document.getElementById('toast-container');
       const el = document.createElement('div');
       el.className = `toast ${type}`;
@@ -1046,6 +1043,11 @@
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+    }
+
+    function canAccessSettings() {
+      if (!proState.teamId) return true;
+      return proState.teamRole === 'owner';
     }
 
     function loadLocalSettings() {
@@ -1091,6 +1093,42 @@
       document.getElementById('s-phone').value = settings.businessPhone || '';
       document.getElementById('s-email').value = settings.businessEmail || '';
       document.getElementById('s-message').value = settings.customMessage || '';
+      document.getElementById('settings-hourly-rate').value = settings.hourlyRate || 0;
+      document.getElementById('settings-travel-fee').value = settings.travelFee || 0;
+      document.getElementById('settings-discount').value = settings.discount || 0;
+    }
+
+    function renderSettingsGrids() {
+      document.getElementById('settings-rates-grid').innerHTML = services.map(service => `
+        <div class="rate-card">
+          <div class="rate-card-label">${service.name}</div>
+          <input type="number" min="0" step="1" class="rate-card-input" value="${service.rate}" onchange="updateServiceRate('${service.id}', this.value)" />
+          <div class="rate-card-unit">Rate per item</div>
+        </div>
+      `).join('');
+
+      document.getElementById('settings-minutes-grid').innerHTML = services.map(service => `
+        <div class="rate-card">
+          <div class="rate-card-label">${service.name}</div>
+          <input type="number" min="0" step="1" class="rate-card-input" value="${service.minutes}" onchange="updateServiceMinutes('${service.id}', this.value)" />
+          <div class="rate-card-unit">Minutes each</div>
+        </div>
+      `).join('');
+    }
+
+    function renderSettingsAccess() {
+      const ownerView = document.getElementById('settings-owner-view');
+      const staffLock = document.getElementById('settings-staff-lock');
+
+      if (canAccessSettings()) {
+        ownerView.classList.remove('hidden');
+        staffLock.classList.add('hidden');
+        syncSettingsForm();
+        renderSettingsGrids();
+      } else {
+        ownerView.classList.add('hidden');
+        staffLock.classList.remove('hidden');
+      }
     }
 
     function applySettingsFromForm() {
@@ -1099,6 +1137,9 @@
       settings.businessPhone = document.getElementById('s-phone').value.trim();
       settings.businessEmail = document.getElementById('s-email').value.trim();
       settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
+      settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
+      settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
+      settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
       saveLocalSettings();
       updateQuoteDisplay();
     }
@@ -1135,14 +1176,6 @@
       if (!service) return;
       service.minutes = Math.max(0, Number(value) || 0);
       saveLocalSettings();
-      renderPricingMode();
-      updateQuoteDisplay();
-    }
-
-    function updateSettingNumber(key, value) {
-      settings[key] = Math.max(0, Number(value) || 0);
-      saveLocalSettings();
-      renderPricingMode();
       updateQuoteDisplay();
     }
 
@@ -1151,7 +1184,6 @@
       if (!service) return;
       service.count = Math.max(0, service.count + delta);
       renderSteppers();
-      renderPricingMode();
       updateQuoteDisplay();
     }
 
@@ -1173,91 +1205,12 @@
       `).join('');
     }
 
-    function renderPricingMode() {
-      const perBtn = document.getElementById('mode-per-window');
-      const hourlyBtn = document.getElementById('mode-hourly');
-      const container = document.getElementById('mode-options-container');
-      const data = getQuoteData();
-
-      perBtn.classList.toggle('active', pricingMode === 'per-window');
-      hourlyBtn.classList.toggle('active', pricingMode === 'hourly');
-
-      if (pricingMode === 'per-window') {
-        container.innerHTML = `
-          <div class="pricing-panel">
-            <div class="rate-grid">
-              ${services.map(service => `
-                <div class="rate-card">
-                  <div class="rate-card-label">${service.name}</div>
-                  <input type="number" min="0" step="1" class="rate-card-input" value="${service.rate}" onchange="updateServiceRate('${service.id}', this.value)" />
-                  <div class="rate-card-unit">Rate per item</div>
-                </div>
-              `).join('')}
-            </div>
-            <div class="field-grid-2" style="margin-top:0.8rem;">
-              <div>
-                <label class="field-label">Travel Fee</label>
-                <input type="number" min="0" step="1" class="field-input" value="${settings.travelFee || 0}" onchange="updateSettingNumber('travelFee', this.value)" />
-              </div>
-              <div>
-                <label class="field-label">Discount</label>
-                <input type="number" min="0" step="1" class="field-input" value="${settings.discount || 0}" onchange="updateSettingNumber('discount', this.value)" />
-              </div>
-            </div>
-          </div>
-        `;
-      } else {
-        container.innerHTML = `
-          <div class="pricing-panel">
-            <div class="field-grid-2" style="margin-bottom:0.8rem;">
-              <div>
-                <label class="field-label">Hourly Rate</label>
-                <input type="number" min="0" step="1" class="field-input" value="${settings.hourlyRate || 0}" onchange="updateSettingNumber('hourlyRate', this.value)" />
-              </div>
-              <div>
-                <label class="field-label">Estimated Hours</label>
-                <input type="text" class="field-input" value="${data.estimatedHours.toFixed(2)} hrs" readonly />
-              </div>
-            </div>
-            <div class="rate-grid">
-              ${services.map(service => `
-                <div class="rate-card">
-                  <div class="rate-card-label">${service.name}</div>
-                  <input type="number" min="0" step="1" class="rate-card-input" value="${service.minutes}" onchange="updateServiceMinutes('${service.id}', this.value)" />
-                  <div class="rate-card-unit">${service.count} selected • minutes each</div>
-                </div>
-              `).join('')}
-            </div>
-            <div class="field-grid-2" style="margin-top:0.8rem;">
-              <div>
-                <label class="field-label">Travel Fee</label>
-                <input type="number" min="0" step="1" class="field-input" value="${settings.travelFee || 0}" onchange="updateSettingNumber('travelFee', this.value)" />
-              </div>
-              <div>
-                <label class="field-label">Discount</label>
-                <input type="number" min="0" step="1" class="field-input" value="${settings.discount || 0}" onchange="updateSettingNumber('discount', this.value)" />
-              </div>
-            </div>
-            <div class="summary-stats" style="margin-top:0.8rem;margin-bottom:0;">
-              <div class="summary-stat">
-                <div class="summary-stat-label">Total Minutes</div>
-                <div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div>
-              </div>
-              <div class="summary-stat">
-                <div class="summary-stat-label">Labour Quote</div>
-                <div class="summary-stat-value">$${data.subtotal.toFixed(2)}</div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-    }
-
     function updateQuoteDisplay() {
       const data = getQuoteData();
 
       document.getElementById('footer-total').textContent = `$${data.total.toFixed(2)}`;
       document.getElementById('footer-count').textContent = `${data.itemCount} items selected`;
+      document.getElementById('save-team-job-btn').classList.toggle('hidden', !proState.teamId);
 
       document.getElementById('service-chips').innerHTML = services
         .filter(service => service.count > 0)
@@ -1319,9 +1272,7 @@
       summary += `\n*TOTAL: $${data.total.toFixed(2)}*\n\n${settings.customMessage || 'Thank you for choosing us!'}`;
 
       document.getElementById('quote-preview-text').textContent =
-        data.itemCount > 0 || pricingMode === 'hourly'
-          ? summary
-          : 'Start adding windows...';
+        data.itemCount > 0 ? summary : 'Start adding windows...';
     }
 
     function resetQuote() {
@@ -1331,7 +1282,6 @@
       document.getElementById('q-address').value = '';
       services.forEach(service => { service.count = 0; });
       renderSteppers();
-      renderPricingMode();
       updateQuoteDisplay();
     }
 
@@ -1344,6 +1294,11 @@
     }
 
     function switchTab(tab) {
+      if (tab === 'settings' && !canAccessSettings()) {
+        showToast('Only the team owner can access settings', 'error');
+        return;
+      }
+
       const buttons = document.querySelectorAll('.tab-btn');
       buttons.forEach(button => button.classList.remove('active'));
       if (tab === 'quote') buttons[0].classList.add('active');
@@ -1356,6 +1311,7 @@
 
       document.getElementById('tab-' + tab).classList.remove('hidden');
       document.getElementById('quote-footer').style.display = tab === 'quote' ? 'block' : 'none';
+      renderSettingsAccess();
       window.scrollTo(0, 0);
     }
 
@@ -1426,11 +1382,7 @@
       if (!memberships.length) return [];
 
       const teamIds = memberships.map(item => item.team_id).filter(Boolean);
-      const teamsRes = await sb
-        .from('teams')
-        .select('id, business_name, invite_code')
-        .in('id', teamIds);
-
+      const teamsRes = await sb.from('teams').select('id, business_name, invite_code').in('id', teamIds);
       if (teamsRes.error) throw teamsRes.error;
 
       const teamMap = new Map((teamsRes.data || []).map(team => [team.id, team]));
@@ -1440,12 +1392,7 @@
     async function fetchJobs(teamId) {
       const sb = await getSb();
       if (!sb || !teamId) return [];
-      const res = await sb
-        .from('jobs')
-        .select('*')
-        .eq('team_id', teamId)
-        .order('created_at', { ascending: false });
-
+      const res = await sb.from('jobs').select('*').eq('team_id', teamId).order('created_at', { ascending: false });
       if (res.error) throw res.error;
       return res.data || [];
     }
@@ -1473,6 +1420,7 @@
         if (!user) {
           proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [] };
           renderProPanel();
+          renderSettingsAccess();
           return;
         }
 
@@ -1521,6 +1469,8 @@
         }
 
         renderProPanel();
+        renderSettingsAccess();
+        updateQuoteDisplay();
       } catch (error) {
         console.error(error);
         showToast(error.message || 'Failed to load Pro area', 'error');
@@ -1583,9 +1533,7 @@
       ];
 
       document.getElementById('job-filters').innerHTML = filters.map(filter => {
-        const style = jobFilter === filter.val
-          ? 'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;'
-          : '';
+        const style = jobFilter === filter.val ? 'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;' : '';
         return `<button class="chip" type="button" style="${style}" onclick="setJobFilter('${filter.val}')">${filter.label}</button>`;
       }).join('');
     }
@@ -1633,6 +1581,18 @@
                 <div class="job-detail-label">Items</div>
                 <div class="job-detail-val">${escapeHtml(job.items_summary || 'N/A')}</div>
               </div>
+              <div>
+                <div class="job-detail-label">Accepted</div>
+                <div class="job-detail-val">${job.accepted_at ? new Date(job.accepted_at).toLocaleString() : '—'}</div>
+              </div>
+              <div>
+                <div class="job-detail-label">Started</div>
+                <div class="job-detail-val">${job.started_at ? new Date(job.started_at).toLocaleString() : '—'}</div>
+              </div>
+              <div>
+                <div class="job-detail-label">Completed</div>
+                <div class="job-detail-val">${job.completed_at ? new Date(job.completed_at).toLocaleString() : '—'}</div>
+              </div>
             </div>
 
             <div class="job-actions">
@@ -1655,7 +1615,12 @@
         const sb = await getSb();
         if (!sb) throw new Error('Supabase unavailable');
 
-        const res = await sb.from('jobs').update({ status }).eq('id', id);
+        const patch = { status };
+        if (status === 'accepted') patch.accepted_at = new Date().toISOString();
+        if (status === 'in_progress') patch.started_at = new Date().toISOString();
+        if (status === 'completed') patch.completed_at = new Date().toISOString();
+
+        const res = await sb.from('jobs').update(patch).eq('id', id);
         if (res.error) throw res.error;
 
         showToast('Updated!', 'success');
@@ -1666,26 +1631,49 @@
       }
     }
 
+    async function saveCurrentQuoteToTeam() {
+      if (!proState.teamId) {
+        showToast('Join or create a team first', 'error');
+        return;
+      }
+
+      try {
+        const sb = await getSb();
+        if (!sb) throw new Error('Supabase unavailable');
+
+        const data = getQuoteData();
+        const payload = {
+          team_id: proState.teamId,
+          customer_name: document.getElementById('q-name').value.trim() || 'Customer',
+          customer_phone: document.getElementById('q-phone').value.trim(),
+          customer_email: document.getElementById('q-email').value.trim(),
+          service_address: document.getElementById('q-address').value.trim(),
+          quoted_price: data.total,
+          items_summary: services
+            .filter(service => service.count > 0)
+            .map(service => `${service.count} ${service.name}`)
+            .join(', '),
+          status: 'quote_sent',
+          created_by: proState.user?.id || null
+        };
+
+        const res = await sb.from('jobs').insert(payload);
+        if (res.error) throw res.error;
+
+        showToast('Job added!', 'success');
+        await bootPro();
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || 'Could not add job', 'error');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       loadLocalSettings();
-      syncSettingsForm();
       renderSteppers();
-      renderPricingMode();
+      syncSettingsForm();
+      renderSettingsGrids();
       updateQuoteDisplay();
-
-      document.getElementById('mode-per-window').onclick = () => {
-        pricingMode = 'per-window';
-        saveLocalSettings();
-        renderPricingMode();
-        updateQuoteDisplay();
-      };
-
-      document.getElementById('mode-hourly').onclick = () => {
-        pricingMode = 'hourly';
-        saveLocalSettings();
-        renderPricingMode();
-        updateQuoteDisplay();
-      };
 
       document.getElementById('auth-signin-tab').onclick = () => {
         authMode = 'signin';
@@ -1770,6 +1758,10 @@
         openQuoteEmail();
       };
 
+      document.getElementById('save-team-job-btn').onclick = async () => {
+        await saveCurrentQuoteToTeam();
+      };
+
       document.getElementById('copy-quote-btn').onclick = async () => {
         try {
           await navigator.clipboard.writeText(document.getElementById('quote-preview-text').textContent);
@@ -1786,7 +1778,6 @@
       document.getElementById('clear-counts-btn').onclick = () => {
         services.forEach(service => { service.count = 0; });
         renderSteppers();
-        renderPricingMode();
         updateQuoteDisplay();
       };
 
@@ -1799,7 +1790,7 @@
         document.getElementById(id).addEventListener('input', updateQuoteDisplay);
       });
 
-      ['s-bizname', 's-contact', 's-phone', 's-email', 's-message'].forEach(id => {
+      ['s-bizname', 's-contact', 's-phone', 's-email', 's-message', 'settings-hourly-rate', 'settings-travel-fee', 'settings-discount'].forEach(id => {
         document.getElementById(id).addEventListener('input', applySettingsFromForm);
       });
 
@@ -1810,7 +1801,6 @@
     window.updateCount = updateCount;
     window.updateServiceRate = updateServiceRate;
     window.updateServiceMinutes = updateServiceMinutes;
-    window.updateSettingNumber = updateSettingNumber;
     window.toggleJobCard = toggleJobCard;
     window.updateJobStatus = updateJobStatus;
     window.setJobFilter = setJobFilter;
