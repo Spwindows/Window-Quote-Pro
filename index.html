@@ -1633,7 +1633,6 @@
     function renderJobsList() {
       const container = document.getElementById('jobs-list-container');
       let jobs = [...(proState.jobs || [])];
-
       if (jobFilter !== 'all') {
         jobs = jobs.filter(job => job.status === jobFilter);
       }
