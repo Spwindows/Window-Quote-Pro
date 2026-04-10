@@ -1003,7 +1003,7 @@
           </div>
           <div class="quote-footer-actions">
             <button class="btn btn-secondary hidden" id="save-team-job-btn" type="button">Add Job</button>
-            <button class="btn btn-success" id="save-job-btn" type="button">Save</button>
+            <button class="btn btn-success" id="save-job-btn" type="button">Email</button>
             <button class="btn btn-primary" id="copy-quote-btn" type="button">Copy</button>
           </div>
         </div>
@@ -1373,6 +1373,114 @@
         </div>
       `).join('');
     }
+function getQuoteData() {
+  const windowServiceIds = ['sw', 'lw', 'sd']; // only actual window items get external-only discount
+
+  const selectedServices = services.filter(service => Number(service.count) > 0);
+
+  const itemCount = selectedServices.reduce((sum, service) => sum + Number(service.count || 0), 0);
+  const totalMinutes = selectedServices.reduce(
+    (sum, service) => sum + (Number(service.count || 0) * Number(service.minutes || 0)),
+    0
+  );
+  const estimatedHours = totalMinutes / 60;
+
+  let windowSubtotal = 0;
+  let nonWindowSubtotal = 0;
+  let subtotal = 0;
+
+  if ((settings.pricingMode || 'per-window') === 'per-window') {
+    selectedServices.forEach(service => {
+      const lineTotal = Number(service.count || 0) * Number(service.rate || 0);
+
+      if (windowServiceIds.includes(service.id)) {
+        windowSubtotal += lineTotal;
+      } else {
+        nonWindowSubtotal += lineTotal;
+      }
+    });
+
+    const adjustedWindowSubtotal = quoteState.externalOnly
+      ? windowSubtotal * (Number(settings.externalOnlyPercent || 70) / 100)
+      : windowSubtotal;
+
+    subtotal = adjustedWindowSubtotal + nonWindowSubtotal;
+
+    const travelFee = Math.max(0, Number(settings.travelFee || 0));
+    const discount = Math.max(0, Number(settings.discount || 0));
+    const baseTotal = Math.max(0, subtotal + travelFee - discount);
+    const gstAmount = settings.gstEnabled
+      ? baseTotal * (Number(settings.gstRate || 10) / 100)
+      : 0;
+    const total = baseTotal + gstAmount;
+
+    return {
+      itemCount,
+      totalMinutes,
+      estimatedHours,
+      windowSubtotal,
+      adjustedWindowSubtotal,
+      nonWindowSubtotal,
+      subtotal,
+      travelFee,
+      discount,
+      baseTotal,
+      gstAmount,
+      total
+    };
+  }
+
+  // Hourly mode
+  const labourSubtotal = estimatedHours * Math.max(0, Number(settings.hourlyRate || 0));
+
+  selectedServices.forEach(service => {
+    const lineTotal = Number(service.count || 0) * Number(service.rate || 0);
+    if (windowServiceIds.includes(service.id)) {
+      windowSubtotal += lineTotal;
+    } else {
+      nonWindowSubtotal += lineTotal;
+    }
+  });
+
+  const adjustedWindowSubtotal = quoteState.externalOnly
+    ? windowSubtotal * (Number(settings.externalOnlyPercent || 70) / 100)
+    : windowSubtotal;
+
+  const travelFee = Math.max(0, Number(settings.travelFee || 0));
+  const discount = Math.max(0, Number(settings.discount || 0));
+
+  // In hourly mode, external only reduces labour only for actual windows
+  let hourlyBase = labourSubtotal;
+  if (quoteState.externalOnly && windowSubtotal > 0) {
+    const fullMix = windowSubtotal + nonWindowSubtotal;
+    if (fullMix > 0) {
+      const adjustedMix = adjustedWindowSubtotal + nonWindowSubtotal;
+      const ratio = adjustedMix / fullMix;
+      hourlyBase = labourSubtotal * ratio;
+    }
+  }
+
+  const baseTotal = Math.max(0, hourlyBase + travelFee - discount);
+  const gstAmount = settings.gstEnabled
+    ? baseTotal * (Number(settings.gstRate || 10) / 100)
+    : 0;
+  const total = baseTotal + gstAmount;
+
+  return {
+    itemCount,
+    totalMinutes,
+    estimatedHours,
+    windowSubtotal,
+    adjustedWindowSubtotal,
+    nonWindowSubtotal,
+    subtotal: hourlyBase,
+    travelFee,
+    discount,
+    baseTotal,
+    gstAmount,
+    total
+  };
+}
 
     function updateQuoteDisplay() {
       const data = getQuoteData();
