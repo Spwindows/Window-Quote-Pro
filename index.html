@@ -533,7 +533,13 @@
     sum += `\n*TOTAL: $${t.toFixed(2)}*\n\n${settings.customMessage}`;
     document.getElementById('quote-preview-text').textContent = c > 0 || pricingMode === 'hourly' ? sum : 'Start adding windows...';
   }
+function resetUI() {
+  document.getElementById('tab-quote').classList.add('hidden');
+  document.getElementById('tab-pro').classList.add('hidden');
+  document.getElementById('tab-settings').classList.add('hidden');
 
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+}
   function switchTab(tab) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); if (event) event.currentTarget.classList.add('active'); ['quote', 'pro', 'settings'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden')); document.getElementById('tab-' + tab).classList.remove('hidden'); document.getElementById('quote-footer').style.display = tab === 'quote' ? 'block' : 'none'; window.scrollTo(0,0); }
   function showToast(m, t = '') { const c = document.getElementById('toast-container'), e = document.createElement('div'); e.className = `toast ${t}`; e.textContent = m; c.appendChild(e); setTimeout(() => e.remove(), 3000); }
 
@@ -554,9 +560,10 @@
     showToast('Team created!', 'success');
 
     await bootPro();
-    switchTab('pro');
+resetUI();
+switchTab('pro');
   } catch (e) {
-    console.error('create team error:', e);
+    console.error(e);
     showToast(e.message || 'Failed to create team', 'error');
   }
 };
