@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,7 +42,6 @@
     .tab-btn-icon { width: 2.5rem; height: 2rem; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem; transition: all 0.15s; position: relative; }
     .tab-btn.active .tab-btn-icon { background: #eff6ff; }
     .tab-btn-label { font-size: 0.6875rem; font-weight: 700; line-height: 1; }
-    .tab-badge { position: absolute; top: 0.125rem; right: 0; width: 1rem; height: 1rem; background: #ef4444; color: #fff; font-size: 0.625rem; font-weight: 900; border-radius: 9999px; display: flex; align-items: center; justify-content: center; }
     .hidden { display: none !important; }
 
     /* Cards */
@@ -61,7 +59,6 @@
     .field-input-icon .field-input { padding-left: 2rem; }
     .field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     .field-full { grid-column: 1 / -1; }
-    .section-label { font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
 
     /* Stepper */
     .stepper-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff; transition: all 0.15s; margin-bottom: 0.5rem; }
@@ -160,7 +157,6 @@
 
     /* Job Card */
     .job-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem; margin-bottom: 0.75rem; overflow: hidden; transition: transform 0.2s ease; }
-    .job-card:active { transform: scale(0.98); }
     .job-card-header { padding: 0.8rem 1rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
     .job-card-name { font-weight: 800; font-size: 0.9375rem; color: #111827; }
     .job-card-meta { display: flex; gap: 0.75rem; margin-top: 0.25rem; font-size: 0.75rem; color: #9ca3af; }
@@ -176,30 +172,11 @@
       .quote-footer-card { padding: 0.8rem; }
       .quote-price { font-size: 1.5rem; }
     }
-
-    /* Loading Overlay */
-    #loading-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(255, 255, 255, 0.8);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 10000;
-    }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 4px solid #f3f4f6;
-      border-top: 4px solid #2563eb;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
   </style>
 </head>
 <body>
-<div id="loading-overlay" class="hidden"><div class="spinner"></div></div>
 <div id="toast-container"></div>
 <div id="app">
-  <!-- Header -->
   <header class="header">
     <div class="header-inner">
       <div class="header-brand">
@@ -220,91 +197,37 @@
     </div>
   </header>
 
-  <!-- Main Content -->
   <div class="main-content">
-    <!-- ═══ QUOTE TAB ═══ -->
     <div id="tab-quote">
       <div class="chip-strip" id="service-chips"></div>
-
-      <!-- Customer Details -->
       <div class="card">
-        <div class="card-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-          Customer Details
-        </div>
+        <div class="card-title">Customer Details</div>
         <div class="field-grid-2">
-          <div class="field-full">
-            <label class="field-label">Name</label>
-            <input type="text" class="field-input" id="q-name" placeholder="John Smith" />
-          </div>
-          <div>
-            <label class="field-label">Phone</label>
-            <div class="field-input-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92Z"/></svg>
-              <input type="tel" class="field-input" id="q-phone" placeholder="0400 000 000" />
-            </div>
-          </div>
-          <div>
-            <label class="field-label">Email</label>
-            <div class="field-input-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              <input type="email" class="field-input" id="q-email" placeholder="john@email.com" />
-            </div>
-          </div>
-          <div class="field-full">
-            <label class="field-label">Address</label>
-            <div class="field-input-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-              <input type="text" class="field-input" id="q-address" placeholder="12 Smith St, Melbourne" />
-            </div>
-          </div>
+          <div class="field-full"><label class="field-label">Name</label><input type="text" class="field-input" id="q-name" placeholder="John Smith" /></div>
+          <div><label class="field-label">Phone</label><input type="tel" class="field-input" id="q-phone" placeholder="0400 000 000" /></div>
+          <div><label class="field-label">Email</label><input type="email" class="field-input" id="q-email" placeholder="john@email.com" /></div>
+          <div class="field-full"><label class="field-label">Address</label><input type="text" class="field-input" id="q-address" placeholder="12 Smith St, Melbourne" /></div>
         </div>
       </div>
-
-      <!-- Services -->
       <div class="card">
-        <div class="card-title" style="justify-content:space-between">
-          <span style="display:flex;align-items:center;gap:0.5rem">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="M3 9V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4"/></svg>
-            Services & Counts
-          </span>
-          <button class="btn btn-secondary btn-sm" id="clear-counts-btn">Clear All</button>
-        </div>
+        <div class="card-title" style="justify-content:space-between"><span>Services & Counts</span><button class="btn btn-secondary btn-sm" id="clear-counts-btn">Clear All</button></div>
         <div id="steppers-container"></div>
       </div>
-
-      <!-- Pricing Mode -->
       <div class="card">
-        <div class="card-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
-          Pricing Strategy
-        </div>
+        <div class="card-title">Pricing Strategy</div>
         <div class="pricing-mode-grid">
-          <div class="pricing-mode-btn" id="mode-per-window">
-            <div class="mode-title">Per Item</div>
-            <div class="mode-desc">Standard unit rates</div>
-          </div>
-          <div class="pricing-mode-btn" id="mode-hourly">
-            <div class="mode-title">Hourly Rate</div>
-            <div class="mode-desc">Time-based estimate</div>
-          </div>
+          <div class="pricing-mode-btn" id="mode-per-window"><div class="mode-title">Per Item</div><div class="mode-desc">Standard unit rates</div></div>
+          <div class="pricing-mode-btn" id="mode-hourly"><div class="mode-title">Hourly Rate</div><div class="mode-desc">Time-based estimate</div></div>
         </div>
         <div id="mode-options-container"></div>
       </div>
-
-      <!-- Summary -->
       <div class="card">
-        <div class="card-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
-          Quote Summary
-        </div>
-        <pre class="quote-preview-pre" id="quote-preview-text">Start adding windows to see a summary...</pre>
+        <div class="card-title">Quote Summary</div>
+        <pre class="quote-preview-pre" id="quote-preview-text">Start adding windows...</pre>
       </div>
     </div>
 
-    <!-- ═══ PRO TAB ═══ -->
     <div id="tab-pro" class="hidden">
-      <!-- Auth Panel -->
       <div id="pro-auth-panel">
         <div class="card">
           <div class="card-title">Access Pro Features</div>
@@ -313,409 +236,176 @@
             <button class="auth-tab" id="auth-signup-tab">Create Account</button>
           </div>
           <div class="field-stack">
-            <div id="auth-name-field" class="hidden">
-              <label class="field-label">Full Name</label>
-              <input type="text" class="field-input" id="auth-name" placeholder="Your Name" />
-            </div>
-            <div>
-              <label class="field-label">Email Address</label>
-              <input type="email" class="field-input" id="auth-email" placeholder="email@example.com" />
-            </div>
-            <div>
-              <label class="field-label">Password</label>
-              <input type="password" class="field-input" id="auth-password" placeholder="••••••••" />
-            </div>
+            <div id="auth-name-field" class="hidden"><label class="field-label">Full Name</label><input type="text" class="field-input" id="auth-name" placeholder="Your Name" /></div>
+            <div><label class="field-label">Email Address</label><input type="email" class="field-input" id="auth-email" placeholder="email@example.com" /></div>
+            <div><label class="field-label">Password</label><input type="password" class="field-input" id="auth-password" placeholder="••••••••" /></div>
             <button class="btn btn-primary btn-full" id="auth-submit-btn">Sign In</button>
           </div>
         </div>
       </div>
       
-      <!-- Team Setup -->
       <div id="pro-team-setup" class="hidden">
         <div class="card">
           <div class="card-title">Join or Create Team</div>
-          <div style="font-size: 0.8125rem; color: #6b7280; margin-bottom: 1rem;">
-            Signed in as: <span id="setup-email-display" style="font-weight: 700; color: #111827;"></span>
-          </div>
           <div class="field-stack">
-            <div>
-              <label class="field-label">Business Name</label>
-              <input type="text" class="field-input" id="team-name-input" placeholder="My Cleaning Biz" />
-            </div>
+            <div><label class="field-label">Business Name</label><input type="text" class="field-input" id="team-name-input" placeholder="My Cleaning Biz" /></div>
             <button class="btn btn-primary btn-full" id="create-team-btn">Create Team</button>
             <div style="text-align:center;font-size:0.75rem;color:#9ca3af;margin:0.5rem 0">OR</div>
-            <div>
-              <label class="field-label">Invite Code</label>
-              <input type="text" class="field-input" id="invite-code-input" placeholder="ABCD-1234" />
-            </div>
+            <div><label class="field-label">Invite Code</label><input type="text" class="field-input" id="invite-code-input" placeholder="ABCD-1234" /></div>
             <button class="btn btn-secondary btn-full" id="join-team-btn">Join with Code</button>
             <button class="btn btn-danger-soft btn-full btn-sm" id="setup-signout-btn" style="margin-top: 1rem;">Sign Out</button>
           </div>
         </div>
       </div>
 
-      <!-- Dashboard -->
       <div id="pro-dashboard" class="hidden">
         <div class="card">
           <div class="team-header">
-            <div>
-              <div class="team-name" id="team-name-display">My Business</div>
-              <div class="team-meta" id="team-email-display">user@example.com</div>
-            </div>
+            <div><div class="team-name" id="team-name-display">My Business</div><div class="team-meta" id="team-email-display">user@example.com</div></div>
             <span class="role-badge" id="team-role-badge">Owner</span>
           </div>
           <div class="kpi-grid">
-            <div class="kpi-card">
-              <div class="kpi-label">Active Jobs</div>
-              <div class="kpi-val" id="kpi-active">0</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Weekly Completion</div>
-              <div class="kpi-val" id="kpi-weekly">0</div>
-            </div>
+            <div class="kpi-card"><div class="kpi-label">Active Jobs</div><div class="kpi-val" id="kpi-active">0</div></div>
+            <div class="kpi-card"><div class="kpi-label">Weekly Completion</div><div class="kpi-val" id="kpi-weekly">0</div></div>
           </div>
           <div class="revenue-grid" id="revenue-banner">
-            <div class="revenue-card">
-              <div class="revenue-label">Collected</div>
-              <div class="revenue-val" id="kpi-collected">$0</div>
-            </div>
-            <div class="revenue-card">
-              <div class="revenue-label">Pending</div>
-              <div class="revenue-val revenue-pending" id="kpi-pending">$0</div>
-            </div>
+            <div class="revenue-card"><div class="revenue-label">Paid Total</div><div class="revenue-val" id="kpi-collected">$0</div></div>
+            <div class="revenue-card"><div class="revenue-label">Quoted Total</div><div class="revenue-val revenue-pending" id="kpi-pending">$0</div></div>
           </div>
           <button class="btn btn-danger-soft btn-full btn-sm" id="pro-signout-btn">Sign Out</button>
         </div>
-
-        <!-- Job Filters -->
         <div class="chip-strip" id="job-filters" style="margin-bottom: 1rem;"></div>
-
-        <!-- Jobs List -->
         <div id="jobs-list-container"></div>
       </div>
     </div>
 
-    <!-- ═══ SETTINGS TAB ═══ -->
     <div id="tab-settings" class="hidden">
       <div class="card">
         <div class="card-title">Business Information</div>
         <div class="field-stack">
-          <div>
-            <label class="field-label">Business Name</label>
-            <input type="text" class="field-input" id="s-bizname" placeholder="Crystal Clear Windows" />
-          </div>
+          <div><label class="field-label">Business Name</label><input type="text" class="field-input" id="s-bizname" placeholder="Crystal Clear Windows" /></div>
           <div class="field-grid-2">
-            <div>
-              <label class="field-label">Contact Name</label>
-              <input type="text" class="field-input" id="s-contact" placeholder="John" />
-            </div>
-            <div>
-              <label class="field-label">Phone</label>
-              <input type="tel" class="field-input" id="s-phone" placeholder="0400 000 000" />
-            </div>
+            <div><label class="field-label">Contact Name</label><input type="text" class="field-input" id="s-contact" placeholder="John" /></div>
+            <div><label class="field-label">Phone</label><input type="tel" class="field-input" id="s-phone" placeholder="0400 000 000" /></div>
           </div>
-          <div>
-            <label class="field-label">Email</label>
-            <input type="email" class="field-input" id="s-email" placeholder="biz@email.com" />
-          </div>
-          <div>
-            <label class="field-label">Default Message</label>
-            <textarea class="field-input" id="s-message" rows="3" placeholder="Thank you for choosing us!"></textarea>
-          </div>
+          <div><label class="field-label">Email</label><input type="email" class="field-input" id="s-email" placeholder="biz@email.com" /></div>
+          <div><label class="field-label">Default Message</label><textarea class="field-input" id="s-message" rows="3" placeholder="Thank you for choosing us!"></textarea></div>
         </div>
       </div>
       <button class="btn btn-primary btn-full" id="save-settings-btn">Save All Settings</button>
     </div>
   </div>
 
-  <!-- Footer Actions -->
   <div class="quote-footer" id="quote-footer">
     <div class="quote-footer-inner">
       <div class="quote-footer-card">
-        <div>
-          <div class="quote-price" id="footer-total">$0</div>
-          <div class="quote-price-sub" id="footer-count">0 items selected</div>
-        </div>
+        <div><div class="quote-price" id="footer-total">$0</div><div class="quote-price-sub" id="footer-count">0 items selected</div></div>
         <div class="quote-footer-actions">
-          <button class="btn btn-success" id="save-job-btn" style="display:none">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            Save
-          </button>
-          <button class="btn btn-primary" id="copy-quote-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-            Copy
-          </button>
+          <button class="btn btn-success" id="save-job-btn" style="display:none">Save</button>
+          <button class="btn btn-primary" id="copy-quote-btn">Copy</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Tab Bar -->
   <nav class="tab-bar">
     <div class="tab-bar-inner">
-      <button class="tab-btn active" onclick="switchTab('quote')">
-        <div class="tab-btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
-        </div>
-        <span class="tab-btn-label">QUOTE</span>
-      </button>
-      <button class="tab-btn" onclick="switchTab('pro')">
-        <div class="tab-btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        </div>
-        <span class="tab-btn-label">PRO</span>
-      </button>
-      <button class="tab-btn" onclick="switchTab('settings')">
-        <div class="tab-btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-        </div>
-        <span class="tab-btn-label">SETTINGS</span>
-      </button>
+      <button class="tab-btn active" onclick="switchTab('quote')"><div class="tab-btn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div><span class="tab-btn-label">QUOTE</span></button>
+      <button class="tab-btn" onclick="switchTab('pro')"><div class="tab-btn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><span class="tab-btn-label">PRO</span></button>
+      <button class="tab-btn" onclick="switchTab('settings')"><div class="tab-btn-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></div><span class="tab-btn-label">SETTINGS</span></button>
     </div>
   </nav>
 </div>
 
 <script>
-  // ═══════════════════════════════════════════════════════════
-  // CONFIG & STATE
-  // ═══════════════════════════════════════════════════════════
-  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_KEY';
+  const SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM';
 
-  let currentTab = 'quote';
-  let pricingMode = 'per-window';
-  let authMode = 'signin';
-  let jobFilter = 'all';
-  let supabaseClient = null;
-  let realtimeChannel = null;
-  let saveBusy = false;
-
+  let pricingMode = 'per-window', authMode = 'signin', jobFilter = 'all', supabaseClient = null, realtimeChannel = null, saveBusy = false;
   let services = [
     { id: 'sw', name: 'Standard Windows', count: 0, rate: 10, icon: '<path d="M3 3h18v18H3z"/><path d="M12 3v18"/><path d="M3 12h18"/>' },
-    { id: 'lw', name: 'Large/Double Windows', count: 0, rate: 18, icon: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/><path d="M3 12h18"/>' },
+    { id: 'lw', name: 'Large Windows', count: 0, rate: 18, icon: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/><path d="M3 12h18"/>' },
     { id: 'sd', name: 'Sliding Doors', count: 0, rate: 25, icon: '<path d="M18 3v18"/><path d="M3 3h15"/><path d="M3 21h15"/><path d="M3 3v18"/>' },
     { id: 'fs', name: 'Fly Screens', count: 0, rate: 5, icon: '<path d="M3 3h18v18H3z"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>' },
     { id: 'tr', name: 'Tracks/Sills', count: 0, rate: 5, icon: '<path d="M3 21h18"/><path d="M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"/>' }
   ];
+  let settings = { businessName: 'Crystal Clear Windows', contactName: 'John', businessPhone: '0400 000 000', businessEmail: 'biz@email.com', customMessage: 'Thank you for choosing us!', hourlyRate: 80, estimatedHours: 1, travelFee: 0, discount: 0 };
+  let proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [] };
 
-  let settings = {
-    businessName: 'Crystal Clear Windows',
-    contactName: 'John',
-    businessPhone: '0400 000 000',
-    businessEmail: 'biz@email.com',
-    customMessage: 'Thank you for choosing us! We look forward to making your windows shine.',
-    hourlyRate: 80,
-    estimatedHours: 1,
-    travelFee: 0,
-    discount: 0
-  };
-
-  let proState = {
-    user: null,
-    teamId: null,
-    teamName: '',
-    teamRole: '',
-    jobs: [],
-    feed: []
-  };
-
-  // ═══════════════════════════════════════════════════════════
-  // SUPABASE / PRO LOGIC
-  // ═══════════════════════════════════════════════════════════
   async function getSb() {
     if (supabaseClient) return supabaseClient;
-    try {
-      var mod = await import('https://esm.sh/@supabase/supabase-js@2');
-      supabaseClient = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      return supabaseClient;
-    } catch(e) { console.error('Supabase load failed:', e); return null; }
+    try { const mod = await import('https://esm.sh/@supabase/supabase-js@2'); supabaseClient = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return supabaseClient; }
+    catch(e) { console.error(e); return null; }
   }
 
-  async function sbSignIn(email, password) {
-    var sb = await getSb();
-    if (!sb) throw new Error('Supabase not available.');
-    var result = await sb.auth.signInWithPassword({ email, password });
-    if (result.error) throw result.error;
-    return result.data;
-  }
-
-  async function sbSignUp(email, password, name) {
-    var sb = await getSb();
-    if (!sb) throw new Error('Supabase not available.');
-    var result = await sb.auth.signUp({ email, password, options: { data: { full_name: name || '' } } });
-    if (result.error) throw result.error;
-    return result.data;
-  }
-
-  async function sbSignOut() {
-    var sb = await getSb();
-    if (!sb) return;
-    await sb.auth.signOut();
-  }
-
-  async function getCurrentUser() {
-    var sb = await getSb();
-    if (!sb) return null;
-    var result = await sb.auth.getUser();
-    if (result.error) return null;
-    return result.data.user;
-  }
-
-  async function getMyTeams(userId) {
-    var sb = await getSb();
-    var result = await sb.from('team_members').select('id,role,status,team_id,team:teams(id,business_name)').eq('user_id', userId).eq('status', 'active');
-    if (result.error) throw result.error;
-    return result.data || [];
-  }
-
-  async function fetchJobs(teamId) {
-    var sb = await getSb();
-    if (!sb || !teamId) return [];
-    var result = await sb.from('jobs').select('*').eq('team_id', teamId).order('created_at', { ascending: false });
-    if (result.error) throw result.error;
-    return result.data || [];
-  }
-
-  async function fetchActivity(teamId) {
-    var sb = await getSb();
-    if (!sb || !teamId) return [];
-    var result = await sb.from('activity_logs').select('*').eq('team_id', teamId).order('created_at', { ascending: false }).limit(30);
-    if (result.error) throw result.error;
-    return result.data || [];
-  }
-
-  async function logActivity(teamId, userId, action, details) {
-    var sb = await getSb();
-    if (!sb || !teamId || !userId) return;
-    try { await sb.from('activity_logs').insert({ team_id: teamId, user_id: userId, action, details: details || '' }); } catch(e) {}
-  }
-
-  async function createTeamAndMakeOwner(name) {
-    var sb = await getSb();
-    var result = await sb.rpc('create_team_and_make_owner', { p_business_name: name });
-    if (result.error) throw result.error;
-    return result.data;
-  }
-
-  async function joinTeamWithInvite(code) {
-    var sb = await getSb();
-    var result = await sb.rpc('join_team_with_invite', { p_invite_code: code });
-    if (result.error) throw result.error;
-    return result.data;
-  }
+  async function sbSignIn(email, password) { const sb = await getSb(); const res = await sb.auth.signInWithPassword({ email, password }); if (res.error) throw res.error; return res.data; }
+  async function sbSignUp(email, password, name) { const sb = await getSb(); const res = await sb.auth.signUp({ email, password, options: { data: { full_name: name || '' } } }); if (res.error) throw res.error; return res.data; }
+  async function sbSignOut() { const sb = await getSb(); await sb.auth.signOut(); }
+  async function getCurrentUser() { const sb = await getSb(); if (!sb) return null; const res = await sb.auth.getUser(); return res.error ? null : res.data.user; }
+  async function getMyTeams(userId) { const sb = await getSb(); const res = await sb.from('team_members').select('id,role,status,team_id,team:teams(id,business_name)').eq('user_id', userId).eq('status', 'active'); return res.error ? [] : (res.data || []); }
+  async function fetchJobs(teamId) { const sb = await getSb(); if (!sb || !teamId) return []; const res = await sb.from('jobs').select('*').eq('team_id', teamId).order('created_at', { ascending: false }); return res.error ? [] : (res.data || []); }
+  async function createTeamAndMakeOwner(name) { const sb = await getSb(); const res = await sb.rpc('create_team_and_make_owner', { p_business_name: name }); if (res.error) throw res.error; return res.data; }
+  async function joinTeamWithInvite(code) { const sb = await getSb(); const res = await sb.rpc('join_team_with_invite', { p_invite_code: code }); if (res.error) throw res.error; return res.data; }
 
   async function bootPro() {
     try {
-      var user = await getCurrentUser();
-      if (!user) {
-        proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
-        renderProPanel();
-        return;
-      }
-      var teams = await getMyTeams(user.id);
+      const user = await getCurrentUser();
+      if (!user) { proState = { user: null, teamId: null, teamName: '', teamRole: '', jobs: [] }; renderProPanel(); return; }
+      const teams = await getMyTeams(user.id);
       if (teams.length) {
-        var t = teams[0];
-        var teamId = (t.team && t.team.id) || t.team_id;
-        var teamName = (t.team && t.team.business_name) || 'Your Team';
-        var teamRole = t.role || 'worker';
-        var results = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
-        proState = { user, teamId, teamName, teamRole, jobs: results[0], feed: results[1] };
-        
-        // Realtime
-        var sb = await getSb();
+        const t = teams[0];
+        const teamId = (t.team && t.team.id) || t.team_id;
+        const jobs = await fetchJobs(teamId);
+        proState = { user, teamId, teamName: (t.team && t.team.business_name) || 'Your Team', teamRole: t.role || 'worker', jobs };
+        const sb = await getSb();
         if (sb) {
-          if (realtimeChannel) { sb.removeChannel(realtimeChannel); }
-          realtimeChannel = sb.channel('jobs-' + teamId).on('postgres_changes', {
-            event: '*', schema: 'public', table: 'jobs', filter: 'team_id=eq.' + teamId
-          }, async () => {
-            var r = await Promise.all([fetchJobs(teamId), fetchActivity(teamId)]);
-            proState.jobs = r[0]; proState.feed = r[1];
-            renderJobsList(); updateKPIs();
-          }).subscribe();
+          if (realtimeChannel) sb.removeChannel(realtimeChannel);
+          realtimeChannel = sb.channel('jobs-' + teamId).on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: 'team_id=eq.' + teamId }, async () => { proState.jobs = await fetchJobs(teamId); renderJobsList(); updateKPIs(); }).subscribe();
         }
-      } else {
-        proState = { user, teamId: null, teamName: '', teamRole: '', jobs: [], feed: [] };
-      }
+      } else { proState = { user, teamId: null, teamName: '', teamRole: '', jobs: [] }; }
       renderProPanel();
     } catch(err) { showToast(err.message, 'error'); }
   }
 
   function renderProPanel() {
-    var user = proState.user;
-    var teamId = proState.teamId;
-
+    const { user, teamId, teamName, teamRole } = proState;
     document.getElementById('pro-auth-panel').classList.toggle('hidden', !!user);
     document.getElementById('pro-team-setup').classList.toggle('hidden', !user || !!teamId);
     document.getElementById('pro-dashboard').classList.toggle('hidden', !user || !teamId);
-
-    var badge = document.getElementById('pro-badge');
-    badge.className = teamId ? 'badge-pro' : 'badge-free';
-    badge.textContent = teamId ? 'PRO' : 'FREE';
-    document.getElementById('header-sub').textContent = proState.teamName || 'Fast quoting for window cleaners';
+    const badge = document.getElementById('pro-badge'); badge.className = teamId ? 'badge-pro' : 'badge-free'; badge.textContent = teamId ? 'PRO' : 'FREE';
+    document.getElementById('header-sub').textContent = teamName || 'Fast quoting for window cleaners';
     document.getElementById('save-job-btn').style.display = teamId ? '' : 'none';
-
-    if (user && !teamId) {
-      document.getElementById('setup-email-display').textContent = user.email;
-    }
     if (user && teamId) {
-      document.getElementById('team-name-display').textContent = proState.teamName;
+      document.getElementById('team-name-display').textContent = teamName;
       document.getElementById('team-email-display').textContent = user.email;
-      var roleBadge = document.getElementById('team-role-badge');
-      roleBadge.textContent = proState.teamRole === 'owner' ? 'Owner' : 'Staff';
-      roleBadge.className = 'role-badge ' + (proState.teamRole === 'owner' ? 'role-owner' : 'role-staff');
-      document.getElementById('revenue-banner').classList.toggle('hidden', proState.teamRole !== 'owner');
+      const rb = document.getElementById('team-role-badge'); rb.textContent = teamRole === 'owner' ? 'Owner' : 'Staff'; rb.className = 'role-badge ' + (teamRole === 'owner' ? 'role-owner' : 'role-staff');
       renderJobsList(); updateKPIs(); buildJobFilters();
     }
   }
 
   function buildJobFilters() {
-    var strip = document.getElementById('job-filters');
-    var filters = [
-      { val: 'all', label: 'All' },
-      { val: 'quote_sent', label: 'Quoted' },
-      { val: 'accepted', label: 'Accepted' },
-      { val: 'in_progress', label: 'Active' },
-      { val: 'completed', label: 'Done' }
-    ];
-    strip.innerHTML = filters.map(f => `
-      <button class="chip ${jobFilter === f.val ? 'chip-blue' : 'btn-secondary btn-sm'}" 
-              onclick="jobFilter='${f.val}'; buildJobFilters(); renderJobsList();">${f.label}</button>
-    `).join('');
+    const filters = [{ val: 'all', label: 'All' }, { val: 'quote_sent', label: 'Quoted' }, { val: 'accepted', label: 'Accepted' }, { val: 'in_progress', label: 'Active' }, { val: 'completed', label: 'Done' }];
+    document.getElementById('job-filters').innerHTML = filters.map(f => `<button class="chip ${jobFilter === f.val ? 'chip-blue' : 'btn-secondary btn-sm'}" onclick="jobFilter='${f.val}'; buildJobFilters(); renderJobsList();">${f.label}</button>`).join('');
   }
 
   function updateKPIs() {
-    var jobs = proState.jobs;
+    const jobs = proState.jobs;
     document.getElementById('kpi-active').textContent = jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled').length;
     document.getElementById('kpi-weekly').textContent = jobs.filter(j => j.status === 'completed').length;
-    
-    var collected = jobs.filter(j => j.status === 'completed').reduce((s, j) => s + (parseFloat(j.paid_amount) || 0), 0);
-    var pending = jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled').reduce((s, j) => s + (parseFloat(j.quoted_price) || 0), 0);
-    
-    document.getElementById('kpi-collected').textContent = `$${collected.toFixed(2)}`;
-    document.getElementById('kpi-pending').textContent = `$${pending.toFixed(2)}`;
+    const paid = jobs.filter(j => j.status === 'completed').reduce((s, j) => s + (parseFloat(j.paid_amount) || parseFloat(j.quoted_price) || 0), 0);
+    const quoted = jobs.reduce((s, j) => s + (parseFloat(j.quoted_price) || 0), 0);
+    document.getElementById('kpi-collected').textContent = `$${paid.toFixed(0)}`;
+    document.getElementById('kpi-pending').textContent = `$${quoted.toFixed(0)}`;
   }
 
   function renderJobsList() {
-    var container = document.getElementById('jobs-list-container');
-    var jobs = proState.jobs;
-    if (jobFilter !== 'all') jobs = jobs.filter(j => j.status === jobFilter);
-    
-    if (!jobs.length) {
-      container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
-      return;
-    }
-
+    const container = document.getElementById('jobs-list-container');
+    let jobs = proState.jobs; if (jobFilter !== 'all') jobs = jobs.filter(j => j.status === jobFilter);
+    if (!jobs.length) { container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>'; return; }
     container.innerHTML = jobs.map(j => `
       <div class="job-card">
         <div class="job-card-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
-          <div>
-            <div class="job-card-name">${j.customer_name}</div>
-            <div class="job-card-meta">
-              <span>$${parseFloat(j.quoted_price).toFixed(2)}</span>
-              <span>•</span>
-              <span style="text-transform:capitalize;">${j.status.replace('_', ' ')}</span>
-            </div>
-          </div>
+          <div><div class="job-card-name">${j.customer_name}</div><div class="job-card-meta"><span>$${parseFloat(j.quoted_price).toFixed(2)}</span><span>•</span><span style="text-transform:capitalize;">${j.status.replace('_', ' ')}</span></div></div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
         </div>
         <div class="job-card-body hidden">
@@ -733,155 +423,47 @@
     `).join('');
   }
 
-  async function updateJobStatus(jobId, status) {
-    var sb = await getSb();
-    if (!sb) return;
-    try {
-      var result = await sb.from('jobs').update({ status }).eq('id', jobId);
-      if (result.error) throw result.error;
-      showToast('Job updated!', 'success');
-      bootPro();
-    } catch(err) { showToast(err.message, 'error'); }
-  }
-
+  async function updateJobStatus(id, status) { const sb = await getSb(); await sb.from('jobs').update({ status }).eq('id', id); showToast('Updated!', 'success'); bootPro(); }
   async function saveJobToTeam() {
-    if (!proState.teamId || saveBusy) return;
-    saveBusy = true;
+    if (!proState.teamId || saveBusy) return; saveBusy = true;
     try {
-      var sb = await getSb();
-      var total = calculateTotal();
-      var items = services.filter(s => s.count > 0).map(s => `${s.count} ${s.name}`).join(', ');
-      
-      var result = await sb.from('jobs').insert({
-        team_id: proState.teamId,
-        customer_name: document.getElementById('q-name').value || 'Customer',
-        customer_phone: document.getElementById('q-phone').value,
-        customer_email: document.getElementById('q-email').value,
-        service_address: document.getElementById('q-address').value,
-        quoted_price: total,
-        items_summary: items,
-        status: 'quote_sent',
-        created_by: proState.user.id
-      });
-      if (result.error) throw result.error;
-      showToast('Job saved!', 'success');
-      bootPro();
-      switchTab('pro');
-    } catch(err) { showToast(err.message, 'error'); }
-    finally { saveBusy = false; }
+      const sb = await getSb();
+      const res = await sb.from('jobs').insert({ team_id: proState.teamId, customer_name: document.getElementById('q-name').value || 'Customer', customer_phone: document.getElementById('q-phone').value, customer_email: document.getElementById('q-email').value, service_address: document.getElementById('q-address').value, quoted_price: calculateTotal(), items_summary: services.filter(s => s.count > 0).map(s => `${s.count} ${s.name}`).join(', '), status: 'quote_sent', created_by: proState.user.id });
+      if (res.error) throw res.error; showToast('Saved!', 'success'); bootPro(); switchTab('pro');
+    } catch(e) { showToast(e.message, 'error'); } finally { saveBusy = false; }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // UI & CORE LOGIC
-  // ═══════════════════════════════════════════════════════════
-  function updateCount(id, delta) {
-    const s = services.find(x => x.id === id);
-    s.count = Math.max(0, s.count + delta);
-    renderSteppers(); updateQuoteDisplay();
-  }
-
-  function renderSteppers() {
-    const container = document.getElementById('steppers-container');
-    container.innerHTML = services.map(s => `
-      <div class="stepper-row ${s.count > 0 ? 'active' : ''}">
-        <div class="stepper-label">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${s.icon}</svg>
-          <span>${s.name}</span>
-        </div>
-        <div class="stepper-controls">
-          <button class="btn-stepper minus" onclick="updateCount('${s.id}', -1)" ${s.count === 0 ? 'disabled' : ''}>-</button>
-          <div class="stepper-val">${s.count}</div>
-          <button class="btn-stepper plus" onclick="updateCount('${s.id}', 1)">+</button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function calculateTotal() {
-    let total = pricingMode === 'per-window' ? services.reduce((acc, s) => acc + (s.count * s.rate), 0) : settings.hourlyRate * settings.estimatedHours;
-    return Math.max(0, total + settings.travelFee - settings.discount);
-  }
-
+  function updateCount(id, delta) { const s = services.find(x => x.id === id); s.count = Math.max(0, s.count + delta); renderSteppers(); updateQuoteDisplay(); }
+  function renderSteppers() { document.getElementById('steppers-container').innerHTML = services.map(s => `<div class="stepper-row ${s.count > 0 ? 'active' : ''}"><div class="stepper-label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${s.icon}</svg><span>${s.name}</span></div><div class="stepper-controls"><button class="btn-stepper minus" onclick="updateCount('${s.id}', -1)" ${s.count === 0 ? 'disabled' : ''}>-</button><div class="stepper-val">${s.count}</div><button class="btn-stepper plus" onclick="updateCount('${s.id}', 1)">+</button></div></div>`).join(''); }
+  function calculateTotal() { let t = pricingMode === 'per-window' ? services.reduce((a, s) => a + (s.count * s.rate), 0) : settings.hourlyRate * settings.estimatedHours; return Math.max(0, t + settings.travelFee - settings.discount); }
   function updateQuoteDisplay() {
-    const total = calculateTotal();
-    const count = services.reduce((acc, s) => acc + s.count, 0);
-    document.getElementById('footer-total').textContent = `$${total.toFixed(2)}`;
-    document.getElementById('footer-count').textContent = `${count} items selected`;
-    
+    const t = calculateTotal(), c = services.reduce((a, s) => a + s.count, 0);
+    document.getElementById('footer-total').textContent = `$${t.toFixed(2)}`; document.getElementById('footer-count').textContent = `${c} items selected`;
     document.getElementById('service-chips').innerHTML = services.filter(s => s.count > 0).map(s => `<div class="chip chip-blue">${s.count} × ${s.name}</div>`).join('');
-
-    let summary = `*QUOTE FROM ${settings.businessName.toUpperCase()}*\n\n`;
-    summary += `Hi ${document.getElementById('q-name').value || 'Customer'},\n`;
-    if (document.getElementById('q-address').value) summary += `Address: ${document.getElementById('q-address').value}\n`;
-    summary += `\n*SERVICES:*\n`;
-    if (pricingMode === 'per-window') {
-      services.filter(s => s.count > 0).forEach(s => summary += `• ${s.count} × ${s.name}: $${(s.count * s.rate).toFixed(2)}\n`);
-    } else {
-      summary += `• Professional Cleaning: $${(settings.hourlyRate * settings.estimatedHours).toFixed(2)}\n`;
-    }
-    if (settings.travelFee > 0) summary += `• Travel: $${settings.travelFee.toFixed(2)}\n`;
-    if (settings.discount > 0) summary += `• Discount: -$${settings.discount.toFixed(2)}\n`;
-    summary += `\n*TOTAL: $${total.toFixed(2)}*\n\n${settings.customMessage}`;
-    document.getElementById('quote-preview-text').textContent = count > 0 || pricingMode === 'hourly' ? summary : 'Start adding windows...';
+    let sum = `*QUOTE FROM ${settings.businessName.toUpperCase()}*\n\nHi ${document.getElementById('q-name').value || 'Customer'},\n`;
+    if (document.getElementById('q-address').value) sum += `Address: ${document.getElementById('q-address').value}\n`;
+    sum += `\n*SERVICES:*\n`;
+    if (pricingMode === 'per-window') services.filter(s => s.count > 0).forEach(s => sum += `• ${s.count} × ${s.name}: $${(s.count * s.rate).toFixed(2)}\n`);
+    else sum += `• Professional Cleaning: $${(settings.hourlyRate * settings.estimatedHours).toFixed(2)}\n`;
+    sum += `\n*TOTAL: $${t.toFixed(2)}*\n\n${settings.customMessage}`;
+    document.getElementById('quote-preview-text').textContent = c > 0 || pricingMode === 'hourly' ? sum : 'Start adding windows...';
   }
 
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if (event) event.currentTarget.classList.add('active');
-    ['quote', 'pro', 'settings'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
-    document.getElementById('tab-' + tab).classList.remove('hidden');
-    document.getElementById('quote-footer').style.display = tab === 'quote' ? 'block' : 'none';
-    currentTab = tab; window.scrollTo(0,0);
-  }
+  function switchTab(tab) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); if (event) event.currentTarget.classList.add('active'); ['quote', 'pro', 'settings'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden')); document.getElementById('tab-' + tab).classList.remove('hidden'); document.getElementById('quote-footer').style.display = tab === 'quote' ? 'block' : 'none'; window.scrollTo(0,0); }
+  function showToast(m, t = '') { const c = document.getElementById('toast-container'), e = document.createElement('div'); e.className = `toast ${t}`; e.textContent = m; c.appendChild(e); setTimeout(() => e.remove(), 3000); }
 
-  function showToast(msg, type = '') {
-    const container = document.getElementById('toast-container');
-    const t = document.createElement('div');
-    t.className = `toast ${type}`; t.textContent = msg;
-    container.appendChild(t); setTimeout(() => t.remove(), 3000);
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // EVENT LISTENERS
-  // ═══════════════════════════════════════════════════════════
   document.addEventListener('DOMContentLoaded', () => {
     renderSteppers(); updateQuoteDisplay();
-    
     document.getElementById('auth-signin-tab').onclick = () => { authMode = 'signin'; document.getElementById('auth-signin-tab').classList.add('active'); document.getElementById('auth-signup-tab').classList.remove('active'); document.getElementById('auth-name-field').classList.add('hidden'); document.getElementById('auth-submit-btn').textContent = 'Sign In'; };
     document.getElementById('auth-signup-tab').onclick = () => { authMode = 'signup'; document.getElementById('auth-signup-tab').classList.add('active'); document.getElementById('auth-signin-tab').classList.remove('active'); document.getElementById('auth-name-field').classList.remove('hidden'); document.getElementById('auth-submit-btn').textContent = 'Create Account'; };
-    
-    document.getElementById('auth-submit-btn').onclick = async () => {
-      var email = document.getElementById('auth-email').value;
-      var pass = document.getElementById('auth-password').value;
-      var name = document.getElementById('auth-name').value;
-      try {
-        if (authMode === 'signin') await sbSignIn(email, pass);
-        else await sbSignUp(email, pass, name);
-        showToast('Success!', 'success'); bootPro();
-      } catch(e) { showToast(e.message, 'error'); }
-    };
-
-    document.getElementById('create-team-btn').onclick = async () => {
-      var name = document.getElementById('team-name-input').value;
-      try { await createTeamAndMakeOwner(name); showToast('Team created!', 'success'); bootPro(); } catch(e) { showToast(e.message, 'error'); }
-    };
-
-    document.getElementById('join-team-btn').onclick = async () => {
-      var code = document.getElementById('invite-code-input').value;
-      try { await joinTeamWithInvite(code); showToast('Joined!', 'success'); bootPro(); } catch(e) { showToast(e.message, 'error'); }
-    };
-
-    document.getElementById('pro-signout-btn').onclick = document.getElementById('setup-signout-btn').onclick = async () => {
-      await sbSignOut(); bootPro(); showToast('Signed out');
-    };
-
+    document.getElementById('auth-submit-btn').onclick = async () => { try { if (authMode === 'signin') await sbSignIn(document.getElementById('auth-email').value, document.getElementById('auth-password').value); else await sbSignUp(document.getElementById('auth-email').value, document.getElementById('auth-password').value, document.getElementById('auth-name').value); showToast('Success!', 'success'); bootPro(); } catch(e) { showToast(e.message, 'error'); } };
+    document.getElementById('create-team-btn').onclick = async () => { try { await createTeamAndMakeOwner(document.getElementById('team-name-input').value); showToast('Team created!', 'success'); bootPro(); } catch(e) { showToast(e.message, 'error'); } };
+    document.getElementById('join-team-btn').onclick = async () => { try { await joinTeamWithInvite(document.getElementById('invite-code-input').value); showToast('Joined!', 'success'); bootPro(); } catch(e) { showToast(e.message, 'error'); } };
+    document.getElementById('pro-signout-btn').onclick = document.getElementById('setup-signout-btn').onclick = async () => { await sbSignOut(); bootPro(); showToast('Signed out'); };
     document.getElementById('save-job-btn').onclick = saveJobToTeam;
     document.getElementById('global-reset-btn').onclick = () => { if(confirm('Reset all?')){ document.getElementById('q-name').value=''; services.forEach(s=>s.count=0); renderSteppers(); updateQuoteDisplay(); } };
-    document.getElementById('save-settings-btn').onclick = () => { showToast('Settings saved!', 'success'); };
     document.getElementById('copy-quote-btn').onclick = () => { navigator.clipboard.writeText(document.getElementById('quote-preview-text').textContent); showToast('Copied!', 'success'); };
-    
     ['q-name', 'q-phone', 'q-email', 'q-address'].forEach(id => document.getElementById(id).oninput = updateQuoteDisplay);
-    
     bootPro();
   });
 </script>
