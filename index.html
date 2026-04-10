@@ -1049,6 +1049,19 @@
     </nav>
   </div>
     <script>
+      let pendingInviteCode = null;
+
+(function checkInviteFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const invite = params.get('invite');
+
+  if (invite) {
+    pendingInviteCode = invite;
+    localStorage.setItem('pending_invite', invite);
+  } else {
+    pendingInviteCode = localStorage.getItem('pending_invite');
+  }
+})();
     const SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM';
     const STORAGE_KEY = 'window-quote-pro-v5-settings';
@@ -1553,20 +1566,28 @@ function getQuoteData() {
     }
 
     async function createTeamAndMakeOwner(name) {
-      const sb = await getSb();
-      if (!sb) throw new Error('Supabase unavailable');
-      const res = await sb.rpc('create_team_and_make_owner', { p_business_name: name.trim() });
-      if (res.error) throw res.error;
-      return res.data;
-    }
+  const sb = await getSb();
+  if (!sb) throw new Error('Supabase unavailable');
+
+  const res = await sb.rpc('create_team', {
+    p_business_name: name.trim()
+  });
+
+  if (res.error) throw res.error;
+  return res.data;
+}
 
     async function joinTeamWithInvite(code) {
-      const sb = await getSb();
-      if (!sb) throw new Error('Supabase unavailable');
-      const res = await sb.rpc('join_team_with_invite', { p_invite_code: code.trim() });
-      if (res.error) throw res.error;
-      return res.data;
-    }
+  const sb = await getSb();
+  if (!sb) throw new Error('Supabase unavailable');
+
+  const res = await sb.rpc('join_team_by_invite', {
+    p_invite_code: code.trim()
+  });
+
+  if (res.error) throw res.error;
+  return res.data;
+}
 
     async function bootPro() {
       try {
@@ -1578,8 +1599,47 @@ function getQuoteData() {
           renderSettingsAccess();
           return;
         }
+        if (pendingInviteCode && !proState.teamId) {
+  try {
+    await joinTeamWithInvite(pendingInviteCode);
+    localStorage.removeItem('pending_invite');
+    pendingInviteCode = null;
+    showToast('Joined team successfully!', 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Invite failed', 'error');
+  }
+}
 
-        const memberships = await getMyTeams(user.id);
+       const sb = await getSb();
+
+const { data: teamData, error } = await sb.rpc('get_my_team');
+
+if (error) throw error;
+
+if (teamData && teamData.length > 0) {
+  const team = teamData[0];
+
+  const jobs = await fetchJobs(team.team_id);
+
+  proState = {
+    user,
+    teamId: team.team_id,
+    teamName: team.business_name || 'Your Team',
+    teamRole: team.role || 'staff',
+    inviteCode: team.invite_code || '',
+    jobs
+  };
+} else {
+  proState = {
+    user,
+    teamId: null,
+    teamName: '',
+    teamRole: '',
+    inviteCode: '',
+    jobs: []
+  };
+}
 
         if (memberships.length > 0) {
           const first = memberships[0];
@@ -1873,30 +1933,36 @@ function getQuoteData() {
 
       document.getElementById('share-invite-btn').onclick = async () => {
   try {
-    if (!proState.inviteCode) throw new Error('No invite code available');
+    if (!proState.inviteCode) {
+      throw new Error('No invite code available');
+    }
 
-    const APP_URL = 'https://windowquotepro.netlify.app/';
+    const APP_URL = 'https://windowquotepro.netlify.app';
+    const link = `${APP_URL}?invite=${proState.inviteCode}`;
 
     const shareText =
-      `Join my Window Quote Pro team.\n\n` +
-      `Open the app here:\n${APP_URL}\n\n` +
-      `1. Sign in to the app\n` +
-      `2. Go to Pro\n` +
-      `3. Enter this invite code:\n\n` +
-      `${proState.inviteCode}`;
+`Join my Window Quote Pro team:
+
+${link}
+
+1. Open the link
+2. Sign in or create account
+3. You will be automatically added to the team`;
 
     if (navigator.share) {
       await navigator.share({
         title: 'Join my Window Quote Pro team',
         text: shareText,
-        url: APP_URL
+        url: link
       });
     } else {
       await navigator.clipboard.writeText(shareText);
-      showToast('Join message copied!', 'success');
+      showToast('Invite link copied!', 'success');
     }
+
   } catch (error) {
     if (error?.name !== 'AbortError') {
+      console.error(error);
       showToast(error.message || 'Could not share invite', 'error');
     }
   }
