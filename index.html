@@ -1275,7 +1275,7 @@ const externalMultiplier = quoteState.externalOnly
 const adjustedWindowSubtotal = windowSubtotal * externalMultiplier;
 const adjustedSubtotal = adjustedWindowSubtotal + nonWindowSubtotal;
 
-      const externalMultiplier = quoteState.externalOnly ? ((Number(settings.externalOnlyPercent) || 70) / 100) : 1;
+    
       const adjustedSubtotal = subtotal * externalMultiplier;
       const travelFee = Number(settings.travelFee) || 0;
       const discount = Number(settings.discount) || 0;
@@ -1412,11 +1412,7 @@ const adjustedSubtotal = adjustedWindowSubtotal + nonWindowSubtotal;
         summary += `• Labour: ${data.estimatedHours.toFixed(2)} hrs @ $${Number(settings.hourlyRate || 0).toFixed(2)} = $${data.subtotal.toFixed(2)}\n`;
       }
 
-      if (quoteState.externalOnly) {
-        summary += `• Full Price: $${data.subtotal.toFixed(2)}\n`;
-        summary += `• External Only Price (${settings.externalOnlyPercent}%): $${data.adjustedSubtotal.toFixed(2)}\n`;
-      }
-
+    
       if (data.travelFee > 0) summary += `• Travel Fee: $${data.travelFee.toFixed(2)}\n`;
       if (data.discount > 0) summary += `• Discount: -$${data.discount.toFixed(2)}\n`;
       if (settings.gstEnabled) {
