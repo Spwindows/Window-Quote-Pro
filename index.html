@@ -1278,12 +1278,18 @@ const adjustedSubtotal = adjustedWindowSubtotal + nonWindowSubtotal;
     
       const adjustedSubtotal = subtotal * externalMultiplier;
       const travelFee = Number(settings.travelFee) || 0;
-      const discount = Number(settings.discount) || 0;
-      const baseTotal = Math.max(0, adjustedSubtotal + travelFee - discount);
-      const gstAmount = settings.gstEnabled ? baseTotal * ((Number(settings.gstRate) || 10) / 100) : 0;
-      const total = baseTotal + gstAmount;
+      const adjustedWindowSubtotal = windowSubtotal * externalMultiplier;
+const adjustedSubtotal = adjustedWindowSubtotal + nonWindowSubtotal;
 
-      return {
+const travelFee = Number(settings.travelFee) || 0;
+const discount = Number(settings.discount) || 0;
+const baseTotal = Math.max(0, adjustedSubtotal + travelFee - discount);
+const gstAmount = settings.gstEnabled
+  ? baseTotal * ((Number(settings.gstRate) || 10) / 100)
+  : 0;
+const total = baseTotal + gstAmount;
+
+return {
   itemCount,
   totalMinutes,
   estimatedHours,
