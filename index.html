@@ -25,6 +25,7 @@
     input[type="number"] { -moz-appearance: textfield; }
 
     #app { min-height: 100vh; display: flex; flex-direction: column; }
+    .hidden { display: none !important; }
 
     .header {
       background: #fff;
@@ -111,8 +112,6 @@
       padding: 1rem 1rem 10rem;
       flex: 1;
     }
-
-    .hidden { display: none !important; }
 
     .card {
       background: #fff;
@@ -370,9 +369,7 @@
       font-weight: 700;
       color: #111827;
       outline: none;
-    }
-
-    .rate-card-unit {
+    }    .rate-card-unit {
       font-size: 0.7rem;
       color: #9ca3af;
       margin-top: 0.2rem;
@@ -786,9 +783,7 @@
               <input type="text" class="field-input" id="q-address" placeholder="12 Smith St, Melbourne" />
             </div>
           </div>
-        </div>
-
-        <div class="card">
+        </div>        <div class="card">
           <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
             <span>Services & Counts</span>
             <button class="btn btn-secondary btn-sm" id="clear-counts-btn" type="button">Clear All</button>
@@ -907,7 +902,9 @@
           <div class="chip-strip" id="job-filters" style="margin-bottom:1rem;"></div>
           <div id="jobs-list-container"></div>
         </div>
-      </div>      <div id="tab-settings" class="hidden">
+      </div>
+
+      <div id="tab-settings" class="hidden">
         <div class="card">
           <div class="card-title">Business Information</div>
           <div class="field-stack">
@@ -1006,7 +1003,7 @@
     let authMode = 'signin';
     let pricingMode = 'per-window';
     let jobFilter = 'all';
-    const STORAGE_KEY = 'window-quote-pro-v2-settings';
+    const STORAGE_KEY = 'window-quote-pro-v3-settings';
 
     let settings = {
       businessName: 'SP Window Cleaning Pty Ltd',
@@ -1033,9 +1030,7 @@
       teamName: '',
       teamRole: '',
       jobs: []
-    };
-
-    function showToast(message, type = '') {
+    };    function showToast(message, type = '') {
       const container = document.getElementById('toast-container');
       const el = document.createElement('div');
       el.className = `toast ${type}`;
@@ -1059,19 +1054,13 @@
         if (!raw) return;
         const parsed = JSON.parse(raw);
 
-        if (parsed.settings) {
-          settings = { ...settings, ...parsed.settings };
-        }
+        if (parsed.settings) settings = { ...settings, ...parsed.settings };
 
         if (Array.isArray(parsed.services)) {
           services = services.map(service => {
             const saved = parsed.services.find(item => item.id === service.id);
             return saved
-              ? {
-                  ...service,
-                  rate: Number(saved.rate) || service.rate,
-                  minutes: Number(saved.minutes) || service.minutes
-                }
+              ? { ...service, rate: Number(saved.rate) || service.rate, minutes: Number(saved.minutes) || service.minutes }
               : service;
           });
         }
@@ -1116,9 +1105,7 @@
 
     function getQuoteData() {
       const itemCount = services.reduce((sum, service) => sum + service.count, 0);
-      const totalMinutes = services.reduce((sum, service) => {
-        return sum + (service.count * (Number(service.minutes) || 0));
-      }, 0);
+      const totalMinutes = services.reduce((sum, service) => sum + (service.count * (Number(service.minutes) || 0)), 0);
       const estimatedHours = totalMinutes / 60;
 
       let subtotal = 0;
@@ -1132,15 +1119,7 @@
       const discount = Number(settings.discount) || 0;
       const total = Math.max(0, subtotal + travelFee - discount);
 
-      return {
-        itemCount,
-        totalMinutes,
-        estimatedHours,
-        subtotal,
-        travelFee,
-        discount,
-        total
-      };
+      return { itemCount, totalMinutes, estimatedHours, subtotal, travelFee, discount, total };
     }
 
     function updateServiceRate(id, value) {
@@ -1185,7 +1164,6 @@
             </svg>
             <span>${service.name}</span>
           </div>
-
           <div class="stepper-controls">
             <button class="btn-stepper minus" type="button" onclick="updateCount('${service.id}', -1)" ${service.count === 0 ? 'disabled' : ''}>-</button>
             <div class="stepper-val">${service.count}</div>
@@ -1216,7 +1194,6 @@
                 </div>
               `).join('')}
             </div>
-
             <div class="field-grid-2" style="margin-top:0.8rem;">
               <div>
                 <label class="field-label">Travel Fee</label>
@@ -1242,7 +1219,6 @@
                 <input type="text" class="field-input" value="${data.estimatedHours.toFixed(2)} hrs" readonly />
               </div>
             </div>
-
             <div class="rate-grid">
               ${services.map(service => `
                 <div class="rate-card">
@@ -1252,7 +1228,6 @@
                 </div>
               `).join('')}
             </div>
-
             <div class="field-grid-2" style="margin-top:0.8rem;">
               <div>
                 <label class="field-label">Travel Fee</label>
@@ -1263,7 +1238,6 @@
                 <input type="number" min="0" step="1" class="field-input" value="${settings.discount || 0}" onchange="updateSettingNumber('discount', this.value)" />
               </div>
             </div>
-
             <div class="summary-stats" style="margin-top:0.8rem;margin-bottom:0;">
               <div class="summary-stat">
                 <div class="summary-stat-label">Total Minutes</div>
@@ -1277,7 +1251,9 @@
           </div>
         `;
       }
-        function updateQuoteDisplay() {
+    }
+
+    function updateQuoteDisplay() {
       const data = getQuoteData();
 
       document.getElementById('footer-total').textContent = `$${data.total.toFixed(2)}`;
@@ -1337,13 +1313,8 @@
         summary += `• Labour: ${data.estimatedHours.toFixed(2)} hrs @ $${Number(settings.hourlyRate || 0).toFixed(2)} = $${data.subtotal.toFixed(2)}\n`;
       }
 
-      if (data.travelFee > 0) {
-        summary += `• Travel Fee: $${data.travelFee.toFixed(2)}\n`;
-      }
-
-      if (data.discount > 0) {
-        summary += `• Discount: -$${data.discount.toFixed(2)}\n`;
-      }
+      if (data.travelFee > 0) summary += `• Travel Fee: $${data.travelFee.toFixed(2)}\n`;
+      if (data.discount > 0) summary += `• Discount: -$${data.discount.toFixed(2)}\n`;
 
       summary += `\n*TOTAL: $${data.total.toFixed(2)}*\n\n${settings.customMessage || 'Thank you for choosing us!'}`;
 
@@ -1364,19 +1335,10 @@
       updateQuoteDisplay();
     }
 
-    function buildEmailSubject() {
-      const customer = document.getElementById('q-name').value.trim() || 'Customer';
-      return `Window Cleaning Quote - ${customer}`;
-    }
-
-    function buildEmailBody() {
-      return document.getElementById('quote-preview-text').textContent;
-    }
-
     function openQuoteEmail() {
       const email = document.getElementById('q-email').value.trim();
-      const subject = buildEmailSubject();
-      const body = buildEmailBody();
+      const subject = `Window Cleaning Quote - ${document.getElementById('q-name').value.trim() || 'Customer'}`;
+      const body = document.getElementById('quote-preview-text').textContent;
       const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.location.href = mailto;
     }
@@ -1384,7 +1346,6 @@
     function switchTab(tab) {
       const buttons = document.querySelectorAll('.tab-btn');
       buttons.forEach(button => button.classList.remove('active'));
-
       if (tab === 'quote') buttons[0].classList.add('active');
       if (tab === 'pro') buttons[1].classList.add('active');
       if (tab === 'settings') buttons[2].classList.add('active');
@@ -1622,17 +1583,17 @@
       ];
 
       document.getElementById('job-filters').innerHTML = filters.map(filter => {
-        const activeClass = jobFilter === filter.val ? 'chip' : 'chip';
         const style = jobFilter === filter.val
           ? 'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;'
           : '';
-        return `<button class="${activeClass}" type="button" style="${style}" onclick="setJobFilter('${filter.val}')">${filter.label}</button>`;
+        return `<button class="chip" type="button" style="${style}" onclick="setJobFilter('${filter.val}')">${filter.label}</button>`;
       }).join('');
     }
 
     function renderJobsList() {
       const container = document.getElementById('jobs-list-container');
       let jobs = [...(proState.jobs || [])];
+
       if (jobFilter !== 'all') {
         jobs = jobs.filter(job => job.status === jobFilter);
       }
