@@ -1161,6 +1161,86 @@
     }
 
     function saveLocalSettings() {
+      async function fetchTeamSettings(teamId) {
+  const sb = await getSb();
+  if (!sb || !teamId) return null;
+
+  const res = await sb
+    .from('team_settings')
+    .select('*')
+    .eq('team_id', teamId)
+    .single();
+
+  if (res.error) throw res.error;
+  return res.data;
+}
+
+async function saveTeamSettings() {
+  if (!proState.teamId) return;
+
+  const sb = await getSb();
+  if (!sb) throw new Error('Supabase unavailable');
+
+  const rates = {};
+  const minutes = {};
+
+  services.forEach(service => {
+    rates[service.id] = Number(service.rate) || 0;
+    minutes[service.id] = Number(service.minutes) || 0;
+  });
+
+  const payload = {
+    team_id: proState.teamId,
+    pricing_mode: settings.pricingMode || 'per-window',
+    hourly_rate: Number(settings.hourlyRate) || 0,
+    travel_fee: Number(settings.travelFee) || 0,
+    discount: Number(settings.discount) || 0,
+    external_only_percent: Number(settings.externalOnlyPercent) || 70,
+    gst_enabled: !!settings.gstEnabled,
+    gst_rate: Number(settings.gstRate) || 10,
+
+    business_name: settings.businessName || '',
+    contact_name: settings.contactName || '',
+    contact_phone: settings.businessPhone || '',
+    contact_email: settings.businessEmail || '',
+    default_message: settings.customMessage || '',
+
+    rates,
+    minutes
+  };
+
+  const res = await sb
+    .from('team_settings')
+    .upsert(payload, { onConflict: 'team_id' });
+
+  if (res.error) throw res.error;
+}
+      function applyTeamSettingsRow(row) {
+  if (!row) return;
+
+  settings.businessName = row.business_name || settings.businessName;
+  settings.contactName = row.contact_name || settings.contactName;
+  settings.businessPhone = row.contact_phone || settings.businessPhone;
+  settings.businessEmail = row.contact_email || settings.businessEmail;
+  settings.customMessage = row.default_message || settings.customMessage;
+
+  settings.pricingMode = row.pricing_mode || settings.pricingMode;
+  settings.hourlyRate = Number(row.hourly_rate ?? settings.hourlyRate);
+  settings.travelFee = Number(row.travel_fee ?? settings.travelFee);
+  settings.discount = Number(row.discount ?? settings.discount);
+  settings.externalOnlyPercent = Number(row.external_only_percent ?? settings.externalOnlyPercent);
+  settings.gstEnabled = !!row.gst_enabled;
+  settings.gstRate = Number(row.gst_rate ?? settings.gstRate);
+
+  const rates = row.rates || {};
+  const minutes = row.minutes || {};
+
+  services = services.map(service => ({
+    ...service,
+    rate: Number(rates[service.id] ?? service.rate),
+    minutes: Number(minutes[service.id] ?? service.minutes)
+  }));
+}
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         settings,
         quoteState,
@@ -1222,99 +1302,34 @@
       }
     }
 
-    function applySettingsFromForm() {
-      settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
-      settings.contactName = document.getElementById('s-contact').value.trim();
-      settings.businessPhone = document.getElementById('s-phone').value.trim();
-      settings.businessEmail = document.getElementById('s-email').value.trim();
-      settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
-      settings.pricingMode = document.getElementById('settings-pricing-mode').value;
-      settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
-      settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
-      settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
-      settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
-      settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
-      settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
-      saveLocalSettings();
-      updateQuoteDisplay();
+    async function applySettingsFromForm() {
+  settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
+  settings.contactName = document.getElementById('s-contact').value.trim();
+  settings.businessPhone = document.getElementById('s-phone').value.trim();
+  settings.businessEmail = document.getElementById('s-email').value.trim();
+  settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
+  settings.pricingMode = document.getElementById('settings-pricing-mode').value;
+  settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
+  settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
+  settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
+  settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
+  settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
+  settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
+
+  saveLocalSettings();
+
+  if (proState.teamId && proState.teamRole === 'owner') {
+    try {
+      await saveTeamSettings();
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || 'Could not sync team settings', 'error');
     }
-      
-function getQuoteData() {
-  const itemCount = services.reduce((sum, service) => sum + service.count, 0);
-  const totalMinutes = services.reduce(
-    (sum, service) => sum + (service.count * (Number(service.minutes) || 0)),
-    0
-  );
-  const estimatedHours = totalMinutes / 60;
-
-  let subtotal = 0;
-  let windowSubtotal = 0;
-  let nonWindowSubtotal = 0;
-
-  const externalWindowIds = ['sw', 'lw', 'sd'];
-
-  if (settings.pricingMode === 'per-window') {
-    services.forEach(service => {
-      const lineTotal = service.count * (Number(service.rate) || 0);
-      subtotal += lineTotal;
-
-      if (externalWindowIds.includes(service.id)) {
-        windowSubtotal += lineTotal;
-      } else {
-        nonWindowSubtotal += lineTotal;
-      }
-    });
-  } else {
-    const hourlyRate = Number(settings.hourlyRate) || 0;
-    subtotal = estimatedHours * hourlyRate;
-
-    let windowMinutes = 0;
-    let nonWindowMinutes = 0;
-
-    services.forEach(service => {
-      const lineMinutes = service.count * (Number(service.minutes) || 0);
-
-      if (externalWindowIds.includes(service.id)) {
-        windowMinutes += lineMinutes;
-      } else {
-        nonWindowMinutes += lineMinutes;
-      }
-    });
-
-    windowSubtotal = (windowMinutes / 60) * hourlyRate;
-    nonWindowSubtotal = (nonWindowMinutes / 60) * hourlyRate;
   }
 
-  const externalMultiplier = quoteState.externalOnly
-    ? ((Number(settings.externalOnlyPercent) || 70) / 100)
-    : 1;
-
-  const adjustedWindowSubtotal = windowSubtotal * externalMultiplier;
-  const adjustedSubtotal = adjustedWindowSubtotal + nonWindowSubtotal;
-
-  const travelFee = Number(settings.travelFee) || 0;
-  const discount = Number(settings.discount) || 0;
-  const baseTotal = Math.max(0, adjustedSubtotal + travelFee - discount);
-  const gstAmount = settings.gstEnabled
-    ? baseTotal * ((Number(settings.gstRate) || 10) / 100)
-    : 0;
-  const total = baseTotal + gstAmount;
-
-  return {
-    itemCount,
-    totalMinutes,
-    estimatedHours,
-    subtotal,
-    windowSubtotal,
-    nonWindowSubtotal,
-    adjustedWindowSubtotal,
-    adjustedSubtotal,
-    travelFee,
-    discount,
-    baseTotal,
-    gstAmount,
-    total
-  };
+  syncSettingsForm();
+  renderSettingsGrids();
+  updateQuoteDisplay();
 }
     function updateServiceRate(id, value) {
       const service = services.find(item => item.id === id);
@@ -1619,8 +1634,12 @@ if (error) throw error;
 
 if (teamData && teamData.length > 0) {
   const team = teamData[0];
-
   const jobs = await fetchJobs(team.team_id);
+
+  const teamSettings = await fetchTeamSettings(team.team_id);
+  if (teamSettings) {
+    applyTeamSettingsRow(teamSettings);
+  }
 
   proState = {
     user,
@@ -1640,8 +1659,7 @@ if (teamData && teamData.length > 0) {
     jobs: []
   };
 }
-
-        if (memberships.length > 0) {
+  if (memberships.length > 0) {
           const first = memberships[0];
           const teamId = first.team_id || first.team?.id || null;
           const teamName = first.team?.business_name || 'Your Team';
@@ -2077,26 +2095,63 @@ ${link}
         document.getElementById(id).addEventListener('input', updateQuoteDisplay);
       });
 
-      [
-        's-bizname',
-        's-contact',
-        's-phone',
-        's-email',
-        's-message',
-        'settings-pricing-mode',
-        'settings-hourly-rate',
-        'settings-travel-fee',
-        'settings-discount',
-        'settings-external-percent',
-        'settings-gst-rate'
-      ].forEach(id => {
-        document.getElementById(id).addEventListener('input', applySettingsFromForm);
-        document.getElementById(id).addEventListener('change', applySettingsFromForm);
-      });
+     [
+  's-bizname',
+  's-contact',
+  's-phone',
+  's-email',
+  's-message',
+  'settings-pricing-mode',
+  'settings-hourly-rate',
+  'settings-travel-fee',
+  'settings-discount',
+  'settings-external-percent',
+  'settings-gst-rate'
+].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
+    settings.contactName = document.getElementById('s-contact').value.trim();
+    settings.businessPhone = document.getElementById('s-phone').value.trim();
+    settings.businessEmail = document.getElementById('s-email').value.trim();
+    settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
+    settings.pricingMode = document.getElementById('settings-pricing-mode').value;
+    settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
+    settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
+    settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
+    settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
+    settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
+    settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
+    updateQuoteDisplay();
+  });
 
-      document.getElementById('settings-gst-enabled').addEventListener('change', applySettingsFromForm);
+  document.getElementById(id).addEventListener('change', () => {
+    settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
+    settings.contactName = document.getElementById('s-contact').value.trim();
+    settings.businessPhone = document.getElementById('s-phone').value.trim();
+    settings.businessEmail = document.getElementById('s-email').value.trim();
+    settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
+    settings.pricingMode = document.getElementById('settings-pricing-mode').value;
+    settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
+    settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
+    settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
+    settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
+    settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
+    settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
+    updateQuoteDisplay();
+  });
+});
 
-      await bootPro();
+document.getElementById('settings-gst-enabled').addEventListener('change', () => {
+  settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
+  updateQuoteDisplay();
+});
+
+document.getElementById('save-settings-btn').onclick = async () => {
+  await applySettingsFromForm();
+  showToast('Settings saved!', 'success');
+};
+
+await bootPro();
     });
 
     window.switchTab = switchTab;
