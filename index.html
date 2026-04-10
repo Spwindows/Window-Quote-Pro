@@ -352,7 +352,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.65rem;
-    }
+          }
 
     .rate-card {
       background: #fff;
@@ -706,7 +706,7 @@
           <div class="header-logo">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2"></rect>
-              <path d="M3 9h18"></path>
+                            <path d="M3 9h18"></path>
               <path d="M3 15h18"></path>
               <path d="M9 3v18"></path>
               <path d="M15 3v18"></path>
@@ -1060,7 +1060,7 @@
     localStorage.setItem('pending_invite', invite);
   } else {
     pendingInviteCode = localStorage.getItem('pending_invite');
-  }
+      }
 })();
     const SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM';
@@ -1161,86 +1161,6 @@
     }
 
     function saveLocalSettings() {
-      async function fetchTeamSettings(teamId) {
-  const sb = await getSb();
-  if (!sb || !teamId) return null;
-
-  const res = await sb
-    .from('team_settings')
-    .select('*')
-    .eq('team_id', teamId)
-    .single();
-
-  if (res.error) throw res.error;
-  return res.data;
-}
-
-async function saveTeamSettings() {
-  if (!proState.teamId) return;
-
-  const sb = await getSb();
-  if (!sb) throw new Error('Supabase unavailable');
-
-  const rates = {};
-  const minutes = {};
-
-  services.forEach(service => {
-    rates[service.id] = Number(service.rate) || 0;
-    minutes[service.id] = Number(service.minutes) || 0;
-  });
-
-  const payload = {
-    team_id: proState.teamId,
-    pricing_mode: settings.pricingMode || 'per-window',
-    hourly_rate: Number(settings.hourlyRate) || 0,
-    travel_fee: Number(settings.travelFee) || 0,
-    discount: Number(settings.discount) || 0,
-    external_only_percent: Number(settings.externalOnlyPercent) || 70,
-    gst_enabled: !!settings.gstEnabled,
-    gst_rate: Number(settings.gstRate) || 10,
-
-    business_name: settings.businessName || '',
-    contact_name: settings.contactName || '',
-    contact_phone: settings.businessPhone || '',
-    contact_email: settings.businessEmail || '',
-    default_message: settings.customMessage || '',
-
-    rates,
-    minutes
-  };
-
-  const res = await sb
-    .from('team_settings')
-    .upsert(payload, { onConflict: 'team_id' });
-
-  if (res.error) throw res.error;
-}
-      function applyTeamSettingsRow(row) {
-  if (!row) return;
-
-  settings.businessName = row.business_name || settings.businessName;
-  settings.contactName = row.contact_name || settings.contactName;
-  settings.businessPhone = row.contact_phone || settings.businessPhone;
-  settings.businessEmail = row.contact_email || settings.businessEmail;
-  settings.customMessage = row.default_message || settings.customMessage;
-
-  settings.pricingMode = row.pricing_mode || settings.pricingMode;
-  settings.hourlyRate = Number(row.hourly_rate ?? settings.hourlyRate);
-  settings.travelFee = Number(row.travel_fee ?? settings.travelFee);
-  settings.discount = Number(row.discount ?? settings.discount);
-  settings.externalOnlyPercent = Number(row.external_only_percent ?? settings.externalOnlyPercent);
-  settings.gstEnabled = !!row.gst_enabled;
-  settings.gstRate = Number(row.gst_rate ?? settings.gstRate);
-
-  const rates = row.rates || {};
-  const minutes = row.minutes || {};
-
-  services = services.map(service => ({
-    ...service,
-    rate: Number(rates[service.id] ?? service.rate),
-    minutes: Number(minutes[service.id] ?? service.minutes)
-  }));
-}
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         settings,
         quoteState,
@@ -1252,7 +1172,88 @@ async function saveTeamSettings() {
       }));
     }
 
+    async function fetchTeamSettings(teamId) {
+      const sb = await getSb();
+      if (!sb || !teamId) return null;
+
+      const res = await sb
+        .from('team_settings')
+        .select('*')
+        .eq('team_id', teamId)
+        .single();
+
+      if (res.error) throw res.error;
+      return res.data;
+    }
+
+    async function saveTeamSettings() {
+      if (!proState.teamId) return;
+
+      const sb = await getSb();
+      if (!sb) throw new Error('Supabase unavailable');
+
+      const rates = {};
+      const minutes = {};
+
+      services.forEach(service => {
+        rates[service.id] = Number(service.rate) || 0;
+        minutes[service.id] = Number(service.minutes) || 0;
+      });
+
+      const payload = {
+        team_id: proState.teamId,
+        pricing_mode: settings.pricingMode || 'per-window',
+        hourly_rate: Number(settings.hourlyRate) || 0,
+        travel_fee: Number(settings.travelFee) || 0,
+        discount: Number(settings.discount) || 0,
+        external_only_percent: Number(settings.externalOnlyPercent) || 70,
+        gst_enabled: !!settings.gstEnabled,
+        gst_rate: Number(settings.gstRate) || 10,
+        business_name: settings.businessName || '',
+        contact_name: settings.contactName || '',
+        contact_phone: settings.businessPhone || '',
+        contact_email: settings.businessEmail || '',
+        default_message: settings.customMessage || '',
+        rates,
+        minutes
+      };
+
+      const res = await sb
+        .from('team_settings')
+        .upsert(payload, { onConflict: 'team_id' });
+
+      if (res.error) throw res.error;
+    }
+
+    function applyTeamSettingsRow(row) {
+      if (!row) return;
+
+      settings.businessName = row.business_name || settings.businessName;
+      settings.contactName = row.contact_name || settings.contactName;
+      settings.businessPhone = row.contact_phone || settings.businessPhone;
+      settings.businessEmail = row.contact_email || settings.businessEmail;
+      settings.customMessage = row.default_message || settings.customMessage;
+
+      settings.pricingMode = row.pricing_mode || settings.pricingMode;
+      settings.hourlyRate = Number(row.hourly_rate ?? settings.hourlyRate);
+      settings.travelFee = Number(row.travel_fee ?? settings.travelFee);
+      settings.discount = Number(row.discount ?? settings.discount);
+      settings.externalOnlyPercent = Number(row.external_only_percent ?? settings.externalOnlyPercent);
+      settings.gstEnabled = !!row.gst_enabled;
+      settings.gstRate = Number(row.gst_rate ?? settings.gstRate);
+
+      const rates = row.rates || {};
+      const minutes = row.minutes || {};
+
+      services = services.map(service => ({
+        ...service,
+        rate: Number(rates[service.id] ?? service.rate),
+        minutes: Number(minutes[service.id] ?? service.minutes)
+      }));
+    }
+
     function syncSettingsForm() {
+
       document.getElementById('s-bizname').value = settings.businessName || '';
       document.getElementById('s-contact').value = settings.contactName || '';
       document.getElementById('s-phone').value = settings.businessPhone || '';
@@ -1413,7 +1414,7 @@ async function saveTeamSettings() {
 
       if (quoteState.externalOnly) {
   summary += `• Full Window Price: $${data.windowSubtotal.toFixed(2)}\n`;
-  summary += `• External Window Price (${settings.externalOnlyPercent}%): $${data.adjustedWindowSubtotal.toFixed(2)}\n`;
+          summary += `• External Window Price (${settings.externalOnlyPercent}%): $${data.adjustedWindowSubtotal.toFixed(2)}\n`;
 
   if (data.nonWindowSubtotal > 0) {
     summary += `• Non-Window Services: $${data.nonWindowSubtotal.toFixed(2)}\n`;
@@ -1612,93 +1613,67 @@ async function saveTeamSettings() {
           proState = { user: null, teamId: null, teamName: '', teamRole: '', inviteCode: '', jobs: [] };
           renderProPanel();
           renderSettingsAccess();
+          updateQuoteDisplay();
           return;
         }
-        if (pendingInviteCode && !proState.teamId) {
-  try {
-    await joinTeamWithInvite(pendingInviteCode);
-    localStorage.removeItem('pending_invite');
-    pendingInviteCode = null;
-    showToast('Joined team successfully!', 'success');
-  } catch (err) {
-    console.error(err);
-    showToast('Invite failed', 'error');
-  }
-}
 
-       const sb = await getSb();
+        if (pendingInviteCode) {
+          try {
+            await joinTeamWithInvite(pendingInviteCode);
+            localStorage.removeItem('pending_invite');
+            pendingInviteCode = null;
+            showToast('Joined team successfully!', 'success');
+          } catch (err) {
+            console.error(err);
+          }
+        }
 
-const { data: teamData, error } = await sb.rpc('get_my_team');
+        const sb = await getSb();
+        if (!sb) throw new Error('Supabase unavailable');
 
-if (error) throw error;
+        const { data: teamData, error } = await sb.rpc('get_my_team');
+        if (error) throw error;
 
-if (teamData && teamData.length > 0) {
-  const team = teamData[0];
-  const jobs = await fetchJobs(team.team_id);
+        if (teamData && teamData.length > 0) {
+          const team = teamData[0];
+          const jobs = await fetchJobs(team.team_id);
 
-  const teamSettings = await fetchTeamSettings(team.team_id);
-  if (teamSettings) {
-    applyTeamSettingsRow(teamSettings);
-  }
-
-  proState = {
-    user,
-    teamId: team.team_id,
-    teamName: team.business_name || 'Your Team',
-    teamRole: team.role || 'staff',
-    inviteCode: team.invite_code || '',
-    jobs
-  };
-} else {
-  proState = {
-    user,
-    teamId: null,
-    teamName: '',
-    teamRole: '',
-    inviteCode: '',
-    jobs: []
-  };
-}
-  if (memberships.length > 0) {
-          const first = memberships[0];
-          const teamId = first.team_id || first.team?.id || null;
-          const teamName = first.team?.business_name || 'Your Team';
-          const inviteCode = first.team?.invite_code || '';
-          const jobs = teamId ? await fetchJobs(teamId) : [];
+          const teamSettings = await fetchTeamSettings(team.team_id);
+          if (teamSettings) {
+            applyTeamSettingsRow(teamSettings);
+          }
 
           proState = {
             user,
-            teamId,
-            teamName,
-            teamRole: first.role || 'staff',
-            inviteCode,
+            teamId: team.team_id,
+            teamName: team.business_name || 'Your Team',
+            teamRole: team.role || 'staff',
+            inviteCode: team.invite_code || '',
             jobs
           };
 
-          const sb = await getSb();
-          if (sb && teamId) {
-            if (realtimeChannel) {
-              try { await sb.removeChannel(realtimeChannel); } catch (_) {}
-            }
-
-            realtimeChannel = sb
-              .channel('jobs-' + teamId)
-              .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'jobs',
-                filter: 'team_id=eq.' + teamId
-              }, async () => {
-                try {
-                  proState.jobs = await fetchJobs(teamId);
-                  renderJobsList();
-                  updateKPIs();
-                } catch (error) {
-                  console.error(error);
-                }
-              })
-              .subscribe();
+          if (realtimeChannel) {
+            try { await sb.removeChannel(realtimeChannel); } catch (_) {}
+            realtimeChannel = null;
           }
+
+          realtimeChannel = sb
+            .channel('jobs-' + team.team_id)
+            .on('postgres_changes', {
+              event: '*',
+              schema: 'public',
+              table: 'jobs',
+              filter: 'team_id=eq.' + team.team_id
+            }, async () => {
+              try {
+                proState.jobs = await fetchJobs(team.team_id);
+                renderJobsList();
+                updateKPIs();
+              } catch (error) {
+                console.error(error);
+              }
+            })
+            .subscribe();
         } else {
           proState = { user, teamId: null, teamName: '', teamRole: '', inviteCode: '', jobs: [] };
         }
@@ -1774,7 +1749,7 @@ if (teamData && teamData.length > 0) {
     function buildJobFilters() {
       const filters = [
         { val: 'all', label: 'All' },
-        { val: 'quote_sent', label: 'Quoted' },
+        { val: 'quoted', label: 'Quoted' },
         { val: 'accepted', label: 'Accepted' },
         { val: 'in_progress', label: 'Active' },
         { val: 'completed', label: 'Done' }
@@ -1793,7 +1768,7 @@ if (teamData && teamData.length > 0) {
   let jobs = [...(proState.jobs || [])];
 
   if (jobFilter !== 'all') {
-    jobs = jobs.filter(job => job.status === jobFilter);
+        jobs = jobs.filter(job => job.status === jobFilter);
   }
 
   if (!jobs.length) {
@@ -1809,7 +1784,7 @@ if (teamData && teamData.length > 0) {
           <div class="job-card-meta">
             <span>$${(parseFloat(job.quoted_price) || 0).toFixed(2)}</span>
             <span>•</span>
-            <span style="text-transform:capitalize;">${String(job.status || 'quote_sent').replaceAll('_', ' ')}</span>
+            <span style="text-transform:capitalize;">${String(job.status || 'quoted').replaceAll('_', ' ')}</span>
           </div>
         </div>
         ${isOwner ? `
@@ -1835,7 +1810,7 @@ if (teamData && teamData.length > 0) {
           </div>
           <div>
             <div class="job-detail-label">Status</div>
-            <div class="job-detail-val" style="text-transform:capitalize;">${escapeHtml(String(job.status || 'quote_sent').replaceAll('_', ' '))}</div>
+            <div class="job-detail-val" style="text-transform:capitalize;">${escapeHtml(String(job.status || 'quoted').replaceAll('_', ' '))}</div>
           </div>
           <div>
             <div class="job-detail-label">Accepted</div>
@@ -1910,7 +1885,7 @@ if (teamData && teamData.length > 0) {
             .filter(service => service.count > 0)
             .map(service => `${service.count} ${service.name}`)
             .join(', '),
-          status: 'quote_sent',
+          status: 'quoted',
           created_by: proState.user?.id || null
         };
 
@@ -2086,72 +2061,54 @@ ${link}
         updateQuoteDisplay();
       };
 
-      document.getElementById('save-settings-btn').onclick = () => {
-        applySettingsFromForm();
-        showToast('Settings saved!', 'success');
-      };
-
       ['q-name', 'q-phone', 'q-email', 'q-address'].forEach(id => {
         document.getElementById(id).addEventListener('input', updateQuoteDisplay);
       });
 
-     [
-  's-bizname',
-  's-contact',
-  's-phone',
-  's-email',
-  's-message',
-  'settings-pricing-mode',
-  'settings-hourly-rate',
-  'settings-travel-fee',
-  'settings-discount',
-  'settings-external-percent',
-  'settings-gst-rate'
-].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
-    settings.contactName = document.getElementById('s-contact').value.trim();
-    settings.businessPhone = document.getElementById('s-phone').value.trim();
-    settings.businessEmail = document.getElementById('s-email').value.trim();
-    settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
-    settings.pricingMode = document.getElementById('settings-pricing-mode').value;
-    settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
-    settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
-    settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
-    settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
-    settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
-    settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
-    updateQuoteDisplay();
-  });
+      [
+        's-bizname',
+        's-contact',
+        's-phone',
+        's-email',
+        's-message',
+        'settings-pricing-mode',
+        'settings-hourly-rate',
+        'settings-travel-fee',
+        'settings-discount',
+        'settings-external-percent',
+        'settings-gst-rate'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        const syncPreview = () => {
+          settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
+          settings.contactName = document.getElementById('s-contact').value.trim();
+          settings.businessPhone = document.getElementById('s-phone').value.trim();
+          settings.businessEmail = document.getElementById('s-email').value.trim();
+          settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
+          settings.pricingMode = document.getElementById('settings-pricing-mode').value;
+          settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
+          settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
+          settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
+          settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
+          settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
+          settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
+          updateQuoteDisplay();
+        };
+        el.addEventListener('input', syncPreview);
+        el.addEventListener('change', syncPreview);
+      });
 
-  document.getElementById(id).addEventListener('change', () => {
-    settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
-    settings.contactName = document.getElementById('s-contact').value.trim();
-    settings.businessPhone = document.getElementById('s-phone').value.trim();
-    settings.businessEmail = document.getElementById('s-email').value.trim();
-    settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
-    settings.pricingMode = document.getElementById('settings-pricing-mode').value;
-    settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
-    settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
-    settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
-    settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
-    settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
-    settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
-    updateQuoteDisplay();
-  });
-});
+      document.getElementById('settings-gst-enabled').addEventListener('change', () => {
+        settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
+        updateQuoteDisplay();
+      });
 
-document.getElementById('settings-gst-enabled').addEventListener('change', () => {
-  settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
-  updateQuoteDisplay();
-});
+      document.getElementById('save-settings-btn').onclick = async () => {
+        await applySettingsFromForm();
+        showToast('Settings saved!', 'success');
+      };
 
-document.getElementById('save-settings-btn').onclick = async () => {
-  await applySettingsFromForm();
-  showToast('Settings saved!', 'success');
-};
-
-await bootPro();
+      await bootPro();
     });
 
     window.switchTab = switchTab;
