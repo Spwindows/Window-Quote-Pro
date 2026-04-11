@@ -1070,7 +1070,7 @@
   let supabaseClient = null;
   let realtimeChannel = null;
   let authMode = 'signin';
-  let jobFilter = 'all';
+  let jobFilter = 'quoted';
 
   let settings = {
     businessName: 'SP Window Cleaning Pty Ltd',
@@ -1985,7 +1985,15 @@
   const canManageJobs = role === 'owner' || role === 'staff';
 
   let jobs = [...(proState.jobs || [])];
-
+function displayStatus(status) {
+  const map = {
+    quoted: 'Quote Sent',
+    accepted: 'Accepted',
+    in_progress: 'Active',
+    completed: 'Completed'
+  };
+  return map[normalizeStatus(status)] || status;
+}
   function normalizeStatus(status) {
   return String(status || '')
     .toLowerCase()
