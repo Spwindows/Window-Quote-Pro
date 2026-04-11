@@ -1201,14 +1201,30 @@
       console.error('Failed to load local settings:', error);
     }
   }
-    async function resetAllData() {
-  if (!confirm('This will reset ALL settings, pricing, and quote data. Continue?')) return;
+async function resetAllData() {
+  if (!confirm('This will reset all app settings, pricing, quotes, and team job data. Continue?')) return;
 
   try {
-    // Reset local storage
+    const isOwner = proState.teamId && String(proState.teamRole || '').toLowerCase() === 'owner';
+
+    if (isOwner) {
+      const sb = await getSb();
+      if (!sb) throw new Error('Supabase unavailable');
+
+      const teamId = proState.teamId;
+
+      const jobsRes = await sb.from('jobs').delete().eq('team_id', teamId);
+      if (jobsRes.error) throw jobsRes.error;
+
+      const settingsRes = await sb.from('team_settings').delete().eq('team_id', teamId);
+      if (settingsRes.error) throw settingsRes.error;
+
+      const invitesRes = await sb.from('team_invites').delete().eq('team_id', teamId);
+      if (invitesRes.error) throw invitesRes.error;
+    }
+
     localStorage.removeItem(STORAGE_KEY);
 
-    // Reset settings to defaults
     settings = {
       businessName: 'SP Window Cleaning Pty Ltd',
       contactName: 'Sean',
@@ -1224,38 +1240,52 @@
       gstRate: 10
     };
 
-    // Reset quote state
-    quoteState = { externalOnly: false };
+    quoteState = {
+      externalOnly: false
+    };
 
-    // Reset all services
-    services.forEach(s => {
-      s.count = 0;
-      s.rate = 0;
-      s.minutes = 0;
-    });
+    services = services.map(service => ({
+      ...service,
+      count: 0,
+      rate:
+        service.id === 'sw' ? 10 :
+        service.id === 'lw' ? 18 :
+        service.id === 'sd' ? 25 :
+        service.id === 'fs' ? 5 :
+        service.id === 'tr' ? 5 :
+        service.id === 'bal' ? 12 :
+        service.id === 'gut' ? 8 :
+        service.id === 'sol' ? 6 :
+        service.id === 'pw' ? 5 : 0,
+      minutes:
+        service.id === 'sw' ? 7 :
+        service.id === 'lw' ? 10 :
+        service.id === 'sd' ? 12 :
+        service.id === 'fs' ? 4 :
+        service.id === 'tr' ? 3 :
+        service.id === 'bal' ? 6 :
+        service.id === 'gut' ? 4 :
+        service.id === 'sol' ? 3 :
+        service.id === 'pw' ? 2 : 0
+    }));
 
-    // OPTIONAL: Reset team settings in Supabase (owner only)
-    if (proState.teamId && String(proState.teamRole).toLowerCase() === 'owner') {
-      const sb = await getSb();
-      if (sb) {
-        await sb.from('team_settings').delete().eq('team_id', proState.teamId);
-      }
-    }
+    proState.jobs = [];
 
-    // Refresh UI
     renderSteppers();
     syncSettingsForm();
     renderSettingsGrids();
+    renderJobsList();
+    updateKPIs();
     updateQuoteDisplay();
 
-    showToast('Everything reset!', 'success');
+    await bootPro();
 
+    showToast('Everything reset for the whole team!', 'success');
   } catch (err) {
     console.error(err);
-    showToast('Reset failed', 'error');
+    showToast(err.message || 'Reset failed', 'error');
   }
 }
-
   function saveLocalSettings() {
     try {
       localStorage.setItem(
