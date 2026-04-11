@@ -1202,25 +1202,15 @@
     }
   }
 async function resetAllData() {
-  if (!confirm('This will reset all app settings, pricing, quotes, and team job data. Continue?')) return;
+  if (!confirm('This will reset all settings, jobs, quotes, and team test data. Continue?')) return;
 
   try {
-    const isOwner = proState.teamId && String(proState.teamRole || '').toLowerCase() === 'owner';
+    const sb = await getSb();
+    if (!sb) throw new Error('Supabase unavailable');
 
-    if (isOwner) {
-      const sb = await getSb();
-      if (!sb) throw new Error('Supabase unavailable');
-
-      const teamId = proState.teamId;
-
-      const jobsRes = await sb.from('jobs').delete().eq('team_id', teamId);
-      if (jobsRes.error) throw jobsRes.error;
-
-      const settingsRes = await sb.from('team_settings').delete().eq('team_id', teamId);
-      if (settingsRes.error) throw settingsRes.error;
-
-      const invitesRes = await sb.from('team_invites').delete().eq('team_id', teamId);
-      if (invitesRes.error) throw invitesRes.error;
+    if (proState.teamId && String(proState.teamRole || '').toLowerCase() === 'owner') {
+      const { error } = await sb.rpc('reset_team_data');
+      if (error) throw error;
     }
 
     localStorage.removeItem(STORAGE_KEY);
@@ -1240,34 +1230,19 @@ async function resetAllData() {
       gstRate: 10
     };
 
-    quoteState = {
-      externalOnly: false
-    };
+    quoteState = { externalOnly: false };
 
-    services = services.map(service => ({
-      ...service,
-      count: 0,
-      rate:
-        service.id === 'sw' ? 10 :
-        service.id === 'lw' ? 18 :
-        service.id === 'sd' ? 25 :
-        service.id === 'fs' ? 5 :
-        service.id === 'tr' ? 5 :
-        service.id === 'bal' ? 12 :
-        service.id === 'gut' ? 8 :
-        service.id === 'sol' ? 6 :
-        service.id === 'pw' ? 5 : 0,
-      minutes:
-        service.id === 'sw' ? 7 :
-        service.id === 'lw' ? 10 :
-        service.id === 'sd' ? 12 :
-        service.id === 'fs' ? 4 :
-        service.id === 'tr' ? 3 :
-        service.id === 'bal' ? 6 :
-        service.id === 'gut' ? 4 :
-        service.id === 'sol' ? 3 :
-        service.id === 'pw' ? 2 : 0
-    }));
+    services = [
+      { id: 'sw', name: 'Standard Windows', count: 0, rate: 10, minutes: 7, unit: 'each', icon: '<path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
+      { id: 'lw', name: 'Large Windows', count: 0, rate: 18, minutes: 10, unit: 'each', icon: '<rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
+      { id: 'sd', name: 'Sliding Doors', count: 0, rate: 25, minutes: 12, unit: 'each', icon: '<path d="M18 3v18"></path><path d="M3 3h15"></path><path d="M3 21h15"></path><path d="M3 3v18"></path>' },
+      { id: 'fs', name: 'Fly Screens', count: 0, rate: 5, minutes: 4, unit: 'each', icon: '<path d="M3 3h18v18H3z"></path><path d="M9 3v18"></path><path d="M15 3v18"></path><path d="M3 9h18"></path><path d="M3 15h18"></path>' },
+      { id: 'tr', name: 'Tracks/Sills', count: 0, rate: 5, minutes: 3, unit: 'each', icon: '<path d="M3 21h18"></path><path d="M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"></path>' },
+      { id: 'bal', name: 'Balustrade Glass', count: 0, rate: 12, minutes: 6, unit: 'each', icon: '<path d="M4 20h16"></path><path d="M7 20V6"></path><path d="M12 20V6"></path><path d="M17 20V6"></path><path d="M6 6h12"></path>' },
+      { id: 'gut', name: 'Gutters', count: 0, rate: 8, minutes: 4, unit: 'lm', icon: '<path d="M3 7h18"></path><path d="M5 7v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7"></path>' },
+      { id: 'sol', name: 'Solar Panels', count: 0, rate: 6, minutes: 3, unit: 'panel', icon: '<path d="M4 6h16v10H4z"></path><path d="M8 6v10"></path><path d="M12 6v10"></path><path d="M16 6v10"></path><path d="M4 11h16"></path>' },
+      { id: 'pw', name: 'Pressure Washing', count: 0, rate: 5, minutes: 2, unit: 'm²', icon: '<path d="M4 20h6"></path><path d="M7 20v-8"></path><path d="M7 12 18 5"></path><path d="M18 5v5"></path><path d="M18 5h-5"></path>' }
+    ];
 
     proState.jobs = [];
 
@@ -1277,7 +1252,6 @@ async function resetAllData() {
     renderJobsList();
     updateKPIs();
     updateQuoteDisplay();
-
     await bootPro();
 
     showToast('Everything reset for the whole team!', 'success');
