@@ -985,6 +985,9 @@
 
           <button class="btn btn-primary btn-full" id="save-settings-btn" type="button">Save All Settings</button>
         </div>
+        <button class="btn btn-danger-soft btn-full" id="reset-all-btn" type="button" style="margin-top:0.6rem;">
+  Reset Everything (Owner)
+</button>
 
         <div id="settings-staff-lock" class="hidden">
           <div class="card">
@@ -1198,6 +1201,60 @@
       console.error('Failed to load local settings:', error);
     }
   }
+    async function resetAllData() {
+  if (!confirm('This will reset ALL settings, pricing, and quote data. Continue?')) return;
+
+  try {
+    // Reset local storage
+    localStorage.removeItem(STORAGE_KEY);
+
+    // Reset settings to defaults
+    settings = {
+      businessName: 'SP Window Cleaning Pty Ltd',
+      contactName: 'Sean',
+      businessPhone: '',
+      businessEmail: '',
+      customMessage: 'Thank you for choosing us!',
+      pricingMode: 'per-window',
+      hourlyRate: 150,
+      travelFee: 0,
+      discount: 0,
+      externalOnlyPercent: 70,
+      gstEnabled: true,
+      gstRate: 10
+    };
+
+    // Reset quote state
+    quoteState = { externalOnly: false };
+
+    // Reset all services
+    services.forEach(s => {
+      s.count = 0;
+      s.rate = 0;
+      s.minutes = 0;
+    });
+
+    // OPTIONAL: Reset team settings in Supabase (owner only)
+    if (proState.teamId && String(proState.teamRole).toLowerCase() === 'owner') {
+      const sb = await getSb();
+      if (sb) {
+        await sb.from('team_settings').delete().eq('team_id', proState.teamId);
+      }
+    }
+
+    // Refresh UI
+    renderSteppers();
+    syncSettingsForm();
+    renderSettingsGrids();
+    updateQuoteDisplay();
+
+    showToast('Everything reset!', 'success');
+
+  } catch (err) {
+    console.error(err);
+    showToast('Reset failed', 'error');
+  }
+}
 
   function saveLocalSettings() {
     try {
@@ -2293,27 +2350,31 @@ ${link}
         if (!code) throw new Error('Please enter an invite code');
 
         await joinTeamWithInvite(code);
-        showToast('Joined!', 'success');
-        setTimeout(() => location.reload(), 500);
-      } catch (error) {
-        console.error(error);
-        showToast(error.message || 'Failed to join team', 'error');
-      }
-    };
+showToast('Joined!', 'success');
+setTimeout(() => location.reload(), 500);
+} catch (error) {
+  console.error(error);
+  showToast(error.message || 'Failed to join team', 'error');
+}
+};
 
-    document.getElementById('setup-signout-btn').onclick = async () => {
-      await sbSignOut();
-      showToast('Signed out');
-      await bootPro();
-    };
+document.getElementById('setup-signout-btn').onclick = async () => {
+  await sbSignOut();
+  showToast('Signed out');
+  await bootPro();
+};
 
-    document.getElementById('pro-signout-btn').onclick = async () => {
-      await sbSignOut();
-      showToast('Signed out');
-      await bootPro();
-      switchTab('pro');
-    };
+const resetAllBtn = document.getElementById('reset-all-btn');
+if (resetAllBtn) {
+  resetAllBtn.onclick = resetAllData;
+}
 
+document.getElementById('pro-signout-btn').onclick = async () => {
+  await sbSignOut();
+  showToast('Signed out');
+  await bootPro();
+  switchTab('pro');
+};
     document.getElementById('save-job-btn').onclick = () => openQuoteEmail();
     document.getElementById('save-team-job-btn').onclick = async () => await saveCurrentQuoteToTeam();
 
