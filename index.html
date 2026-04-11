@@ -296,7 +296,8 @@
 
     .btn-stepper.plus { background: #2563eb; color: #fff; }
     .btn-stepper.minus:disabled { opacity: 0.35; cursor: default; }
-        .quote-preview-pre {
+
+    .quote-preview-pre {
       white-space: pre-wrap;
       word-break: break-word;
       font-size: 0.84rem;
@@ -352,7 +353,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.65rem;
-          }
+    }
 
     .rate-card {
       background: #fff;
@@ -601,7 +602,8 @@
       flex-wrap: wrap;
       justify-content: flex-end;
     }
-        .auth-tabs {
+
+    .auth-tabs {
       display: flex;
       gap: 0.25rem;
       margin-bottom: 1rem;
@@ -706,7 +708,7 @@
           <div class="header-logo">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2"></rect>
-                            <path d="M3 9h18"></path>
+              <path d="M3 9h18"></path>
               <path d="M3 15h18"></path>
               <path d="M9 3v18"></path>
               <path d="M15 3v18"></path>
@@ -871,7 +873,8 @@
           <div id="jobs-list-container"></div>
         </div>
       </div>
-            <div id="tab-settings" class="hidden">
+
+      <div id="tab-settings" class="hidden">
         <div id="settings-owner-view" class="hidden">
           <div class="card">
             <div class="card-title">Business Information</div>
@@ -1048,8 +1051,9 @@
       </div>
     </nav>
   </div>
-    <script>
-  let pendingInviteCode = null;
+
+  <script>
+    let pendingInviteCode = null;
 
   (function checkInviteFromURL() {
     const params = new URLSearchParams(window.location.search);
@@ -1133,6 +1137,29 @@
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#039;');
+  }
+
+  function normalizeStatus(status) {
+    const normalized = String(status || '')
+      .toLowerCase()
+      .trim()
+      .replaceAll(' ', '_');
+
+    if (normalized === 'quote_sent') return 'quoted';
+    if (normalized === 'active') return 'in_progress';
+    if (normalized === 'started') return 'in_progress';
+
+    return normalized;
+  }
+
+  function displayStatus(status) {
+    const map = {
+      quoted: 'Quote Sent',
+      accepted: 'Accepted',
+      in_progress: 'Active',
+      completed: 'Completed'
+    };
+    return map[normalizeStatus(status)] || String(status || '');
   }
 
   function canAccessSettings() {
@@ -1877,7 +1904,7 @@
           .subscribe();
       } else {
         proState = {
-          user,
+          user: null,
           teamId: null,
           teamName: '',
           teamRole: '',
@@ -1940,10 +1967,10 @@
 
   function updateKPIs() {
     const jobs = proState.jobs || [];
-    const active = jobs.filter(job => !['completed', 'cancelled'].includes(job.status)).length;
-    const completed = jobs.filter(job => job.status === 'completed').length;
+    const active = jobs.filter(job => !['completed', 'cancelled'].includes(normalizeStatus(job.status))).length;
+    const completed = jobs.filter(job => normalizeStatus(job.status) === 'completed').length;
     const paid = jobs
-      .filter(job => job.status === 'completed')
+      .filter(job => normalizeStatus(job.status) === 'completed')
       .reduce((sum, job) => sum + (parseFloat(job.paid_amount) || parseFloat(job.quoted_price) || 0), 0);
     const quoted = jobs.reduce((sum, job) => sum + (parseFloat(job.quoted_price) || 0), 0);
 
@@ -1963,10 +1990,12 @@
     const container = document.getElementById('job-filters');
     if (!container) return;
 
-    <button onclick="setJobFilter('quoted')">Quoted</button>
-<button onclick="setJobFilter('accepted')">Accepted</button>
-<button onclick="setJobFilter('in_progress')">Active</button>
-<button onclick="setJobFilter('completed')">Done</button>
+    const filters = [
+      { val: 'quoted', label: 'Quoted' },
+      { val: 'accepted', label: 'Accepted' },
+      { val: 'in_progress', label: 'Active' },
+      { val: 'completed', label: 'Done' }
+    ];
 
     container.innerHTML = filters.map(filter => {
       const style = jobFilter === filter.val
@@ -1978,147 +2007,126 @@
   }
 
   function renderJobsList() {
-  const container = document.getElementById('jobs-list-container');
-  if (!container) return;
+    const container = document.getElementById('jobs-list-container');
+    if (!container) return;
 
-  const role = String(proState.teamRole || '').toLowerCase();
-  const canManageJobs = role === 'owner' || role === 'staff';
+    const role = String(proState.teamRole || '').toLowerCase();
+    const canManageJobs = role === 'owner' || role === 'staff';
 
-  let jobs = [...(proState.jobs || [])];
-function displayStatus(status) {
-  const map = {
-    quoted: 'Quote Sent',
-    accepted: 'Accepted',
-    in_progress: 'Active',
-    completed: 'Completed'
-  };
-  return map[normalizeStatus(status)] || status;
-}
-  function normalizeStatus(status) {
-  return String(status || '')
-    .toLowerCase()
-    .replaceAll(' ', '_');
-}
+    let jobs = [...(proState.jobs || [])];
 
-function normalizeStatus(status) {
-  return String(status || '')
-    .toLowerCase()
-    .replaceAll(' ', '_');
-}
+    if (jobFilter) {
+      jobs = jobs.filter(job => normalizeStatus(job.status) === jobFilter);
+    }
 
-if (jobFilter) {
-  jobs = jobs.filter(job => normalizeStatus(job.status) === jobFilter);
-}
-  
-  if (!jobs.length) {
-    container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
-    return;
+    if (!jobs.length) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
+      return;
+    }
+
+    container.innerHTML = jobs.map(job => `
+      <div class="job-card">
+        <div class="job-card-header" ${canManageJobs ? `onclick="toggleJobCard('${job.id}')"` : ''} style="${canManageJobs ? 'cursor:pointer;' : 'cursor:default;'}">
+          <div>
+            <div class="job-card-name">${escapeHtml(job.customer_name || 'Customer')}</div>
+            <div class="job-card-meta">
+              <span>$${(parseFloat(job.quoted_price) || 0).toFixed(2)}</span>
+              <span>•</span>
+              <span style="text-transform:capitalize;">${escapeHtml(displayStatus(job.status))}</span>
+            </div>
+          </div>
+          ${canManageJobs ? `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          ` : ''}
+        </div>
+
+        <div class="job-card-body ${canManageJobs ? 'hidden' : ''}" id="job-body-${job.id}">
+          <div class="job-detail-grid">
+            <div>
+              <div class="job-detail-label">Address</div>
+              <div class="job-detail-val">${escapeHtml(job.service_address || 'N/A')}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Phone</div>
+              <div class="job-detail-val">${escapeHtml(job.customer_phone || 'N/A')}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Items</div>
+              <div class="job-detail-val">${escapeHtml(job.items_summary || 'N/A')}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Status</div>
+              <div class="job-detail-val" style="text-transform:capitalize;">${escapeHtml(displayStatus(job.status))}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Accepted</div>
+              <div class="job-detail-val">${job.accepted_at ? new Date(job.accepted_at).toLocaleString() : '—'}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Started</div>
+              <div class="job-detail-val">${job.started_at ? new Date(job.started_at).toLocaleString() : '—'}</div>
+            </div>
+            <div>
+              <div class="job-detail-label">Completed</div>
+              <div class="job-detail-val">${job.completed_at ? new Date(job.completed_at).toLocaleString() : '—'}</div>
+            </div>
+          </div>
+
+          ${canManageJobs ? `
+            <div class="job-actions">
+              <button class="btn btn-secondary btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'accepted')">Accept</button>
+              <button class="btn btn-primary btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'in_progress')">Start</button>
+              <button class="btn btn-success btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'completed')">Complete</button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `).join('');
   }
 
-  container.innerHTML = jobs.map(job => `
-    <div class="job-card">
-      <div class="job-card-header" ${canManageJobs ? `onclick="toggleJobCard('${job.id}')"` : ''} style="${canManageJobs ? 'cursor:pointer;' : 'cursor:default;'}">
-        <div>
-          <div class="job-card-name">${escapeHtml(job.customer_name || 'Customer')}</div>
-          <div class="job-card-meta">
-            <span>$${(parseFloat(job.quoted_price) || 0).toFixed(2)}</span>
-            <span>•</span>
-            <span style="text-transform:capitalize;">${escapeHtml(String(job.status || 'quoted').replaceAll('_', ' '))}</span>
-          </div>
-        </div>
-        ${canManageJobs ? `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="m6 9 6 6 6-6"></path>
-          </svg>
-        ` : ''}
-      </div>
-
-      <div class="job-card-body ${canManageJobs ? 'hidden' : ''}" id="job-body-${job.id}">
-        <div class="job-detail-grid">
-          <div>
-            <div class="job-detail-label">Address</div>
-            <div class="job-detail-val">${escapeHtml(job.service_address || 'N/A')}</div>
-          </div>
-          <div>
-            <div class="job-detail-label">Phone</div>
-            <div class="job-detail-val">${escapeHtml(job.customer_phone || 'N/A')}</div>
-          </div>
-          <div>
-            <div class="job-detail-label">Items</div>
-            <div class="job-detail-val">${escapeHtml(job.items_summary || 'N/A')}</div>
-          </div>
-          <div>
-            <div class="job-detail-label">Status</div>
-            <div class="job-detail-val" style="text-transform:capitalize;">${escapeHtml(String(job.status || 'quoted').replaceAll('_', ' '))}</div>
-          </div>
-          <div>
-            <div class="job-detail-label">Accepted</div>
-            <div class="job-detail-val">${job.accepted_at ? new Date(job.accepted_at).toLocaleString() : '—'}</div>
-          </div>
-          <div>
-            <div class="job-detail-label">Started</div>
-            <div class="job-detail-val">${job.started_at ? new Date(job.started_at).toLocaleString() : '—'}</div>
-          </div>
-          <div>
-            <div class="job-detail-label">Completed</div>
-            <div class="job-detail-val">${job.completed_at ? new Date(job.completed_at).toLocaleString() : '—'}</div>
-          </div>
-        </div>
-
-        ${canManageJobs ? `
-          <div class="job-actions">
-            <button class="btn btn-secondary btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'accepted')">Accept</button>
-            <button class="btn btn-primary btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'in_progress')">Start</button>
-            <button class="btn btn-success btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'completed')">Complete</button>
-          </div>
-        ` : ''}
-      </div>
-    </div>
-  `).join('');
-}
   function toggleJobCard(id) {
     const body = document.getElementById('job-body-' + id);
     if (body) body.classList.toggle('hidden');
   }
 
   async function updateJobStatus(id, status) {
-  try {
-    const sb = await getSb();
-    if (!sb) throw new Error('Supabase unavailable');
+    try {
+      const sb = await getSb();
+      if (!sb) throw new Error('Supabase unavailable');
 
-    const patch = { status };
+      const patch = { status };
 
-    if (status === 'accepted') {
-      patch.accepted_at = new Date().toISOString();
-    }
-
-    if (status === 'in_progress') {
-      patch.started_at = new Date().toISOString();
-      if (!patch.accepted_at) {
-        // accepted_at stays unchanged unless you want to force it too
+      if (status === 'accepted') {
+        patch.accepted_at = new Date().toISOString();
       }
+
+      if (status === 'in_progress') {
+        patch.started_at = new Date().toISOString();
+      }
+
+      if (status === 'completed') {
+        patch.completed_at = new Date().toISOString();
+      }
+
+      const res = await sb.from('jobs').update(patch).eq('id', id);
+      if (res.error) throw res.error;
+
+      const job = proState.jobs.find(j => j.id === id);
+      if (job) {
+        Object.assign(job, patch);
+      }
+
+      renderJobsList();
+      updateKPIs();
+      showToast('Updated!', 'success');
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || 'Could not update job', 'error');
     }
-
-    if (status === 'completed') {
-      patch.completed_at = new Date().toISOString();
-    }
-
-    const res = await sb.from('jobs').update(patch).eq('id', id);
-    if (res.error) throw res.error;
-
-    const job = proState.jobs.find(j => j.id === id);
-    if (job) {
-      Object.assign(job, patch);
-    }
-
-    renderJobsList();
-    updateKPIs();
-    showToast('Updated!', 'success');
-  } catch (error) {
-    console.error(error);
-    showToast(error.message || 'Could not update job', 'error');
   }
-}
+
   async function saveCurrentQuoteToTeam() {
     if (!proState.teamId) {
       showToast('Join or create a team first', 'error');
@@ -2162,6 +2170,11 @@ if (jobFilter) {
     renderSteppers();
     renderSettingsAccess();
     updateQuoteDisplay();
+
+    const inviteInput = document.getElementById('invite-code-input');
+    if (inviteInput && pendingInviteCode) {
+      inviteInput.value = pendingInviteCode;
+    }
 
     const externalOnlyToggle = document.getElementById('external-only-toggle');
     externalOnlyToggle.checked = !!quoteState.externalOnly;
@@ -2394,6 +2407,7 @@ ${link}
   window.addEventListener('unhandledrejection', event => {
     console.error('Unhandled promise rejection:', event.reason);
   });
-</script>
+  </script>
 </body>
 </html>
+    
