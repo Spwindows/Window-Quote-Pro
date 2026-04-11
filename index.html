@@ -1963,13 +1963,10 @@
     const container = document.getElementById('job-filters');
     if (!container) return;
 
-    const filters = [
-      { val: 'all', label: 'All' },
-      { val: 'quoted', label: 'Quoted' },
-      { val: 'accepted', label: 'Accepted' },
-      { val: 'in_progress', label: 'Active' },
-      { val: 'completed', label: 'Done' }
-    ];
+    <button onclick="setJobFilter('quoted')">Quoted</button>
+<button onclick="setJobFilter('accepted')">Accepted</button>
+<button onclick="setJobFilter('in_progress')">Active</button>
+<button onclick="setJobFilter('completed')">Done</button>
 
     container.innerHTML = filters.map(filter => {
       const style = jobFilter === filter.val
@@ -1989,13 +1986,22 @@
 
   let jobs = [...(proState.jobs || [])];
 
-  if (jobFilter !== 'all') {
-    jobs = jobs.filter(job => {
-      const status = String(job.status || '').toLowerCase().replaceAll(' ', '_');
-      return status === jobFilter;
-    });
-  }
+  function normalizeStatus(status) {
+  return String(status || '')
+    .toLowerCase()
+    .replaceAll(' ', '_');
+}
 
+function normalizeStatus(status) {
+  return String(status || '')
+    .toLowerCase()
+    .replaceAll(' ', '_');
+}
+
+if (jobFilter) {
+  jobs = jobs.filter(job => normalizeStatus(job.status) === jobFilter);
+}
+  
   if (!jobs.length) {
     container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
     return;
