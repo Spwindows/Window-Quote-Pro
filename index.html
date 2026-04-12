@@ -1627,7 +1627,13 @@ if (!t) {
     const saveTeamBtn = document.getElementById('save-team-job-btn');
     if (saveTeamBtn) saveTeamBtn.classList.toggle('hidden', !proState.teamId);
   }
+function exportQuotePDF() {
+  if (!proState.teamId) {
+    showToast('PDF export is a Pro feature', 'error');
+    return;
+  }
 
+  const data = getQuoteData();
   function exportQuotePDF() {
     const data = getQuoteData();
     const element = document.createElement('div');
