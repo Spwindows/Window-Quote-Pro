@@ -1915,8 +1915,8 @@ if (!t) {
       updateQuoteDisplay();
     };
     document.getElementById('reset-all-btn').onclick = resetAllData;
-    document.getElementById('copy-invite-btn').onclick = () => { navigator.clipboard.writeText(proState.inviteCode); showToast('Copied!'); };
-    document.getElementById('share-invite-btn').onclick = async () => {
+document.getElementById('copy-invite-btn').onclick = () => { navigator.clipboard.writeText(proState.inviteCode); showToast('Copied!'); };
+document.getElementById('share-invite-btn').onclick = async () => {
   if (!proState.inviteCode) {
     showToast('No invite code available', 'error');
     return;
@@ -1945,8 +1945,7 @@ if (!t) {
     showToast('Share cancelled', 'error');
   }
 };
-    };
-  });
+});
   </script>
 </body>
 </html>
