@@ -1581,7 +1581,81 @@ if (!t) {
   }
 
   function updateQuoteDisplay() {
-    function exportQuotePDF() {
+  const data = getQuoteData();
+  document.getElementById('footer-total').textContent = `$${data.total.toFixed(2)}`;
+  document.getElementById('footer-count').textContent = `${data.itemCount} items selected${settings.gstEnabled ? ' • inc GST' : ' • ex GST'}`;
+  
+  const chips = document.getElementById('service-chips');
+  if (chips) {
+    chips.innerHTML = services
+      .filter(s => s.count > 0)
+      .map(s => `<div class="chip">${s.count} × ${s.name}</div>`)
+      .join('');
+  }
+
+  const stats = document.getElementById('quote-summary-stats');
+  if (stats) {
+    stats.innerHTML = `
+      <div class="summary-stat"><div class="summary-stat-label">Items</div><div class="summary-stat-value">${data.itemCount}</div></div>
+      <div class="summary-stat"><div class="summary-stat-label">Total</div><div class="summary-stat-value">$${data.total.toFixed(2)}</div></div>
+      <div class="summary-stat"><div class="summary-stat-label">Minutes</div><div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div></div>
+      <div class="summary-stat"><div class="summary-stat-label">Hours</div><div class="summary-stat-value">${data.estimatedHours.toFixed(2)}</div></div>
+    `;
+  }
+
+  let summary = `*QUOTE FROM ${String(settings.businessName).toUpperCase()}*\n\n`;
+  summary += `Hi ${document.getElementById('q-name').value.trim() || 'Customer'},\n`;
+
+  const addr = document.getElementById('q-address').value.trim();
+  if (addr) summary += `Address: ${addr}\n`;
+
+  if (quoteState.externalOnly) {
+    summary += `• Full Window Price: $${data.windowSub.toFixed(2)}\n`;
+    summary += `• External Window Price (${settings.externalOnlyPercent}%): $${data.adjWindowSub.toFixed(2)}\n`;
+    if (data.nonWindowSub > 0) {
+      summary += `• Non-Window Services: $${data.nonWindowSub.toFixed(2)}\n`;
+    }
+  }
+
+  summary += `\n*SERVICES:*\n`;
+
+  const selected = services.filter(s => s.count > 0);
+  if (!selected.length) {
+    summary += `• No items added yet\n`;
+  } else {
+    selected.forEach(s => {
+      let line = s.count * s.rate;
+      if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
+        line *= (Number(settings.externalOnlyPercent) / 100);
+      }
+      summary += `• ${s.count} × ${s.name} = $${line.toFixed(2)}\n`;
+    });
+  }
+
+  summary += `\n*PRICING:*\nSubtotal: $${data.subtotal.toFixed(2)}\n`;
+  if (settings.travelFee > 0) summary += `Travel Fee: +$${Number(settings.travelFee).toFixed(2)}\n`;
+  if (settings.discount > 0) summary += `Discount: -$${Number(settings.discount).toFixed(2)}\n`;
+
+  if (settings.gstEnabled) {
+    summary += `Base Total: $${data.baseTotal.toFixed(2)}\n`;
+    summary += `GST (${settings.gstRate}%): +$${data.gstAmount.toFixed(2)}\n`;
+  }
+
+  summary += `\n*TOTAL: $${data.total.toFixed(2)}*\n${settings.gstEnabled ? '(inc GST)' : '(ex GST)'}\n\n`;
+  summary += `Time Estimate: ${data.estimatedHours.toFixed(2)} hours\n`;
+  summary += `Items: ${data.itemCount}\n\n`;
+  summary += `${settings.customMessage}\n\n`;
+  summary += `Please let us know if you'd like to proceed. Thank you!`;
+
+  document.getElementById('quote-preview-text').textContent = summary;
+
+  const saveTeamBtn = document.getElementById('save-team-job-btn');
+  if (saveTeamBtn) {
+    saveTeamBtn.classList.toggle('hidden', !proState.teamId);
+  }
+}
+
+function exportQuotePDF() {
   if (!proState.teamId) {
     showToast('PDF export is a Pro feature', 'error');
     return;
@@ -1655,22 +1729,25 @@ if (!t) {
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
           <span>Subtotal:</span><span>$${data.subtotal.toFixed(2)}</span>
         </div>
+
         ${settings.travelFee > 0 ? `
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
-            <
+            <span>Travel Fee:</span><span>+$${Number(settings.travelFee).toFixed(2)}</span>
+          </div>
+        ` : ''}
 
-    
-function exportQuotePDF() {
-  
-    <: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+        ${settings.discount > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
             <span>Discount:</span><span>-$${Number(settings.discount).toFixed(2)}</span>
           </div>
         ` : ''}
+
         ${settings.gstEnabled ? `
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px;">
             <span>GST (${settings.gstRate}%):</span><span>+$${data.gstAmount.toFixed(2)}</span>
           </div>
         ` : ''}
+
         <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px; color: #111827;">
           <span>TOTAL:</span><span>$${data.total.toFixed(2)}</span>
         </div>
@@ -1696,9 +1773,15 @@ function exportQuotePDF() {
   showToast('PDF exported!', 'success');
 }
 
-  function openShareModal() { document.getElementById('share-modal').classList.remove('hidden'); }
-  function closeShareModal() { document.getElementById('share-modal').classList.add('hidden'); }
-  async function copyQuoteToClipboard() {
+function openShareModal() {
+  document.getElementById('share-modal').classList.remove('hidden');
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.add('hidden');
+}
+
+async function copyQuoteToClipboard() {
   try {
     const t = document.getElementById('quote-preview-text').textContent;
     await navigator.clipboard.writeText(t);
@@ -1708,25 +1791,27 @@ function exportQuotePDF() {
     showToast('Copy failed', 'error');
   }
 }
-  function emailQuote() {
-    const t = document.getElementById('quote-preview-text').textContent;
-    const email = document.getElementById('q-email').value;
-    window.location.href = `mailto:${email}?subject=Quote from ${settings.businessName}&body=${encodeURIComponent(t)}`;
-    closeShareModal();
-  }
-  function smsQuote() {
-    const t = document.getElementById('quote-preview-text').textContent;
-    const phone = document.getElementById('q-phone').value;
-    window.location.href = `sms:${phone}?body=${encodeURIComponent(t)}`;
-    closeShareModal();
-  }
-  function whatsappQuote() {
-    const t = document.getElementById('quote-preview-text').textContent;
-    const phone = document.getElementById('q-phone').value.replace(/\D/g, '');
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(t)}`, '_blank');
-    closeShareModal();
-  }
 
+function emailQuote() {
+  const t = document.getElementById('quote-preview-text').textContent;
+  const email = document.getElementById('q-email').value;
+  window.location.href = `mailto:${email}?subject=Quote from ${settings.businessName}&body=${encodeURIComponent(t)}`;
+  closeShareModal();
+}
+
+function smsQuote() {
+  const t = document.getElementById('quote-preview-text').textContent;
+  const phone = document.getElementById('q-phone').value;
+  window.location.href = `sms:${phone}?body=${encodeURIComponent(t)}`;
+  closeShareModal();
+}
+
+function whatsappQuote() {
+  const t = document.getElementById('quote-preview-text').textContent;
+  const phone = document.getElementById('q-phone').value.replace(/\D/g, '');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(t)}`, '_blank');
+  closeShareModal();
+}
   function showOnboarding() { document.getElementById('onboarding-modal').classList.remove('hidden'); }
   function skipOnboarding() { document.getElementById('onboarding-modal').classList.add('hidden'); localStorage.setItem('wqp-onboarding-done', 'true'); }
   function setOnboardingGST(enabled) { settings.gstEnabled = enabled; }
