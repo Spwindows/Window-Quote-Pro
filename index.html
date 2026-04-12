@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 16px; scroll-behavior: smooth; }
@@ -26,6 +27,63 @@
 
     #app { min-height: 100vh; display: flex; flex-direction: column; }
     .hidden { display: none !important; }
+
+    /* MODAL STYLES */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .modal-header {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #111827;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-subtitle {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #f3f4f6;
+      border: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      font-size: 1.2rem;
+    }
 
     .header {
       background: #fff;
@@ -57,11 +115,11 @@
       width: 2.25rem;
       height: 2.25rem;
       border-radius: 0.75rem;
-      background: #2563eb;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+      box-shadow: 0 4px 12px rgba(37,99,235,0.3);
       flex-shrink: 0;
     }
 
@@ -85,8 +143,7 @@
       max-width: 180px;
     }
 
-    .badge-free,
-    .badge-pro {
+    .badge-free, .badge-pro {
       font-size: 0.72rem;
       font-weight: 800;
       padding: 0.35rem 0.7rem;
@@ -101,8 +158,9 @@
     }
 
     .badge-pro {
-      background: #2563eb;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: #fff;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
     }
 
     .main-content {
@@ -122,11 +180,20 @@
       margin-bottom: 1rem;
     }
 
+    .card.premium {
+      border: 2px solid #dbeafe;
+      background: linear-gradient(135deg, #f0f9ff 0%, #fff 100%);
+      box-shadow: 0 4px 12px rgba(37,99,235,0.1);
+    }
+
     .card-title {
       font-weight: 800;
       font-size: 0.95rem;
       color: #1f2937;
       margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .field-label {
@@ -183,12 +250,12 @@
     }
 
     .btn-primary {
-      background: #2563eb;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: #fff;
       box-shadow: 0 4px 12px rgba(37,99,235,0.2);
     }
 
-    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:hover { background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); }
 
     .btn-secondary {
       background: #f3f4f6;
@@ -230,6 +297,7 @@
       background: #dbeafe;
       color: #1d4ed8;
       border: 1px solid #bfdbfe;
+      cursor: pointer;
     }
 
     .stepper-row {
@@ -294,7 +362,7 @@
       color: #374151;
     }
 
-    .btn-stepper.plus { background: #2563eb; color: #fff; }
+    .btn-stepper.plus { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; }
     .btn-stepper.minus:disabled { opacity: 0.35; cursor: default; }
 
     .quote-preview-pre {
@@ -339,56 +407,134 @@
       margin-top: 0.2rem;
     }
 
-    .settings-lock {
-      padding: 1rem;
+    .quote-footer {
+      position: fixed;
+      bottom: 4.5rem;
+      left: 0;
+      right: 0;
+      z-index: 40;
+    }
+
+    .quote-footer-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0.5rem 0.75rem;
+    }
+
+    .quote-footer-card {
+      background: #fff;
       border: 1px solid #e5e7eb;
-      border-radius: 0.9rem;
-      background: #f9fafb;
-      color: #4b5563;
-      font-size: 0.9rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      padding: 0.8rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .quote-price {
+      font-size: 1.9rem;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .quote-price-sub {
+      font-size: 0.76rem;
+      color: #9ca3af;
+      margin-top: 0.2rem;
       font-weight: 600;
     }
 
-    .rate-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.65rem;
+    .quote-footer-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .rate-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.8rem;
-      padding: 0.75rem;
+    .auth-tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+      background: #f3f4f6;
+      border-radius: 1rem;
+      padding: 0.25rem;
     }
 
-    .rate-card-label {
-      font-size: 0.7rem;
+    .auth-tab {
+      flex: 1;
+      padding: 0.68rem;
+      border-radius: 0.85rem;
+      border: none;
+      background: transparent;
+      font-size: 0.83rem;
       font-weight: 800;
       color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 0.3rem;
+      cursor: pointer;
+      text-align: center;
     }
 
-    .rate-card-input {
-      width: 100%;
-      padding: 0.55rem;
-      border-radius: 0.7rem;
-      border: 1px solid #e5e7eb;
+    .auth-tab.active {
       background: #fff;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #111827;
-      outline: none;
+      color: #1d2433;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
     }
 
-    .rate-card-unit {
-      font-size: 0.7rem;
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #e5e7eb;
+      padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    }
+
+    .tab-bar-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      gap: 0.25rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      border: none;
+      background: none;
+      cursor: pointer;
       color: #9ca3af;
-      margin-top: 0.2rem;
     }
 
+    .tab-btn.active { color: #2563eb; }
+
+    .tab-btn-icon {
+      width: 2.5rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+    }
+
+    .tab-btn.active .tab-btn-icon { background: #eff6ff; }
+    .tab-btn-label { font-size: 0.69rem; font-weight: 800; line-height: 1; }
+
+    /* PRO STYLES */
     .team-header {
       display: flex;
       align-items: center;
@@ -528,6 +674,40 @@
       margin-top: 1rem;
     }
 
+    .rate-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+
+    .rate-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.8rem;
+      padding: 0.75rem;
+    }
+
+    .rate-card-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+
+    .rate-card-input {
+      width: 100%;
+      padding: 0.55rem;
+      border-radius: 0.7rem;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #111827;
+      outline: none;
+    }
+
     #toast-container {
       position: fixed;
       top: 1rem;
@@ -554,152 +734,131 @@
     .toast.success { background: #059669; }
     .toast.error { background: #dc2626; }
 
-    .quote-footer {
-      position: fixed;
-      bottom: 4.5rem;
-      left: 0;
-      right: 0;
-      z-index: 40;
-    }
-
-    .quote-footer-inner {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 0.5rem 0.75rem;
-    }
-
-    .quote-footer-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 1rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-      padding: 0.8rem 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* PREMIUM MODAL SHARES */
+    .share-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 0.75rem;
     }
 
-    .quote-price {
-      font-size: 1.9rem;
-      font-weight: 900;
-      color: #111827;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .quote-price-sub {
-      font-size: 0.76rem;
-      color: #9ca3af;
-      margin-top: 0.2rem;
-      font-weight: 600;
-    }
-
-    .quote-footer-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-shrink: 0;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .auth-tabs {
-      display: flex;
-      gap: 0.25rem;
-      margin-bottom: 1rem;
-      background: #f3f4f6;
-      border-radius: 1rem;
-      padding: 0.25rem;
-    }
-
-    .auth-tab {
-      flex: 1;
-      padding: 0.68rem;
+    .share-option {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
       border-radius: 0.85rem;
-      border: none;
-      background: transparent;
-      font-size: 0.83rem;
-      font-weight: 800;
-      color: #6b7280;
-      cursor: pointer;
+      padding: 0.8rem;
       text-align: center;
-    }
-
-    .auth-tab.active {
-      background: #fff;
-      color: #1d2433;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
-    }
-
-    .tab-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 50;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid #e5e7eb;
-      padding-bottom: env(safe-area-inset-bottom);
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-    }
-
-    .tab-bar-inner {
-      max-width: 680px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      padding: 0.5rem 1rem;
-      gap: 0.25rem;
-    }
-
-    .tab-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.5rem;
-      border-radius: 0.75rem;
-      border: none;
-      background: none;
       cursor: pointer;
-      color: #9ca3af;
+      transition: all 0.15s ease;
     }
 
-    .tab-btn.active { color: #2563eb; }
+    .share-option:hover {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
 
-    .tab-btn-icon {
-      width: 2.5rem;
-      height: 2rem;
-      display: flex;
+    .share-option-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .share-option-label { font-size: 0.75rem; font-weight: 800; color: #6b7280; }
+
+    /* ONBOARDING */
+    .onboarding-step { margin-bottom: 1.5rem; }
+    .onboarding-step-number {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.75rem;
+      width: 2rem;
+      height: 2rem;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+      border-radius: 50%;
+      font-weight: 900;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
     }
-
-    .tab-btn.active .tab-btn-icon { background: #eff6ff; }
-    .tab-btn-label { font-size: 0.69rem; font-weight: 800; line-height: 1; }
+    .onboarding-step-title { font-weight: 800; font-size: 0.95rem; color: #111827; margin-bottom: 0.5rem; }
 
     @media (max-width: 520px) {
-      .field-grid-2,
-      .summary-stats,
-      .kpi-grid,
-      .revenue-grid,
-      .job-detail-grid,
-      .rate-grid {
+      .field-grid-2, .summary-stats, .kpi-grid, .revenue-grid, .job-detail-grid, .rate-grid {
         grid-template-columns: 1fr;
       }
-
       .quote-footer-card { padding: 0.8rem; }
       .quote-price { font-size: 1.55rem; }
       .header-sub { max-width: 120px; }
       .quote-footer-actions .btn { padding-left: 0.85rem; padding-right: 0.85rem; }
     }
+
+    @media print {
+      body { background: #fff; }
+      .header, .tab-bar, .quote-footer, #toast-container { display: none !important; }
+      .main-content { padding: 0; }
+      .modal-overlay { display: none !important; }
+    }
   </style>
 </head>
 <body>
   <div id="toast-container"></div>
+
+  <!-- ONBOARDING MODAL -->
+  <div id="onboarding-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="skipOnboarding()" type="button">✕</button>
+      <div class="modal-header">Welcome to Window Quote Pro!</div>
+      <div class="modal-subtitle">Let's get you set up in 2 minutes</div>
+      <div class="onboarding-step">
+        <div class="onboarding-step-number">1</div>
+        <div class="onboarding-step-title">Business Name</div>
+        <input type="text" class="field-input" id="onboarding-business-name" placeholder="Your business name" />
+      </div>
+      <div class="onboarding-step">
+        <div class="onboarding-step-number">2</div>
+        <div class="onboarding-step-title">Default Pricing Mode</div>
+        <select class="field-select" id="onboarding-pricing-mode">
+          <option value="per-window">Per Item</option>
+          <option value="hourly">Hourly Estimate</option>
+        </select>
+      </div>
+      <div class="onboarding-step">
+        <div class="onboarding-step-number">3</div>
+        <div class="onboarding-step-title">Enable GST?</div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+          <button class="btn btn-secondary" onclick="setOnboardingGST(true)" style="flex: 1;">Yes (10%)</button>
+          <button class="btn btn-secondary" onclick="setOnboardingGST(false)" style="flex: 1;">No</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="completeOnboarding()" type="button">Get Started</button>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div id="share-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="closeShareModal()" type="button">✕</button>
+      <div class="modal-header">Share Quote</div>
+      <div class="modal-subtitle">Choose how to send this quote</div>
+      <div class="share-options">
+        <div class="share-option" onclick="copyQuoteToClipboard()">
+          <div class="share-option-icon">📋</div>
+          <div class="share-option-label">Copy Text</div>
+        </div>
+        <div class="share-option" onclick="emailQuote()">
+          <div class="share-option-icon">✉️</div>
+          <div class="share-option-label">Email</div>
+        </div>
+        <div class="share-option" onclick="smsQuote()">
+          <div class="share-option-icon">💬</div>
+          <div class="share-option-label">SMS</div>
+        </div>
+        <div class="share-option" onclick="whatsappQuote()">
+          <div class="share-option-icon">💚</div>
+          <div class="share-option-label">WhatsApp</div>
+        </div>
+      </div>
+      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+        <button class="btn btn-primary btn-full" id="export-pdf-btn" onclick="exportQuotePDF()" type="button">
+          📄 Export as PDF (Pro)
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div id="app">
     <header class="header">
@@ -719,7 +878,6 @@
             <div class="header-sub" id="header-sub">Fast quoting for window cleaners</div>
           </div>
         </div>
-
         <div style="display:flex;align-items:center;gap:0.5rem;">
           <button class="btn btn-secondary btn-sm" id="global-reset-btn" title="Reset Quote" type="button">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -733,9 +891,9 @@
     </header>
 
     <div class="main-content">
+      <!-- QUOTE TAB -->
       <div id="tab-quote">
         <div class="chip-strip" id="service-chips"></div>
-
         <div class="card">
           <div class="card-title">Customer Details</div>
           <div class="field-grid-2">
@@ -757,7 +915,6 @@
             </div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
             <span>Services & Counts</span>
@@ -765,7 +922,6 @@
           </div>
           <div id="steppers-container"></div>
         </div>
-
         <div class="card">
           <div class="card-title">Quote Type</div>
           <div class="field-stack">
@@ -778,7 +934,6 @@
             </div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-title">Quote Summary</div>
           <div class="summary-stats" id="quote-summary-stats"></div>
@@ -786,6 +941,7 @@
         </div>
       </div>
 
+      <!-- PRO TAB (AUTH, TEAM, DASHBOARD) -->
       <div id="tab-pro" class="hidden">
         <div id="pro-auth-panel">
           <div class="card">
@@ -811,7 +967,6 @@
             </div>
           </div>
         </div>
-
         <div id="pro-team-setup" class="hidden">
           <div class="card">
             <div class="card-title">Join or Create Team</div>
@@ -821,9 +976,7 @@
                 <input type="text" class="field-input" id="team-name-input" placeholder="My Cleaning Biz" />
               </div>
               <button class="btn btn-primary btn-full" id="create-team-btn" type="button">Create Team</button>
-
               <div style="text-align:center;font-size:0.76rem;color:#9ca3af;margin:0.4rem 0;">OR</div>
-
               <div>
                 <label class="field-label">Invite Code</label>
                 <input type="text" class="field-input" id="invite-code-input" placeholder="ABCD-1234" />
@@ -833,7 +986,6 @@
             </div>
           </div>
         </div>
-
         <div id="pro-dashboard" class="hidden">
           <div class="card">
             <div class="team-header">
@@ -843,7 +995,6 @@
               </div>
               <span class="role-badge role-owner" id="team-role-badge">Owner</span>
             </div>
-
             <div class="kpi-grid">
               <div class="kpi-card">
                 <div class="kpi-label">Active Jobs</div>
@@ -854,7 +1005,6 @@
                 <div class="kpi-val" id="kpi-weekly">0</div>
               </div>
             </div>
-
             <div class="revenue-grid">
               <div class="revenue-card">
                 <div class="revenue-label">Paid Total</div>
@@ -865,15 +1015,14 @@
                 <div class="revenue-val revenue-pending" id="kpi-pending">$0</div>
               </div>
             </div>
-
             <button class="btn btn-danger-soft btn-full btn-sm" id="pro-signout-btn" type="button">Sign Out</button>
           </div>
-
           <div class="chip-strip" id="job-filters" style="margin-bottom:1rem;"></div>
           <div id="jobs-list-container"></div>
         </div>
       </div>
 
+      <!-- SETTINGS TAB -->
       <div id="tab-settings" class="hidden">
         <div id="settings-owner-view" class="hidden">
           <div class="card">
@@ -883,7 +1032,6 @@
                 <label class="field-label">Business Name</label>
                 <input type="text" class="field-input" id="s-bizname" placeholder="SP Window Cleaning Pty Ltd" />
               </div>
-
               <div class="field-grid-2">
                 <div>
                   <label class="field-label">Contact Name</label>
@@ -894,19 +1042,16 @@
                   <input type="tel" class="field-input" id="s-phone" placeholder="0400 000 000" />
                 </div>
               </div>
-
               <div>
                 <label class="field-label">Email</label>
                 <input type="email" class="field-input" id="s-email" placeholder="info@business.com.au" />
               </div>
-
               <div>
                 <label class="field-label">Default Message</label>
                 <textarea class="field-input" id="s-message" rows="3" placeholder="Thank you for choosing us!"></textarea>
               </div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-title">Team Invite</div>
             <div class="field-stack">
@@ -914,18 +1059,15 @@
                 <label class="field-label">Invite Code</label>
                 <input type="text" class="field-input" id="team-invite-code" readonly placeholder="No invite code yet" />
               </div>
-
               <div class="field-grid-2">
                 <button class="btn btn-secondary btn-full" id="copy-invite-btn" type="button">Copy Invite Code</button>
                 <button class="btn btn-primary btn-full" id="share-invite-btn" type="button">Share Join Message</button>
               </div>
-
               <div style="font-size:0.8rem;color:#6b7280;">
                 Staff can sign in, go to Pro, and use this invite code to join your team.
               </div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-title">Pricing Method</div>
             <div class="field-stack">
@@ -938,60 +1080,50 @@
               </div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-title">Per Item Pricing</div>
             <div class="rate-grid" id="settings-rates-grid"></div>
           </div>
-
           <div class="card">
             <div class="card-title">Hourly Estimate Settings</div>
-
             <div class="field-grid-2" style="margin-bottom:0.8rem;">
               <div>
                 <label class="field-label">Hourly Rate</label>
                 <input type="number" min="0" step="1" class="field-input" id="settings-hourly-rate" />
               </div>
               <div>
+                <label class="field-label">External Only %</label>
+                <input type="number" min="0" max="100" step="1" class="field-input" id="settings-external-percent" />
+              </div>
+            </div>
+            <div class="field-grid-2">
+              <div>
                 <label class="field-label">Travel Fee</label>
                 <input type="number" min="0" step="1" class="field-input" id="settings-travel-fee" />
               </div>
+              <div>
+                <label class="field-label">Discount</label>
+                <input type="number" min="0" step="1" class="field-input" id="settings-discount" />
+              </div>
             </div>
-
-            <div style="margin-bottom:0.8rem;">
-              <label class="field-label">Discount</label>
-              <input type="number" min="0" step="1" class="field-input" id="settings-discount" />
-            </div>
-
-            <div style="margin-bottom:0.8rem;">
-              <label class="field-label">External Only Percentage</label>
-              <input type="number" min="1" max="100" step="1" class="field-input" id="settings-external-percent" />
-            </div>
-
-            <div style="margin-bottom:0.8rem;">
+            <div style="margin-top:0.8rem;">
               <label style="display:flex;align-items:center;gap:0.6rem;font-weight:700;color:#374151;">
                 <input type="checkbox" id="settings-gst-enabled" />
-                Add GST to quotes
+                Enable GST
               </label>
             </div>
-
-            <div style="margin-bottom:0.8rem;">
+            <div style="margin-top:0.8rem;">
               <label class="field-label">GST Rate (%)</label>
               <input type="number" min="0" max="100" step="1" class="field-input" id="settings-gst-rate" />
             </div>
-
+            <div class="card-title" style="margin-top:1rem;">Minutes per Item</div>
             <div class="rate-grid" id="settings-minutes-grid"></div>
           </div>
-
           <button class="btn btn-primary btn-full" id="save-settings-btn" type="button">Save All Settings</button>
+          <button class="btn btn-danger-soft btn-full" id="reset-all-btn" type="button" style="margin-top:0.6rem;">Reset Everything (Owner)</button>
         </div>
-        <button class="btn btn-danger-soft btn-full" id="reset-all-btn" type="button" style="margin-top:0.6rem;">
-  Reset Everything (Owner)
-</button>
-
         <div id="settings-staff-lock" class="hidden">
           <div class="card">
-            <div class="card-title">Settings</div>
             <div class="settings-lock">
               Only the team owner can change pricing, timing, GST, business details, and admin settings.
             </div>
@@ -1000,68 +1132,53 @@
       </div>
     </div>
 
+    <!-- QUOTE FOOTER -->
     <div class="quote-footer" id="quote-footer">
       <div class="quote-footer-inner">
         <div class="quote-footer-card">
           <div>
-            <div class="quote-price" id="footer-total">$0</div>
+            <div class="quote-price" id="footer-total">$0.00</div>
             <div class="quote-price-sub" id="footer-count">0 items selected</div>
           </div>
           <div class="quote-footer-actions">
-            <button class="btn btn-secondary hidden" id="save-team-job-btn" type="button">Add Job</button>
-            <button class="btn btn-success" id="save-job-btn" type="button">Email</button>
-            <button class="btn btn-primary" id="copy-quote-btn" type="button">Copy</button>
+            <button class="btn btn-secondary btn-sm hidden" id="save-team-job-btn" type="button">Save to Team</button>
+            <button class="btn btn-primary btn-sm" id="share-quote-btn" type="button">Share</button>
           </div>
         </div>
       </div>
     </div>
 
-    <nav class="tab-bar">
+    <!-- TAB BAR -->
+    <div class="tab-bar">
       <div class="tab-bar-inner">
-        <button class="tab-btn active" type="button" onclick="switchTab('quote')">
+        <button class="tab-btn active" id="tab-quote-btn" type="button" onclick="switchTab('quote')">
           <div class="tab-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <path d="M14 2v6h6"></path>
-              <path d="M16 13H8"></path>
-              <path d="M16 17H8"></path>
-              <path d="M10 9H8"></path>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
           </div>
-          <span class="tab-btn-label">QUOTE</span>
+          <div class="tab-btn-label">Quote</div>
         </button>
-
-        <button class="tab-btn" type="button" onclick="switchTab('pro')">
+        <button class="tab-btn" id="tab-pro-btn" type="button" onclick="switchTab('pro')">
           <div class="tab-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-              <path d="M2 17l10 5 10-5"></path>
-              <path d="M2 12l10 5 10-5"></path>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           </div>
-          <span class="tab-btn-label">PRO</span>
+          <div class="tab-btn-label">Pro</div>
         </button>
-
-        <button class="tab-btn" id="settings-tab-btn" type="button" onclick="switchTab('settings')">
+        <button class="tab-btn" id="tab-settings-btn" type="button" onclick="switchTab('settings')">
           <div class="tab-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           </div>
-          <span class="tab-btn-label">SETTINGS</span>
+          <div class="tab-btn-label">Settings</div>
         </button>
       </div>
-    </nav>
+    </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    let pendingInviteCode = null;
-
+  let pendingInviteCode = null;
   (function checkInviteFromURL() {
     const params = new URLSearchParams(window.location.search);
     const invite = params.get('invite');
-
     if (invite) {
       pendingInviteCode = invite;
       localStorage.setItem('pending_invite', invite);
@@ -1094,9 +1211,7 @@
     gstRate: 10
   };
 
-  let quoteState = {
-    externalOnly: false
-  };
+  let quoteState = { externalOnly: false };
 
   let services = [
     { id: 'sw',  name: 'Standard Windows', count: 0, rate: 10, minutes: 7,  unit: 'each',  icon: '<path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
@@ -1122,46 +1237,26 @@
   function showToast(message, type = '') {
     const container = document.getElementById('toast-container');
     if (!container) return;
-
     const el = document.createElement('div');
     el.className = `toast ${type}`;
     el.textContent = String(message || '');
     container.appendChild(el);
-
-    setTimeout(() => {
-      if (el.parentNode) el.remove();
-    }, 3000);
+    setTimeout(() => { if (el.parentNode) el.remove(); }, 3000);
   }
 
   function escapeHtml(value) {
-    return String(value ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
+    return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
   }
 
   function normalizeStatus(status) {
-    const normalized = String(status || '')
-      .toLowerCase()
-      .trim()
-      .replaceAll(' ', '_');
-
-    if (normalized === 'quote_sent') return 'quoted';
-    if (normalized === 'active') return 'in_progress';
-    if (normalized === 'started') return 'in_progress';
-
-    return normalized;
+    const n = String(status || '').toLowerCase().trim().replaceAll(' ', '_');
+    if (n === 'quote_sent') return 'quoted';
+    if (n === 'active' || n === 'started') return 'in_progress';
+    return n;
   }
 
   function displayStatus(status) {
-    const map = {
-      quoted: 'Quote Sent',
-      accepted: 'Accepted',
-      in_progress: 'Active',
-      completed: 'Completed'
-    };
+    const map = { quoted: 'Quote Sent', accepted: 'Accepted', in_progress: 'Active', completed: 'Completed' };
     return map[normalizeStatus(status)] || String(status || '');
   }
 
@@ -1174,345 +1269,268 @@
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
-
       const parsed = JSON.parse(raw);
-
-      if (parsed.settings) {
-        settings = { ...settings, ...parsed.settings };
-      }
-
-      if (parsed.quoteState) {
-        quoteState = { ...quoteState, ...parsed.quoteState };
-      }
-
+      if (parsed.settings) settings = { ...settings, ...parsed.settings };
+      if (parsed.quoteState) quoteState = { ...quoteState, ...parsed.quoteState };
       if (Array.isArray(parsed.services)) {
         services = services.map(service => {
           const saved = parsed.services.find(item => item.id === service.id);
-          return saved
-            ? {
-                ...service,
-                rate: Number(saved.rate) || service.rate,
-                minutes: Number(saved.minutes) || service.minutes
-              }
-            : service;
+          return saved ? { ...service, rate: Number(saved.rate) || service.rate, minutes: Number(saved.minutes) || service.minutes } : service;
         });
       }
-    } catch (error) {
-      console.error('Failed to load local settings:', error);
-    }
+    } catch (e) { console.error('Failed to load local settings:', e); }
   }
-async function resetAllData() {
-  if (!confirm('This will reset all settings, jobs, quotes, and team test data. Continue?')) return;
 
-  try {
-    const sb = await getSb();
-    if (!sb) throw new Error('Supabase unavailable');
-
-    if (proState.teamId && String(proState.teamRole || '').toLowerCase() === 'owner') {
-      const { error } = await sb.rpc('reset_team_data');
-      if (error) throw error;
-    }
-
-    localStorage.removeItem(STORAGE_KEY);
-
-    settings = {
-      businessName: 'SP Window Cleaning Pty Ltd',
-      contactName: 'Sean',
-      businessPhone: '',
-      businessEmail: '',
-      customMessage: 'Thank you for choosing us!',
-      pricingMode: 'per-window',
-      hourlyRate: 150,
-      travelFee: 0,
-      discount: 0,
-      externalOnlyPercent: 70,
-      gstEnabled: true,
-      gstRate: 10
-    };
-
-    quoteState = { externalOnly: false };
-
-    services = [
-      { id: 'sw', name: 'Standard Windows', count: 0, rate: 10, minutes: 7, unit: 'each', icon: '<path d="M3 3h18v18H3z"></path><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
-      { id: 'lw', name: 'Large Windows', count: 0, rate: 18, minutes: 10, unit: 'each', icon: '<rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M12 3v18"></path><path d="M3 12h18"></path>' },
-      { id: 'sd', name: 'Sliding Doors', count: 0, rate: 25, minutes: 12, unit: 'each', icon: '<path d="M18 3v18"></path><path d="M3 3h15"></path><path d="M3 21h15"></path><path d="M3 3v18"></path>' },
-      { id: 'fs', name: 'Fly Screens', count: 0, rate: 5, minutes: 4, unit: 'each', icon: '<path d="M3 3h18v18H3z"></path><path d="M9 3v18"></path><path d="M15 3v18"></path><path d="M3 9h18"></path><path d="M3 15h18"></path>' },
-      { id: 'tr', name: 'Tracks/Sills', count: 0, rate: 5, minutes: 3, unit: 'each', icon: '<path d="M3 21h18"></path><path d="M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"></path>' },
-      { id: 'bal', name: 'Balustrade Glass', count: 0, rate: 12, minutes: 6, unit: 'each', icon: '<path d="M4 20h16"></path><path d="M7 20V6"></path><path d="M12 20V6"></path><path d="M17 20V6"></path><path d="M6 6h12"></path>' },
-      { id: 'gut', name: 'Gutters', count: 0, rate: 8, minutes: 4, unit: 'lm', icon: '<path d="M3 7h18"></path><path d="M5 7v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7"></path>' },
-      { id: 'sol', name: 'Solar Panels', count: 0, rate: 6, minutes: 3, unit: 'panel', icon: '<path d="M4 6h16v10H4z"></path><path d="M8 6v10"></path><path d="M12 6v10"></path><path d="M16 6v10"></path><path d="M4 11h16"></path>' },
-      { id: 'pw', name: 'Pressure Washing', count: 0, rate: 5, minutes: 2, unit: 'm²', icon: '<path d="M4 20h6"></path><path d="M7 20v-8"></path><path d="M7 12 18 5"></path><path d="M18 5v5"></path><path d="M18 5h-5"></path>' }
-    ];
-
-    proState.jobs = [];
-
-    renderSteppers();
-    syncSettingsForm();
-    renderSettingsGrids();
-    renderJobsList();
-    updateKPIs();
-    updateQuoteDisplay();
-    await bootPro();
-
-    showToast('Everything reset for the whole team!', 'success');
-  } catch (err) {
-    console.error(err);
-    showToast(err.message || 'Reset failed', 'error');
-  }
-}
   function saveLocalSettings() {
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          settings,
-          quoteState,
-          services: services.map(service => ({
-            id: service.id,
-            rate: service.rate,
-            minutes: service.minutes
-          }))
-        })
-      );
-    } catch (error) {
-      console.error('Failed to save local settings:', error);
-    }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        settings, quoteState,
+        services: services.map(s => ({ id: s.id, rate: s.rate, minutes: s.minutes }))
+      }));
+    } catch (e) { console.error('Failed to save local settings:', e); }
   }
 
   async function getSb() {
     if (supabaseClient) return supabaseClient;
-
     try {
-      const mod = await import('https://esm.sh/@supabase/supabase-js@2');
-      supabaseClient = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       return supabaseClient;
-    } catch (error) {
-      console.error(error);
-      showToast('Could not connect to Supabase', 'error');
-      return null;
-    }
+    } catch (e) { console.error('Supabase init failed', e); return null; }
   }
 
-  async function fetchTeamSettings(teamId) {
+  async function bootPro() {
     const sb = await getSb();
-    if (!sb || !teamId) return null;
+    if (!sb) return;
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { proState.user = null; renderProUI(); return; }
+    proState.user = user;
+    try {
+      const { data: team, error } = await sb.rpc('get_my_team');
+      if (error || !team) {
+        proState.teamId = null;
+        if (pendingInviteCode) {
+          try {
+            const { error: joinErr } = await sb.rpc('join_team_by_invite', { p_invite_code: pendingInviteCode });
+            if (!joinErr) {
+              localStorage.removeItem('pending_invite');
+              pendingInviteCode = null;
+              return await bootPro();
+            }
+          } catch (e) { console.error('Auto-join failed', e); }
+          document.getElementById('invite-code-input').value = pendingInviteCode || '';
+        }
+      } else {
+        const t = Array.isArray(team) ? team[0] : team;
+        proState.teamId = t.team_id;
+        proState.teamName = t.business_name;
+        proState.teamRole = t.role;
+        proState.inviteCode = t.invite_code;
+        localStorage.removeItem('pending_invite');
+        pendingInviteCode = null;
 
-    const res = await sb
-      .from('team_settings')
-      .select('*')
-      .eq('team_id', teamId)
-      .limit(1);
+        const { data: jobs } = await sb.from('jobs').select('*').eq('team_id', proState.teamId).order('created_at', { ascending: false });
+        proState.jobs = jobs || [];
 
-    if (res.error) throw res.error;
+        const { data: s } = await sb.from('team_settings').select('*').eq('team_id', proState.teamId).single();
+        if (s) {
+          settings = {
+            businessName: s.business_name || settings.businessName,
+            contactName: s.contact_name || settings.contactName,
+            businessPhone: s.contact_phone || settings.businessPhone,
+            businessEmail: s.contact_email || settings.businessEmail,
+            customMessage: s.default_message || settings.customMessage,
+            pricingMode: s.pricing_mode || settings.pricingMode,
+            hourlyRate: Number(s.hourly_rate) || settings.hourlyRate,
+            travelFee: Number(s.travel_fee) || settings.travelFee,
+            discount: Number(s.discount) || settings.discount,
+            externalOnlyPercent: Number(s.external_only_percent) || settings.externalOnlyPercent,
+            gstEnabled: !!s.gst_enabled,
+            gstRate: Number(s.gst_rate) || settings.gstRate
+          };
+          if (s.rates) {
+            services = services.map(svc => {
+              const remoteRate = s.rates[svc.id];
+              const remoteMin = s.minutes ? s.minutes[svc.id] : null;
+              return { 
+                ...svc, 
+                rate: remoteRate !== undefined ? Number(remoteRate) : svc.rate,
+                minutes: remoteMin !== undefined ? Number(remoteMin) : svc.minutes
+              };
+            });
+          }
+        }
 
-    return Array.isArray(res.data) && res.data.length ? res.data[0] : null;
-  }
-
-  async function saveTeamSettings() {
-    if (!proState.teamId) return;
-
-    const sb = await getSb();
-    if (!sb) throw new Error('Supabase unavailable');
-
-    const rates = {};
-    const minutes = {};
-
-    services.forEach(service => {
-      rates[service.id] = Number(service.rate) || 0;
-      minutes[service.id] = Number(service.minutes) || 0;
-    });
-
-    const payload = {
-      team_id: proState.teamId,
-      pricing_mode: settings.pricingMode || 'per-window',
-      hourly_rate: Number(settings.hourlyRate) || 0,
-      travel_fee: Number(settings.travelFee) || 0,
-      discount: Number(settings.discount) || 0,
-      external_only_percent: Number(settings.externalOnlyPercent) || 70,
-      gst_enabled: !!settings.gstEnabled,
-      gst_rate: Number(settings.gstRate) || 10,
-      business_name: settings.businessName || '',
-      contact_name: settings.contactName || '',
-      contact_phone: settings.businessPhone || '',
-      contact_email: settings.businessEmail || '',
-      default_message: settings.customMessage || '',
-      rates,
-      minutes
-    };
-
-    const res = await sb
-      .from('team_settings')
-      .upsert(payload, { onConflict: 'team_id' });
-
-    if (res.error) throw res.error;
-  }
-
-  function applyTeamSettingsRow(row) {
-    if (!row) return;
-
-    settings.businessName = row.business_name || settings.businessName;
-    settings.contactName = row.contact_name || settings.contactName;
-    settings.businessPhone = row.contact_phone || settings.businessPhone;
-    settings.businessEmail = row.contact_email || settings.businessEmail;
-    settings.customMessage = row.default_message || settings.customMessage;
-
-    settings.pricingMode = row.pricing_mode || settings.pricingMode;
-    settings.hourlyRate = Number(row.hourly_rate ?? settings.hourlyRate);
-    settings.travelFee = Number(row.travel_fee ?? settings.travelFee);
-    settings.discount = Number(row.discount ?? settings.discount);
-    settings.externalOnlyPercent = Number(row.external_only_percent ?? settings.externalOnlyPercent);
-    settings.gstEnabled = !!row.gst_enabled;
-    settings.gstRate = Number(row.gst_rate ?? settings.gstRate);
-
-    const rates = row.rates || {};
-    const minutes = row.minutes || {};
-
-    services = services.map(service => ({
-      ...service,
-      rate: Number(rates[service.id] ?? service.rate),
-      minutes: Number(minutes[service.id] ?? service.minutes)
-    }));
-  }
-
-  function syncSettingsForm() {
-    const map = {
-      's-bizname': settings.businessName || '',
-      's-contact': settings.contactName || '',
-      's-phone': settings.businessPhone || '',
-      's-email': settings.businessEmail || '',
-      's-message': settings.customMessage || '',
-      'settings-pricing-mode': settings.pricingMode || 'per-window',
-      'settings-hourly-rate': settings.hourlyRate || 0,
-      'settings-travel-fee': settings.travelFee || 0,
-      'settings-discount': settings.discount || 0,
-      'settings-external-percent': settings.externalOnlyPercent || 70,
-      'settings-gst-rate': settings.gstRate || 10
-    };
-
-    Object.entries(map).forEach(([id, value]) => {
-      const el = document.getElementById(id);
-      if (el) el.value = value;
-    });
-
-    const gstEnabled = document.getElementById('settings-gst-enabled');
-    if (gstEnabled) gstEnabled.checked = !!settings.gstEnabled;
-  }
-
-  function renderSettingsGrids() {
-    const ratesGrid = document.getElementById('settings-rates-grid');
-    const minutesGrid = document.getElementById('settings-minutes-grid');
-    if (!ratesGrid || !minutesGrid) return;
-
-    ratesGrid.innerHTML = services.map(service => `
-      <div class="rate-card">
-        <div class="rate-card-label">${service.name}</div>
-        <input type="number" min="0" step="1" class="rate-card-input" value="${service.rate}" onchange="updateServiceRate('${service.id}', this.value)" />
-        <div class="rate-card-unit">Rate per ${service.unit}</div>
-      </div>
-    `).join('');
-
-    minutesGrid.innerHTML = services.map(service => `
-      <div class="rate-card">
-        <div class="rate-card-label">${service.name}</div>
-        <input type="number" min="0" step="1" class="rate-card-input" value="${service.minutes}" onchange="updateServiceMinutes('${service.id}', this.value)" />
-        <div class="rate-card-unit">Minutes per ${service.unit}</div>
-      </div>
-    `).join('');
-  }
-
-  function renderSettingsAccess() {
-    const ownerView = document.getElementById('settings-owner-view');
-    const staffLock = document.getElementById('settings-staff-lock');
-
-    if (!ownerView || !staffLock) return;
-
-    if (canAccessSettings()) {
-      ownerView.classList.remove('hidden');
-      staffLock.classList.add('hidden');
-      syncSettingsForm();
-      renderSettingsGrids();
-
-      const inviteInput = document.getElementById('team-invite-code');
-      if (inviteInput) inviteInput.value = proState.inviteCode || '';
-    } else {
-      ownerView.classList.add('hidden');
-      staffLock.classList.remove('hidden');
-    }
-  }
-
-  async function applySettingsFromForm() {
-    settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
-    settings.contactName = document.getElementById('s-contact').value.trim();
-    settings.businessPhone = document.getElementById('s-phone').value.trim();
-    settings.businessEmail = document.getElementById('s-email').value.trim();
-    settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
-    settings.pricingMode = document.getElementById('settings-pricing-mode').value;
-    settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
-    settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
-    settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
-    settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
-    settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
-    settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
-
-    saveLocalSettings();
-
-    if (proState.teamId && String(proState.teamRole || '').toLowerCase() === 'owner') {
-      try {
-        await saveTeamSettings();
-      } catch (error) {
-        console.error(error);
-        showToast(error.message || 'Could not sync team settings', 'error');
+        if (realtimeChannel) realtimeChannel.unsubscribe();
+        realtimeChannel = sb.channel('team-jobs')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `team_id=eq.${proState.teamId}` }, async (payload) => {
+            const { data: updatedJobs } = await sb.from('jobs').select('*').eq('team_id', proState.teamId).order('created_at', { ascending: false });
+            proState.jobs = updatedJobs || [];
+            renderJobsList();
+            updateKPIs();
+          })
+          .subscribe();
       }
-    }
-
+    } catch (e) { console.error(e); }
+    renderProUI();
     syncSettingsForm();
     renderSettingsGrids();
+    updateKPIs();
+    renderJobsList();
     updateQuoteDisplay();
   }
 
-  function updateServiceRate(id, value) {
-    const service = services.find(item => item.id === id);
-    if (!service) return;
-
-    service.rate = Math.max(0, Number(value) || 0);
-    saveLocalSettings();
-    updateQuoteDisplay();
+  async function handleAuth() {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    const sb = await getSb();
+    if (!sb) return;
+    try {
+      let res;
+      if (authMode === 'signup') {
+        const name = document.getElementById('auth-name').value;
+        res = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
+      } else {
+        res = await sb.auth.signInWithPassword({ email, password });
+      }
+      if (res.error) throw res.error;
+      showToast('Welcome!', 'success');
+      await bootPro();
+    } catch (e) { showToast(e.message, 'error'); }
   }
 
-  function updateServiceMinutes(id, value) {
-    const service = services.find(item => item.id === id);
-    if (!service) return;
+  async function createTeam() {
+    const name = document.getElementById('team-name-input').value.trim();
+    if (!name) return showToast('Enter business name', 'error');
+    const sb = await getSb();
+    if (!sb) return;
+    try {
+      const { error } = await sb.rpc('create_team', { p_business_name: name });
+      if (error) throw error;
+      showToast('Team created!', 'success');
+      await bootPro();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
 
-    service.minutes = Math.max(0, Number(value) || 0);
-    saveLocalSettings();
-    updateQuoteDisplay();
+  async function joinTeam() {
+    const code = document.getElementById('invite-code-input').value.trim();
+    if (!code) return showToast('Enter invite code', 'error');
+    const sb = await getSb();
+    if (!sb) return;
+    try {
+      const { error } = await sb.rpc('join_team_by_invite', { p_invite_code: code });
+      if (error) throw error;
+      showToast('Joined team!', 'success');
+      await bootPro();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function updateJobStatus(id, status) {
+    const sb = await getSb();
+    if (!sb) return;
+    const patch = { status: normalizeStatus(status) };
+    const now = new Date().toISOString();
+    if (patch.status === 'accepted') patch.accepted_at = now;
+    if (patch.status === 'in_progress') patch.started_at = now;
+    if (patch.status === 'completed') patch.completed_at = now;
+    try {
+      const { error } = await sb.from('jobs').update(patch).eq('id', id);
+      if (error) throw error;
+      const j = proState.jobs.find(x => x.id === id);
+      if (j) Object.assign(j, patch);
+      renderJobsList();
+      updateKPIs();
+      showToast('Status updated!');
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function saveTeamJob() {
+    if (!proState.teamId) return showToast('Join a team first', 'error');
+    const sb = await getSb();
+    if (!sb) return;
+    const data = getQuoteData();
+    const payload = {
+      team_id: proState.teamId,
+      customer_name: document.getElementById('q-name').value.trim() || 'Customer',
+      customer_phone: document.getElementById('q-phone').value.trim(),
+      customer_email: document.getElementById('q-email').value.trim(),
+      service_address: document.getElementById('q-address').value.trim(),
+      quoted_price: data.total,
+      items_summary: services.filter(s => s.count > 0).map(s => `${s.count} ${s.name}`).join(', '),
+      status: 'quoted',
+      created_by: proState.user.id
+    };
+    try {
+      const { error } = await sb.from('jobs').insert(payload);
+      if (error) throw error;
+      showToast('Job saved to team!');
+      await bootPro();
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function saveSettingsToServer() {
+    if (!proState.teamId || !canAccessSettings()) return;
+    const sb = await getSb();
+    if (!sb) return;
+    const ratesMap = {};
+    const minsMap = {};
+    services.forEach(s => { 
+      ratesMap[s.id] = s.rate; 
+      minsMap[s.id] = s.minutes;
+    });
+    const payload = {
+      business_name: settings.businessName,
+      contact_name: settings.contactName,
+      contact_phone: settings.businessPhone,
+      contact_email: settings.businessEmail,
+      default_message: settings.customMessage,
+      pricing_mode: settings.pricingMode,
+      hourly_rate: Number(settings.hourlyRate),
+      travel_fee: Number(settings.travelFee),
+      discount: Number(settings.discount),
+      external_only_percent: Number(settings.externalOnlyPercent),
+      gst_enabled: !!settings.gstEnabled,
+      gst_rate: Number(settings.gstRate),
+      rates: ratesMap,
+      minutes: minsMap
+    };
+    try {
+      const { error } = await sb.from('team_settings').upsert({ team_id: proState.teamId, ...payload });
+      if (error) throw error;
+      showToast('Settings saved!', 'success');
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function resetAllData() {
+    if (!confirm('This will reset all settings, jobs, quotes, and team data. Continue?')) return;
+    try {
+      const sb = await getSb();
+      if (proState.teamId && canAccessSettings()) {
+        const { error } = await sb.rpc('reset_team_data');
+        if (error) throw error;
+      }
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    } catch (e) { showToast(e.message, 'error'); }
   }
 
   function updateCount(id, delta) {
-    const service = services.find(item => item.id === id);
-    if (!service) return;
-
-    service.count = Math.max(0, Number(service.count || 0) + Number(delta || 0));
-    renderSteppers();
-    updateQuoteDisplay();
+    const s = services.find(x => x.id === id);
+    if (s) { s.count = Math.max(0, s.count + delta); renderSteppers(); updateQuoteDisplay(); }
   }
 
   function renderSteppers() {
     const container = document.getElementById('steppers-container');
     if (!container) return;
-
-    container.innerHTML = services.map(service => `
-      <div class="stepper-row ${service.count > 0 ? 'active' : ''}">
+    container.innerHTML = services.map(s => `
+      <div class="stepper-row ${s.count > 0 ? 'active' : ''}">
         <div class="stepper-label">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            ${service.icon}
-          </svg>
-          <span>${service.name} <span style="font-size:11px;color:#9ca3af;">• ${service.unit}</span></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${s.icon}</svg>
+          <span>${s.name} <span style="font-size:11px;color:#9ca3af;">• ${s.unit}</span></span>
         </div>
         <div class="stepper-controls">
-          <button class="btn-stepper minus" type="button" onclick="updateCount('${service.id}', -1)" ${service.count === 0 ? 'disabled' : ''}>-</button>
-          <div class="stepper-val">${service.count}</div>
-          <button class="btn-stepper plus" type="button" onclick="updateCount('${service.id}', 1)">+</button>
+          <button class="btn-stepper minus" type="button" onclick="updateCount('${s.id}', -1)" ${s.count === 0 ? 'disabled' : ''}>-</button>
+          <div class="stepper-val">${s.count}</div>
+          <button class="btn-stepper plus" type="button" onclick="updateCount('${s.id}', 1)">+</button>
         </div>
       </div>
     `).join('');
@@ -1520,959 +1538,341 @@ async function resetAllData() {
 
   function getQuoteData() {
     const windowServiceIds = ['sw', 'lw', 'sd'];
-    const selectedServices = services.filter(service => Number(service.count) > 0);
-
-    const itemCount = selectedServices.reduce((sum, service) => sum + Number(service.count || 0), 0);
-    const totalMinutes = selectedServices.reduce(
-      (sum, service) => sum + (Number(service.count || 0) * Number(service.minutes || 0)),
-      0
-    );
+    const selected = services.filter(s => s.count > 0);
+    const itemCount = selected.reduce((sum, s) => sum + s.count, 0);
+    const totalMinutes = selected.reduce((sum, s) => sum + (s.count * s.minutes), 0);
     const estimatedHours = totalMinutes / 60;
 
-    let windowSubtotal = 0;
-    let nonWindowSubtotal = 0;
-    let subtotal = 0;
-
-    if ((settings.pricingMode || 'per-window') === 'per-window') {
-      selectedServices.forEach(service => {
-        const lineTotal = Number(service.count || 0) * Number(service.rate || 0);
-
-        if (windowServiceIds.includes(service.id)) {
-          windowSubtotal += lineTotal;
-        } else {
-          nonWindowSubtotal += lineTotal;
-        }
-      });
-
-      const adjustedWindowSubtotal = quoteState.externalOnly
-        ? windowSubtotal * (Number(settings.externalOnlyPercent || 70) / 100)
-        : windowSubtotal;
-
-      subtotal = adjustedWindowSubtotal + nonWindowSubtotal;
-
-      const travelFee = Math.max(0, Number(settings.travelFee || 0));
-      const discount = Math.max(0, Number(settings.discount || 0));
-      const baseTotal = Math.max(0, subtotal + travelFee - discount);
-      const gstAmount = settings.gstEnabled
-        ? baseTotal * (Number(settings.gstRate || 10) / 100)
-        : 0;
-      const total = baseTotal + gstAmount;
-
-      return {
-        itemCount,
-        totalMinutes,
-        estimatedHours,
-        windowSubtotal,
-        adjustedWindowSubtotal,
-        nonWindowSubtotal,
-        subtotal,
-        travelFee,
-        discount,
-        baseTotal,
-        gstAmount,
-        total
-      };
-    }
-
-    const labourSubtotal = estimatedHours * Math.max(0, Number(settings.hourlyRate || 0));
-
-    selectedServices.forEach(service => {
-      const lineTotal = Number(service.count || 0) * Number(service.rate || 0);
-      if (windowServiceIds.includes(service.id)) {
-        windowSubtotal += lineTotal;
-      } else {
-        nonWindowSubtotal += lineTotal;
-      }
+    let windowSub = 0, nonWindowSub = 0;
+    selected.forEach(s => {
+      const line = s.count * s.rate;
+      if (windowServiceIds.includes(s.id)) windowSub += line; else nonWindowSub += line;
     });
 
-    const adjustedWindowSubtotal = quoteState.externalOnly
-      ? windowSubtotal * (Number(settings.externalOnlyPercent || 70) / 100)
-      : windowSubtotal;
+    const adjWindowSub = quoteState.externalOnly ? windowSub * (Number(settings.externalOnlyPercent) / 100) : windowSub;
+    let subtotal = 0;
 
-    const travelFee = Math.max(0, Number(settings.travelFee || 0));
-    const discount = Math.max(0, Number(settings.discount || 0));
-
-    let hourlyBase = labourSubtotal;
-
-    if (quoteState.externalOnly && windowSubtotal > 0) {
-      const fullMix = windowSubtotal + nonWindowSubtotal;
-      if (fullMix > 0) {
-        const adjustedMix = adjustedWindowSubtotal + nonWindowSubtotal;
-        const ratio = adjustedMix / fullMix;
-        hourlyBase = labourSubtotal * ratio;
+    if (settings.pricingMode === 'per-window') {
+      subtotal = adjWindowSub + nonWindowSub;
+    } else {
+      let hourlyBase = estimatedHours * Number(settings.hourlyRate);
+      if (quoteState.externalOnly && windowSub > 0) {
+        const fullMix = windowSub + nonWindowSub;
+        if (fullMix > 0) hourlyBase *= (adjWindowSub + nonWindowSub) / fullMix;
       }
+      subtotal = hourlyBase;
     }
 
-    const baseTotal = Math.max(0, hourlyBase + travelFee - discount);
-    const gstAmount = settings.gstEnabled
-      ? baseTotal * (Number(settings.gstRate || 10) / 100)
-      : 0;
-    const total = baseTotal + gstAmount;
-
-    return {
-      itemCount,
-      totalMinutes,
-      estimatedHours,
-      windowSubtotal,
-      adjustedWindowSubtotal,
-      nonWindowSubtotal,
-      subtotal: hourlyBase,
-      travelFee,
-      discount,
-      baseTotal,
-      gstAmount,
-      total
-    };
+    const baseTotal = Math.max(0, subtotal + Number(settings.travelFee) - Number(settings.discount));
+    const gstAmount = settings.gstEnabled ? baseTotal * (Number(settings.gstRate) / 100) : 0;
+    return { itemCount, totalMinutes, estimatedHours, windowSub, adjWindowSub, nonWindowSub, subtotal, baseTotal, gstAmount, total: baseTotal + gstAmount };
   }
 
   function updateQuoteDisplay() {
     const data = getQuoteData();
+    document.getElementById('footer-total').textContent = `$${data.total.toFixed(2)}`;
+    document.getElementById('footer-count').textContent = `${data.itemCount} items selected${settings.gstEnabled ? ' • inc GST' : ' • ex GST'}`;
+    
+    const chips = document.getElementById('service-chips');
+    if (chips) chips.innerHTML = services.filter(s => s.count > 0).map(s => `<div class="chip">${s.count} × ${s.name}</div>`).join('');
 
-    const footerTotal = document.getElementById('footer-total');
-    const footerCount = document.getElementById('footer-count');
-    const saveTeamJobBtn = document.getElementById('save-team-job-btn');
-    const serviceChips = document.getElementById('service-chips');
-    const quoteSummaryStats = document.getElementById('quote-summary-stats');
-    const quotePreviewText = document.getElementById('quote-preview-text');
+    const stats = document.getElementById('quote-summary-stats');
+    if (stats) stats.innerHTML = `
+      <div class="summary-stat"><div class="summary-stat-label">Items</div><div class="summary-stat-value">${data.itemCount}</div></div>
+      <div class="summary-stat"><div class="summary-stat-label">Total</div><div class="summary-stat-value">$${data.total.toFixed(2)}</div></div>
+      <div class="summary-stat"><div class="summary-stat-label">Minutes</div><div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div></div>
+      <div class="summary-stat"><div class="summary-stat-label">Hours</div><div class="summary-stat-value">${data.estimatedHours.toFixed(2)}</div></div>
+    `;
 
-    if (footerTotal) footerTotal.textContent = `$${data.total.toFixed(2)}`;
-    if (footerCount) {
-      footerCount.textContent =
-        `${data.itemCount} items selected${settings.gstEnabled ? ' • inc GST' : ' • ex GST'}`;
-    }
-
-    if (saveTeamJobBtn) {
-      saveTeamJobBtn.classList.toggle('hidden', !proState.teamId);
-    }
-
-    if (serviceChips) {
-      serviceChips.innerHTML = services
-        .filter(service => service.count > 0)
-        .map(service => `<div class="chip">${service.count} × ${service.name}</div>`)
-        .join('');
-    }
-
-    if (quoteSummaryStats) {
-      quoteSummaryStats.innerHTML = `
-        <div class="summary-stat">
-          <div class="summary-stat-label">Items</div>
-          <div class="summary-stat-value">${data.itemCount}</div>
-        </div>
-        <div class="summary-stat">
-          <div class="summary-stat-label">Total</div>
-          <div class="summary-stat-value">$${data.total.toFixed(2)}</div>
-        </div>
-        <div class="summary-stat">
-          <div class="summary-stat-label">Minutes</div>
-          <div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div>
-        </div>
-        <div class="summary-stat">
-          <div class="summary-stat-label">Hours</div>
-          <div class="summary-stat-value">${data.estimatedHours.toFixed(2)}</div>
-        </div>
-      `;
-    }
-
-    let summary = `*QUOTE FROM ${String(settings.businessName || 'SP Window Cleaning Pty Ltd').toUpperCase()}*\n\n`;
+    let summary = `*QUOTE FROM ${String(settings.businessName).toUpperCase()}*\n\n`;
     summary += `Hi ${document.getElementById('q-name').value.trim() || 'Customer'},\n`;
-
-    const address = document.getElementById('q-address').value.trim();
-    if (address) summary += `Address: ${address}\n`;
-
+    const addr = document.getElementById('q-address').value.trim();
+    if (addr) summary += `Address: ${addr}\n`;
     if (quoteState.externalOnly) {
-      summary += `• Full Window Price: $${data.windowSubtotal.toFixed(2)}\n`;
-      summary += `• External Window Price (${settings.externalOnlyPercent}%): $${data.adjustedWindowSubtotal.toFixed(2)}\n`;
-
-      if (data.nonWindowSubtotal > 0) {
-        summary += `• Non-Window Services: $${data.nonWindowSubtotal.toFixed(2)}\n`;
-      }
+      summary += `• Full Window Price: $${data.windowSub.toFixed(2)}\n• External Window Price (${settings.externalOnlyPercent}%): $${data.adjWindowSub.toFixed(2)}\n`;
+      if (data.nonWindowSub > 0) summary += `• Non-Window Services: $${data.nonWindowSub.toFixed(2)}\n`;
     }
-
     summary += `\n*SERVICES:*\n`;
-
-    if (settings.pricingMode === 'per-window') {
-      const selected = services.filter(service => service.count > 0);
-
-      if (!selected.length) {
-        summary += `• No items added yet\n`;
-      } else {
-        selected.forEach(service => {
-          let lineTotal = service.count * service.rate;
-
-          if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(service.id)) {
-            lineTotal = lineTotal * (Number(settings.externalOnlyPercent || 70) / 100);
-          }
-
-          summary += `• ${service.count} × ${service.name}: $${lineTotal.toFixed(2)}\n`;
-        });
-      }
-    } else {
-      const selected = services.filter(service => service.count > 0);
-
-      if (!selected.length) {
-        summary += `• No items added yet\n`;
-      } else {
-        selected.forEach(service => {
-          const serviceMinutes = service.count * service.minutes;
-          summary += `• ${service.count} × ${service.name} @ ${service.minutes} min each = ${serviceMinutes} min\n`;
-        });
-      }
-
-      summary += `• Labour: ${data.estimatedHours.toFixed(2)} hrs @ $${Number(settings.hourlyRate || 0).toFixed(2)} = $${data.subtotal.toFixed(2)}\n`;
-    }
-
-    if (data.travelFee > 0) summary += `• Travel Fee: $${data.travelFee.toFixed(2)}\n`;
-    if (data.discount > 0) summary += `• Discount: -$${data.discount.toFixed(2)}\n`;
-
+    const selected = services.filter(s => s.count > 0);
+    if (!selected.length) summary += `• No items added yet\n`;
+    else selected.forEach(s => {
+      let line = s.count * s.rate;
+      if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) line *= (Number(settings.externalOnlyPercent) / 100);
+      summary += `• ${s.count} × ${s.name} = $${line.toFixed(2)}\n`;
+    });
+    summary += `\n*PRICING:*\nSubtotal: $${data.subtotal.toFixed(2)}\n`;
+    if (settings.travelFee > 0) summary += `Travel Fee: +$${Number(settings.travelFee).toFixed(2)}\n`;
+    if (settings.discount > 0) summary += `Discount: -$${Number(settings.discount).toFixed(2)}\n`;
     if (settings.gstEnabled) {
-      summary += `• Subtotal: $${data.baseTotal.toFixed(2)}\n`;
-      summary += `• GST (${settings.gstRate}%): $${data.gstAmount.toFixed(2)}\n`;
+      summary += `Base Total: $${data.baseTotal.toFixed(2)}\nGST (${settings.gstRate}%): +$${data.gstAmount.toFixed(2)}\n`;
     }
-
-    summary += `\n*TOTAL: $${data.total.toFixed(2)}*\n\n${settings.customMessage || 'Thank you for choosing us!'}`;
-
-    if (quotePreviewText) {
-      quotePreviewText.textContent = data.itemCount > 0 ? summary : 'Start adding windows...';
-    }
+    summary += `\n*TOTAL: $${data.total.toFixed(2)}*\n${settings.gstEnabled ? '(inc GST)' : '(ex GST)'}\n\n`;
+    summary += `Time Estimate: ${data.estimatedHours.toFixed(2)} hours\nItems: ${data.itemCount}\n\n`;
+    summary += `${settings.customMessage}\n\n`;
+    summary += `Please let us know if you'd like to proceed. Thank you!`;
+    document.getElementById('quote-preview-text').textContent = summary;
+    
+    const saveTeamBtn = document.getElementById('save-team-job-btn');
+    if (saveTeamBtn) saveTeamBtn.classList.toggle('hidden', !proState.teamId);
   }
 
-  function resetQuote() {
-    document.getElementById('q-name').value = '';
-    document.getElementById('q-phone').value = '';
-    document.getElementById('q-email').value = '';
-    document.getElementById('q-address').value = '';
-    document.getElementById('external-only-toggle').checked = false;
+  function exportQuotePDF() {
+    const data = getQuoteData();
+    const element = document.createElement('div');
+    element.innerHTML = `
+      <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
+        <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px;">
+          <h1 style="margin: 0; color: #2563eb; font-size: 32px;">${settings.businessName}</h1>
+          <p style="margin: 5px 0; color: #6b7280;">Professional Quote</p>
+        </div>
+        <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Customer</h3>
+            <p style="margin: 2px 0;"><strong>${document.getElementById('q-name').value || 'Customer'}</strong></p>
+            <p style="margin: 2px 0;">${document.getElementById('q-phone').value}</p>
+            <p style="margin: 2px 0;">${document.getElementById('q-email').value}</p>
+            <p style="margin: 2px 0;">${document.getElementById('q-address').value}</p>
+          </div>
+          <div style="text-align: right;">
+            <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Quote Details</h3>
+            <p style="margin: 2px 0;">Date: ${new Date().toLocaleDateString()}</p>
+            <p style="margin: 2px 0;">Valid for: 30 Days</p>
+          </div>
+        </div>
+        <div style="margin-bottom: 30px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Service</th>
+                <th style="padding: 12px; text-align: center; font-size: 12px; text-transform: uppercase;">Qty</th>
+                <th style="padding: 12px; text-align: right; font-size: 12px; text-transform: uppercase;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${services.filter(s => s.count > 0).map(s => {
+                let line = s.count * s.rate;
+                if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) line *= (Number(settings.externalOnlyPercent) / 100);
+                return `<tr style="border-bottom: 1px solid #f3f4f6;">
+                  <td style="padding: 12px; font-size: 14px;">${s.name} ${quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id) ? '(External Only)' : ''}</td>
+                  <td style="padding: 12px; text-align: center; font-size: 14px;">${s.count}</td>
+                  <td style="padding: 12px; text-align: right; font-size: 14px;">$${line.toFixed(2)}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-left: auto; width: 250px; background: #f9fafb; padding: 20px; border-radius: 12px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Subtotal:</span><span>$${data.subtotal.toFixed(2)}</span></div>
+          ${settings.travelFee > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Travel Fee:</span><span>+$${Number(settings.travelFee).toFixed(2)}</span></div>` : ''}
+          ${settings.discount > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Discount:</span><span>-$${Number(settings.discount).toFixed(2)}</span></div>` : ''}
+          ${settings.gstEnabled ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px;"><span>GST (${settings.gstRate}%):</span><span>+$${data.gstAmount.toFixed(2)}</span></div>` : ''}
+          <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px; color: #111827;"><span>TOTAL:</span><span>$${data.total.toFixed(2)}</span></div>
+        </div>
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; text-align: center;">
+          <p style="margin-bottom: 10px;">${settings.customMessage}</p>
+          <p>Contact: ${settings.contactName} • ${settings.businessPhone} • ${settings.businessEmail}</p>
+        </div>
+      </div>
+    `;
+    const opt = { margin: 0, filename: `quote-${document.getElementById('q-name').value || 'customer'}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' } };
+    html2pdf().set(opt).from(element).save();
+    closeShareModal();
+    showToast('PDF exported!', 'success');
+  }
 
-    quoteState.externalOnly = false;
+  function openShareModal() { document.getElementById('share-modal').classList.remove('hidden'); }
+  function closeShareModal() { document.getElementById('share-modal').classList.add('hidden'); }
+  function copyQuoteToClipboard() {
+    const t = document.getElementById('quote-preview-text').textContent;
+    navigator.clipboard.writeText(t).then(() => { showToast('Quote copied!'); closeShareModal(); });
+  }
+  function emailQuote() {
+    const t = document.getElementById('quote-preview-text').textContent;
+    const email = document.getElementById('q-email').value;
+    window.location.href = `mailto:${email}?subject=Quote from ${settings.businessName}&body=${encodeURIComponent(t)}`;
+    closeShareModal();
+  }
+  function smsQuote() {
+    const t = document.getElementById('quote-preview-text').textContent;
+    const phone = document.getElementById('q-phone').value;
+    window.location.href = `sms:${phone}?body=${encodeURIComponent(t)}`;
+    closeShareModal();
+  }
+  function whatsappQuote() {
+    const t = document.getElementById('quote-preview-text').textContent;
+    const phone = document.getElementById('q-phone').value.replace(/\D/g, '');
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(t)}`, '_blank');
+    closeShareModal();
+  }
 
-    services.forEach(service => {
-      service.count = 0;
-    });
-
-    renderSteppers();
+  function showOnboarding() { document.getElementById('onboarding-modal').classList.remove('hidden'); }
+  function skipOnboarding() { document.getElementById('onboarding-modal').classList.add('hidden'); localStorage.setItem('wqp-onboarding-done', 'true'); }
+  function setOnboardingGST(enabled) { settings.gstEnabled = enabled; }
+  function completeOnboarding() {
+    settings.businessName = document.getElementById('onboarding-business-name').value || settings.businessName;
+    settings.pricingMode = document.getElementById('onboarding-pricing-mode').value;
+    saveLocalSettings();
+    skipOnboarding();
     updateQuoteDisplay();
   }
 
-  function openQuoteEmail() {
-    const email = document.getElementById('q-email').value.trim();
-    if (!email) {
-      showToast('Enter a customer email first', 'error');
-      return;
-    }
-
-    const subject = `Window Cleaning Quote - ${document.getElementById('q-name').value.trim() || 'Customer'}`;
-    const body = document.getElementById('quote-preview-text').textContent;
-    const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
+  function switchTab(t) {
+    document.querySelectorAll('[id^="tab-"]').forEach(el => { if (el.id.startsWith('tab-') && !el.id.endsWith('-btn')) el.classList.add('hidden'); });
+    document.getElementById(`tab-${t}`).classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    const btn = document.getElementById(`tab-${t}-btn`); if (btn) btn.classList.add('active');
+    document.getElementById('quote-footer').classList.toggle('hidden', t !== 'quote');
   }
 
-  function switchTab(tab) {
-    if (tab === 'settings' && !canAccessSettings()) {
-      showToast('Only the team owner can access settings', 'error');
-      return;
-    }
-
-    const buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(button => button.classList.remove('active'));
-
-    if (tab === 'quote' && buttons[0]) buttons[0].classList.add('active');
-    if (tab === 'pro' && buttons[1]) buttons[1].classList.add('active');
-    if (tab === 'settings' && buttons[2]) buttons[2].classList.add('active');
-
-    ['quote', 'pro', 'settings'].forEach(name => {
-      const panel = document.getElementById('tab-' + name);
-      if (panel) panel.classList.add('hidden');
-    });
-
-    const activeTab = document.getElementById('tab-' + tab);
-    if (activeTab) activeTab.classList.remove('hidden');
-
-    const footer = document.getElementById('quote-footer');
-    if (footer) footer.style.display = tab === 'quote' ? 'block' : 'none';
-
-    renderSettingsAccess();
-    window.scrollTo(0, 0);
-  }
-
-  async function sbSignIn(email, password) {
-    const sb = await getSb();
-    if (!sb) throw new Error('Supabase unavailable');
-
-    const res = await sb.auth.signInWithPassword({ email, password });
-    if (res.error) throw res.error;
-
-    return res.data;
-  }
-
-  async function sbSignUp(email, password, name) {
-    const sb = await getSb();
-    if (!sb) throw new Error('Supabase unavailable');
-
-    const res = await sb.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: name || '' }
-      }
-    });
-
-    if (res.error) throw res.error;
-    return res.data;
-  }
-
-  async function sbSignOut() {
-    const sb = await getSb();
-    if (!sb) return;
-
-    await sb.auth.signOut();
-
-    if (realtimeChannel) {
-      try {
-        await sb.removeChannel(realtimeChannel);
-      } catch (_) {}
-      realtimeChannel = null;
-    }
-  }
-
-  async function getCurrentUser() {
-    const sb = await getSb();
-    if (!sb) return null;
-
-    const res = await sb.auth.getUser();
-    return res.error ? null : res.data.user;
-  }
-
-  async function fetchJobs(teamId) {
-    const sb = await getSb();
-    if (!sb || !teamId) return [];
-
-    const res = await sb
-      .from('jobs')
-      .select('*')
-      .eq('team_id', teamId)
-      .order('created_at', { ascending: false });
-
-    if (res.error) throw res.error;
-    return res.data || [];
-  }
-
-  async function createTeamAndMakeOwner(name) {
-    const sb = await getSb();
-    if (!sb) throw new Error('Supabase unavailable');
-
-    const res = await sb.rpc('create_team', {
-      p_business_name: name.trim()
-    });
-
-    if (res.error) throw res.error;
-    return res.data;
-  }
-
-  async function joinTeamWithInvite(code) {
-    const sb = await getSb();
-    if (!sb) throw new Error('Supabase unavailable');
-
-    const res = await sb.rpc('join_team_by_invite', {
-      p_invite_code: code.trim()
-    });
-
-    if (res.error) throw res.error;
-    return res.data;
-  }
-
-  async function bootPro() {
-    try {
-      const user = await getCurrentUser();
-
-      if (!user) {
-        proState = {
-          user: null,
-          teamId: null,
-          teamName: '',
-          teamRole: '',
-          inviteCode: '',
-          jobs: []
-        };
-
-        renderProPanel();
-        renderSettingsAccess();
-        updateQuoteDisplay();
-        return;
-      }
-
-      if (pendingInviteCode) {
-        try {
-          await joinTeamWithInvite(pendingInviteCode);
-          localStorage.removeItem('pending_invite');
-          pendingInviteCode = null;
-          showToast('Joined team successfully!', 'success');
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      const sb = await getSb();
-      if (!sb) throw new Error('Supabase unavailable');
-
-      const { data: teamData, error } = await sb.rpc('get_my_team');
-      if (error) throw error;
-
-      if (teamData && teamData.length > 0) {
-        const team = teamData[0];
-        const jobs = await fetchJobs(team.team_id);
-
-        const teamSettings = await fetchTeamSettings(team.team_id);
-        if (teamSettings) {
-          applyTeamSettingsRow(teamSettings);
-        }
-
-        proState = {
-          user,
-          teamId: team.team_id,
-          teamName: team.business_name || 'Your Team',
-          teamRole: team.role || 'staff',
-          inviteCode: team.invite_code || '',
-          jobs
-        };
-
-        if (realtimeChannel) {
-          try {
-            await sb.removeChannel(realtimeChannel);
-          } catch (_) {}
-          realtimeChannel = null;
-        }
-
-        realtimeChannel = sb
-          .channel('jobs-' + team.team_id)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'jobs',
-              filter: 'team_id=eq.' + team.team_id
-            },
-            async () => {
-              try {
-                proState.jobs = await fetchJobs(team.team_id);
-                renderJobsList();
-                updateKPIs();
-              } catch (error) {
-                console.error(error);
-              }
-            }
-          )
-          .subscribe();
-      } else {
-        proState = {
-          user: null,
-          teamId: null,
-          teamName: '',
-          teamRole: '',
-          inviteCode: '',
-          jobs: []
-        };
-      }
-
-      renderProPanel();
-      renderSettingsAccess();
-      updateQuoteDisplay();
-    } catch (error) {
-      console.error(error);
-      showToast(error.message || 'Failed to load Pro area', 'error');
-    }
-  }
-
-  function renderProPanel() {
-    const { user, teamId, teamName, teamRole } = proState;
-
-    document.getElementById('pro-auth-panel').classList.toggle('hidden', !!user);
-    document.getElementById('pro-team-setup').classList.toggle('hidden', !user || !!teamId);
-    document.getElementById('pro-dashboard').classList.toggle('hidden', !user || !teamId);
-
+  function renderProUI() {
+    const auth = document.getElementById('pro-auth-panel');
+    const setup = document.getElementById('pro-team-setup');
+    const dash = document.getElementById('pro-dashboard');
     const badge = document.getElementById('pro-badge');
-    badge.className = teamId ? 'badge-pro' : 'badge-free';
-    badge.textContent = teamId ? 'PRO' : 'FREE';
-
-    document.getElementById('header-sub').textContent = teamName || 'Fast quoting for window cleaners';
-
-    const roleBadge = document.getElementById('team-role-badge');
-    const settingsTabBtn = document.getElementById('settings-tab-btn');
-    const isOwner = String(teamRole || '').toLowerCase() === 'owner';
-
-    if (user && teamId) {
-      document.getElementById('team-name-display').textContent = teamName || 'My Business';
-      document.getElementById('team-email-display').textContent = user.email || '';
-
-      roleBadge.textContent = isOwner ? 'Owner' : 'Staff';
-      roleBadge.className = 'role-badge ' + (isOwner ? 'role-owner' : 'role-staff');
-
-      if (settingsTabBtn) {
-        settingsTabBtn.classList.toggle('hidden', !isOwner);
-      }
-
-      buildJobFilters();
-      updateKPIs();
-      renderJobsList();
-    } else {
-      roleBadge.textContent = '';
-      roleBadge.className = 'role-badge hidden';
-
-      if (settingsTabBtn) {
-        settingsTabBtn.classList.remove('hidden');
-      }
+    auth.classList.add('hidden'); setup.classList.add('hidden'); dash.classList.add('hidden');
+    badge.textContent = proState.teamId ? 'PRO' : 'FREE';
+    badge.className = proState.teamId ? 'badge-pro' : 'badge-free';
+    if (!proState.user) auth.classList.remove('hidden');
+    else if (!proState.teamId) setup.classList.remove('hidden');
+    else {
+      dash.classList.remove('hidden');
+      document.getElementById('team-name-display').textContent = proState.teamName;
+      document.getElementById('team-email-display').textContent = proState.user.email;
+      const role = document.getElementById('team-role-badge');
+      role.textContent = proState.teamRole === 'owner' ? 'Owner' : 'Staff';
+      role.className = `role-badge ${proState.teamRole === 'owner' ? 'role-owner' : 'role-staff'}`;
     }
-
-    renderSettingsAccess();
   }
 
   function updateKPIs() {
     const jobs = proState.jobs || [];
-    const active = jobs.filter(job => !['completed', 'cancelled'].includes(normalizeStatus(job.status))).length;
-    const completed = jobs.filter(job => normalizeStatus(job.status) === 'completed').length;
-    const paid = jobs
-      .filter(job => normalizeStatus(job.status) === 'completed')
-      .reduce((sum, job) => sum + (parseFloat(job.paid_amount) || parseFloat(job.quoted_price) || 0), 0);
-    const quoted = jobs.reduce((sum, job) => sum + (parseFloat(job.quoted_price) || 0), 0);
-
-    document.getElementById('kpi-active').textContent = String(active);
-    document.getElementById('kpi-weekly').textContent = String(completed);
-    document.getElementById('kpi-collected').textContent = `$${paid.toFixed(0)}`;
-    document.getElementById('kpi-pending').textContent = `$${quoted.toFixed(0)}`;
-  }
-
-  function setJobFilter(filter) {
-    jobFilter = filter;
-    buildJobFilters();
-    renderJobsList();
-  }
-
-  function buildJobFilters() {
-    const container = document.getElementById('job-filters');
-    if (!container) return;
-
-    const filters = [
-      { val: 'quoted', label: 'Quoted' },
-      { val: 'accepted', label: 'Accepted' },
-      { val: 'in_progress', label: 'Active' },
-      { val: 'completed', label: 'Done' }
-    ];
-
-    container.innerHTML = filters.map(filter => {
-      const style = jobFilter === filter.val
-        ? 'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;'
-        : '';
-
-      return `<button class="chip" type="button" style="${style}" onclick="setJobFilter('${filter.val}')">${filter.label}</button>`;
-    }).join('');
+    const active = jobs.filter(j => !['completed', 'cancelled'].includes(normalizeStatus(j.status))).length;
+    const weekly = jobs.filter(j => normalizeStatus(j.status) === 'completed').length;
+    const collected = jobs.filter(j => normalizeStatus(j.status) === 'completed').reduce((sum, j) => sum + (parseFloat(j.quoted_price) || 0), 0);
+    const pending = jobs.filter(j => normalizeStatus(j.status) !== 'completed').reduce((sum, j) => sum + (parseFloat(j.quoted_price) || 0), 0);
+    document.getElementById('kpi-active').textContent = active;
+    document.getElementById('kpi-weekly').textContent = weekly;
+    document.getElementById('kpi-collected').textContent = `$${collected.toFixed(0)}`;
+    document.getElementById('kpi-pending').textContent = `$${pending.toFixed(0)}`;
   }
 
   function renderJobsList() {
     const container = document.getElementById('jobs-list-container');
-    if (!container) return;
-
-    const role = String(proState.teamRole || '').toLowerCase();
-    const canManageJobs = role === 'owner' || role === 'staff';
-
-    let jobs = [...(proState.jobs || [])];
-
-    if (jobFilter) {
-      jobs = jobs.filter(job => normalizeStatus(job.status) === jobFilter);
-    }
-
-    if (!jobs.length) {
-      container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
-      return;
-    }
-
-    container.innerHTML = jobs.map(job => `
+    let jobs = proState.jobs.filter(j => normalizeStatus(j.status) === jobFilter);
+    const filters = [{v:'quoted',l:'Quoted'},{v:'accepted',l:'Accepted'},{v:'in_progress',l:'Active'},{v:'completed',l:'Done'}];
+    document.getElementById('job-filters').innerHTML = filters.map(f => `<div class="chip" style="${jobFilter===f.v?'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;':''}" onclick="jobFilter='${f.v}';renderJobsList();">${f.l}</div>`).join('');
+    if (!jobs.length) { container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>'; return; }
+    container.innerHTML = jobs.map(j => `
       <div class="job-card">
-        <div class="job-card-header" ${canManageJobs ? `onclick="toggleJobCard('${job.id}')"` : ''} style="${canManageJobs ? 'cursor:pointer;' : 'cursor:default;'}">
+        <div class="job-card-header" onclick="document.getElementById('job-body-${j.id}').classList.toggle('hidden')">
           <div>
-            <div class="job-card-name">${escapeHtml(job.customer_name || 'Customer')}</div>
-            <div class="job-card-meta">
-              <span>$${(parseFloat(job.quoted_price) || 0).toFixed(2)}</span>
-              <span>•</span>
-              <span style="text-transform:capitalize;">${escapeHtml(displayStatus(job.status))}</span>
-            </div>
+            <div class="job-card-name">${escapeHtml(j.customer_name)}</div>
+            <div class="job-card-meta"><span>$${(parseFloat(j.quoted_price)||0).toFixed(2)}</span><span>•</span><span>${displayStatus(j.status)}</span></div>
           </div>
-          ${canManageJobs ? `
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="m6 9 6 6 6-6"></path>
-            </svg>
-          ` : ''}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"></path></svg>
         </div>
-
-        <div class="job-card-body ${canManageJobs ? 'hidden' : ''}" id="job-body-${job.id}">
+        <div class="job-card-body hidden" id="job-body-${j.id}">
           <div class="job-detail-grid">
-            <div>
-              <div class="job-detail-label">Address</div>
-              <div class="job-detail-val">${escapeHtml(job.service_address || 'N/A')}</div>
-            </div>
-            <div>
-              <div class="job-detail-label">Phone</div>
-              <div class="job-detail-val">${escapeHtml(job.customer_phone || 'N/A')}</div>
-            </div>
-            <div>
-              <div class="job-detail-label">Items</div>
-              <div class="job-detail-val">${escapeHtml(job.items_summary || 'N/A')}</div>
-            </div>
-            <div>
-              <div class="job-detail-label">Status</div>
-              <div class="job-detail-val" style="text-transform:capitalize;">${escapeHtml(displayStatus(job.status))}</div>
-            </div>
-            <div>
-              <div class="job-detail-label">Accepted</div>
-              <div class="job-detail-val">${job.accepted_at ? new Date(job.accepted_at).toLocaleString() : '—'}</div>
-            </div>
-            <div>
-              <div class="job-detail-label">Started</div>
-              <div class="job-detail-val">${job.started_at ? new Date(job.started_at).toLocaleString() : '—'}</div>
-            </div>
-            <div>
-              <div class="job-detail-label">Completed</div>
-              <div class="job-detail-val">${job.completed_at ? new Date(job.completed_at).toLocaleString() : '—'}</div>
-            </div>
+            <div><div class="job-detail-label">Address</div><div class="job-detail-val">${escapeHtml(j.service_address||'N/A')}</div></div>
+            <div><div class="job-detail-label">Phone</div><div class="job-detail-val">${escapeHtml(j.customer_phone||'N/A')}</div></div>
+            <div><div class="job-detail-label">Items</div><div class="job-detail-val">${escapeHtml(j.items_summary||'N/A')}</div></div>
+            <div><div class="job-detail-label">Status</div><div class="job-detail-val">${displayStatus(j.status)}</div></div>
           </div>
-
-          ${canManageJobs ? `
-            <div class="job-actions">
-              <button class="btn btn-secondary btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'accepted')">Accept</button>
-              <button class="btn btn-primary btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'in_progress')">Start</button>
-              <button class="btn btn-success btn-sm" type="button" onclick="event.stopPropagation(); updateJobStatus('${job.id}', 'completed')">Complete</button>
-            </div>
-          ` : ''}
+          <div class="job-actions">
+            <button class="btn btn-secondary btn-sm" onclick="updateJobStatus('${j.id}', 'accepted')">Accept</button>
+            <button class="btn btn-primary btn-sm" onclick="updateJobStatus('${j.id}', 'in_progress')">Start</button>
+            <button class="btn btn-success btn-sm" onclick="updateJobStatus('${j.id}', 'completed')">Complete</button>
+          </div>
         </div>
       </div>
     `).join('');
   }
 
-  function toggleJobCard(id) {
-    const body = document.getElementById('job-body-' + id);
-    if (body) body.classList.toggle('hidden');
+  function syncSettingsForm() {
+    const isOwner = canAccessSettings();
+    document.getElementById('settings-owner-view').classList.toggle('hidden', !isOwner);
+    document.getElementById('settings-staff-lock').classList.toggle('hidden', isOwner);
+    if (!isOwner) return;
+    document.getElementById('s-bizname').value = settings.businessName;
+    document.getElementById('s-contact').value = settings.contactName;
+    document.getElementById('s-phone').value = settings.businessPhone;
+    document.getElementById('s-email').value = settings.businessEmail;
+    document.getElementById('s-message').value = settings.customMessage;
+    document.getElementById('settings-pricing-mode').value = settings.pricingMode;
+    document.getElementById('settings-hourly-rate').value = settings.hourlyRate;
+    document.getElementById('settings-external-percent').value = settings.externalOnlyPercent;
+    document.getElementById('settings-travel-fee').value = settings.travelFee;
+    document.getElementById('settings-discount').value = settings.discount;
+    document.getElementById('settings-gst-enabled').checked = settings.gstEnabled;
+    document.getElementById('settings-gst-rate').value = settings.gstRate;
+    document.getElementById('team-invite-code').value = proState.inviteCode || '';
   }
 
-  async function updateJobStatus(id, status) {
-    try {
-      const sb = await getSb();
-      if (!sb) throw new Error('Supabase unavailable');
-
-      const patch = { status };
-
-      if (status === 'accepted') {
-        patch.accepted_at = new Date().toISOString();
-      }
-
-      if (status === 'in_progress') {
-        patch.started_at = new Date().toISOString();
-      }
-
-      if (status === 'completed') {
-        patch.completed_at = new Date().toISOString();
-      }
-
-      const res = await sb.from('jobs').update(patch).eq('id', id);
-      if (res.error) throw res.error;
-
-      const job = proState.jobs.find(j => j.id === id);
-      if (job) {
-        Object.assign(job, patch);
-      }
-
-      renderJobsList();
-      updateKPIs();
-      showToast('Updated!', 'success');
-    } catch (error) {
-      console.error(error);
-      showToast(error.message || 'Could not update job', 'error');
-    }
+  function renderSettingsGrids() {
+    if (!canAccessSettings()) return;
+    document.getElementById('settings-rates-grid').innerHTML = services.map(s => `
+      <div class="rate-card">
+        <div class="rate-card-label">${s.name} ($)</div>
+        <input type="number" class="rate-card-input" value="${s.rate}" onchange="updateServiceRate('${s.id}', this.value)" />
+      </div>
+    `).join('');
+    document.getElementById('settings-minutes-grid').innerHTML = services.map(s => `
+      <div class="rate-card">
+        <div class="rate-card-label">${s.name} (min)</div>
+        <input type="number" class="rate-card-input" value="${s.minutes}" onchange="updateServiceMinutes('${s.id}', this.value)" />
+      </div>
+    `).join('');
   }
 
-  async function saveCurrentQuoteToTeam() {
-    if (!proState.teamId) {
-      showToast('Join or create a team first', 'error');
-      return;
-    }
-
-    try {
-      const sb = await getSb();
-      if (!sb) throw new Error('Supabase unavailable');
-
-      const data = getQuoteData();
-
-      const payload = {
-        team_id: proState.teamId,
-        customer_name: document.getElementById('q-name').value.trim() || 'Customer',
-        customer_phone: document.getElementById('q-phone').value.trim(),
-        customer_email: document.getElementById('q-email').value.trim(),
-        service_address: document.getElementById('q-address').value.trim(),
-        quoted_price: data.total,
-        items_summary: services
-          .filter(service => service.count > 0)
-          .map(service => `${service.count} ${service.name}`)
-          .join(', '),
-        status: 'quoted',
-        created_by: proState.user?.id || null
-      };
-
-      const res = await sb.from('jobs').insert(payload);
-      if (res.error) throw res.error;
-
-      showToast('Job added!', 'success');
-      await bootPro();
-    } catch (error) {
-      console.error(error);
-      showToast(error.message || 'Could not add job', 'error');
-    }
-  }
+  function updateServiceRate(id, val) { const s = services.find(x => x.id === id); if (s) s.rate = Number(val); updateQuoteDisplay(); }
+  function updateServiceMinutes(id, val) { const s = services.find(x => x.id === id); if (s) s.minutes = Number(val); updateQuoteDisplay(); }
 
   document.addEventListener('DOMContentLoaded', async () => {
     loadLocalSettings();
     renderSteppers();
-    renderSettingsAccess();
+    syncSettingsForm();
+    renderSettingsGrids();
     updateQuoteDisplay();
-
-    const inviteInput = document.getElementById('invite-code-input');
-    if (inviteInput && pendingInviteCode) {
-      inviteInput.value = pendingInviteCode;
-    }
-
-    const externalOnlyToggle = document.getElementById('external-only-toggle');
-    externalOnlyToggle.checked = !!quoteState.externalOnly;
-
-    externalOnlyToggle.addEventListener('change', e => {
-      quoteState.externalOnly = e.target.checked;
-      saveLocalSettings();
-      updateQuoteDisplay();
-    });
-
-    document.getElementById('copy-invite-btn').onclick = async () => {
-      try {
-        if (!proState.inviteCode) throw new Error('No invite code available');
-        await navigator.clipboard.writeText(proState.inviteCode);
-        showToast('Invite code copied!', 'success');
-      } catch (error) {
-        showToast(error.message || 'Could not copy invite code', 'error');
-      }
-    };
-
-    document.getElementById('share-invite-btn').onclick = async () => {
-      try {
-        if (!proState.inviteCode) {
-          throw new Error('No invite code available');
-        }
-
-        const APP_URL = 'https://windowquotepro.netlify.app';
-        const link = `${APP_URL}?invite=${proState.inviteCode}`;
-
-        const shareText =
-`Join my Window Quote Pro team:
-
-${link}
-
-1. Open the link
-2. Sign in or create account
-3. You will be automatically added to the team`;
-
-        if (navigator.share) {
-          await navigator.share({
-            title: 'Join my Window Quote Pro team',
-            text: shareText,
-            url: link
-          });
-        } else {
-          await navigator.clipboard.writeText(shareText);
-          showToast('Invite link copied!', 'success');
-        }
-      } catch (error) {
-        if (error?.name !== 'AbortError') {
-          console.error(error);
-          showToast(error.message || 'Could not share invite', 'error');
-        }
-      }
-    };
-
-    document.getElementById('auth-signin-tab').onclick = () => {
-      authMode = 'signin';
-      document.getElementById('auth-signin-tab').classList.add('active');
-      document.getElementById('auth-signup-tab').classList.remove('active');
-      document.getElementById('auth-name-field').classList.add('hidden');
-      document.getElementById('auth-submit-btn').textContent = 'Sign In';
-    };
-
-    document.getElementById('auth-signup-tab').onclick = () => {
-      authMode = 'signup';
-      document.getElementById('auth-signup-tab').classList.add('active');
-      document.getElementById('auth-signin-tab').classList.remove('active');
-      document.getElementById('auth-name-field').classList.remove('hidden');
-      document.getElementById('auth-submit-btn').textContent = 'Create Account';
-    };
-
-    document.getElementById('auth-submit-btn').onclick = async () => {
-      try {
-        const email = document.getElementById('auth-email').value.trim();
-        const password = document.getElementById('auth-password').value;
-        const name = document.getElementById('auth-name').value.trim();
-
-        if (!email || !password) {
-          throw new Error('Please enter email and password');
-        }
-
-        if (authMode === 'signin') {
-          await sbSignIn(email, password);
-          showToast('Signed in!', 'success');
-        } else {
-          await sbSignUp(email, password, name);
-          showToast('Account created. Check your email if confirmation is required.', 'success');
-        }
-
-        await bootPro();
-        switchTab('pro');
-      } catch (error) {
-        console.error(error);
-        showToast(error.message || 'Authentication failed', 'error');
-      }
-    };
-
-    document.getElementById('create-team-btn').onclick = async () => {
-      try {
-        const bizName = document.getElementById('team-name-input').value.trim();
-        if (!bizName) throw new Error('Please enter a business name');
-
-        await createTeamAndMakeOwner(bizName);
-        showToast('Team created!', 'success');
-        setTimeout(() => location.reload(), 500);
-      } catch (error) {
-        console.error(error);
-        showToast(error.message || 'Failed to create team', 'error');
-      }
-    };
-
-    document.getElementById('join-team-btn').onclick = async () => {
-      try {
-        const code = document.getElementById('invite-code-input').value.trim();
-        if (!code) throw new Error('Please enter an invite code');
-
-        await joinTeamWithInvite(code);
-showToast('Joined!', 'success');
-setTimeout(() => location.reload(), 500);
-} catch (error) {
-  console.error(error);
-  showToast(error.message || 'Failed to join team', 'error');
-}
-};
-
-document.getElementById('setup-signout-btn').onclick = async () => {
-  await sbSignOut();
-  showToast('Signed out');
-  await bootPro();
-};
-
-const resetAllBtn = document.getElementById('reset-all-btn');
-if (resetAllBtn) {
-  resetAllBtn.onclick = resetAllData;
-}
-
-document.getElementById('pro-signout-btn').onclick = async () => {
-  await sbSignOut();
-  showToast('Signed out');
-  await bootPro();
-  switchTab('pro');
-};
-    document.getElementById('save-job-btn').onclick = () => openQuoteEmail();
-    document.getElementById('save-team-job-btn').onclick = async () => await saveCurrentQuoteToTeam();
-
-    document.getElementById('copy-quote-btn').onclick = async () => {
-      try {
-        await navigator.clipboard.writeText(document.getElementById('quote-preview-text').textContent);
-        showToast('Copied!', 'success');
-      } catch (_) {
-        showToast('Could not copy text', 'error');
-      }
-    };
-
-    document.getElementById('global-reset-btn').onclick = () => {
-      if (confirm('Reset current quote?')) resetQuote();
-    };
-
-    document.getElementById('clear-counts-btn').onclick = () => {
-      services.forEach(service => {
-        service.count = 0;
-      });
-      renderSteppers();
-      updateQuoteDisplay();
-    };
-
-    ['q-name', 'q-phone', 'q-email', 'q-address'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', updateQuoteDisplay);
-    });
-
-    [
-      's-bizname',
-      's-contact',
-      's-phone',
-      's-email',
-      's-message',
-      'settings-pricing-mode',
-      'settings-hourly-rate',
-      'settings-travel-fee',
-      'settings-discount',
-      'settings-external-percent',
-      'settings-gst-rate'
-    ].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-
-      const syncPreview = () => {
-        settings.businessName = document.getElementById('s-bizname').value.trim() || 'SP Window Cleaning Pty Ltd';
-        settings.contactName = document.getElementById('s-contact').value.trim();
-        settings.businessPhone = document.getElementById('s-phone').value.trim();
-        settings.businessEmail = document.getElementById('s-email').value.trim();
-        settings.customMessage = document.getElementById('s-message').value.trim() || 'Thank you for choosing us!';
-        settings.pricingMode = document.getElementById('settings-pricing-mode').value;
-        settings.hourlyRate = Math.max(0, Number(document.getElementById('settings-hourly-rate').value) || 0);
-        settings.travelFee = Math.max(0, Number(document.getElementById('settings-travel-fee').value) || 0);
-        settings.discount = Math.max(0, Number(document.getElementById('settings-discount').value) || 0);
-        settings.externalOnlyPercent = Math.max(1, Math.min(100, Number(document.getElementById('settings-external-percent').value) || 70));
-        settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
-        settings.gstRate = Math.max(0, Math.min(100, Number(document.getElementById('settings-gst-rate').value) || 10));
-        updateQuoteDisplay();
-      };
-
-      el.addEventListener('input', syncPreview);
-      el.addEventListener('change', syncPreview);
-    });
-
-    document.getElementById('settings-gst-enabled').addEventListener('change', () => {
-      settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
-      updateQuoteDisplay();
-    });
-
-    document.getElementById('save-settings-btn').onclick = async () => {
-      await applySettingsFromForm();
-      showToast('Settings saved!', 'success');
-    };
-
     await bootPro();
-  });
+    if (!localStorage.getItem('wqp-onboarding-done')) showOnboarding();
 
-  window.switchTab = switchTab;
-  window.updateCount = updateCount;
-  window.updateServiceRate = updateServiceRate;
-  window.updateServiceMinutes = updateServiceMinutes;
-  window.toggleJobCard = toggleJobCard;
-  window.updateJobStatus = updateJobStatus;
-  window.setJobFilter = setJobFilter;
-
-  window.addEventListener('error', event => {
-    console.error('Global error:', event.error || event.message);
-  });
-
-  window.addEventListener('unhandledrejection', event => {
-    console.error('Unhandled promise rejection:', event.reason);
+    document.getElementById('auth-signin-tab').onclick = () => { authMode = 'signin'; document.getElementById('auth-signin-tab').classList.add('active'); document.getElementById('auth-signup-tab').classList.remove('active'); document.getElementById('auth-name-field').classList.add('hidden'); document.getElementById('auth-submit-btn').textContent = 'Sign In'; };
+    document.getElementById('auth-signup-tab').onclick = () => { authMode = 'signup'; document.getElementById('auth-signup-tab').classList.add('active'); document.getElementById('auth-signin-tab').classList.remove('active'); document.getElementById('auth-name-field').classList.remove('hidden'); document.getElementById('auth-submit-btn').textContent = 'Create Account'; };
+    document.getElementById('auth-submit-btn').onclick = handleAuth;
+    document.getElementById('pro-signout-btn').onclick = async () => { const sb = await getSb(); if (sb) await sb.auth.signOut(); location.reload(); };
+    document.getElementById('setup-signout-btn').onclick = async () => { const sb = await getSb(); if (sb) await sb.auth.signOut(); location.reload(); };
+    document.getElementById('create-team-btn').onclick = createTeam;
+    document.getElementById('join-team-btn').onclick = joinTeam;
+    document.getElementById('save-team-job-btn').onclick = saveTeamJob;
+    document.getElementById('share-quote-btn').onclick = openShareModal;
+    document.getElementById('clear-counts-btn').onclick = () => { services.forEach(s => s.count = 0); renderSteppers(); updateQuoteDisplay(); };
+    document.getElementById('global-reset-btn').onclick = () => { if (confirm('Reset this quote?')) { services.forEach(s => s.count = 0); renderSteppers(); updateQuoteDisplay(); } };
+    document.getElementById('external-only-toggle').onchange = (e) => { quoteState.externalOnly = e.target.checked; updateQuoteDisplay(); };
+    document.getElementById('save-settings-btn').onclick = async () => {
+      settings.businessName = document.getElementById('s-bizname').value;
+      settings.contactName = document.getElementById('s-contact').value;
+      settings.businessPhone = document.getElementById('s-phone').value;
+      settings.businessEmail = document.getElementById('s-email').value;
+      settings.customMessage = document.getElementById('s-message').value;
+      settings.pricingMode = document.getElementById('settings-pricing-mode').value;
+      settings.hourlyRate = Number(document.getElementById('settings-hourly-rate').value);
+      settings.externalOnlyPercent = Number(document.getElementById('settings-external-percent').value);
+      settings.travelFee = Number(document.getElementById('settings-travel-fee').value);
+      settings.discount = Number(document.getElementById('settings-discount').value);
+      settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
+      settings.gstRate = Number(document.getElementById('settings-gst-rate').value);
+      saveLocalSettings();
+      await saveSettingsToServer();
+      updateQuoteDisplay();
+    };
+    document.getElementById('reset-all-btn').onclick = resetAllData;
+    document.getElementById('copy-invite-btn').onclick = () => { navigator.clipboard.writeText(proState.inviteCode); showToast('Copied!'); };
+    document.getElementById('share-invite-btn').onclick = () => {
+      const msg = `Join my Window Quote Pro team with code: ${proState.inviteCode}`;
+      if (navigator.share) navigator.share({ title: 'Join Team', text: msg });
+      else { navigator.clipboard.writeText(msg); showToast('Join message copied!'); }
+    };
   });
   </script>
 </body>
 </html>
-    
