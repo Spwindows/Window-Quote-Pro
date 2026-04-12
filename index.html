@@ -1634,6 +1634,21 @@ function exportQuotePDF() {
   }
 
   const data = getQuoteData();
+
+  const customerName = escapeHtml(document.getElementById('q-name').value || 'Customer');
+  const customerPhone = escapeHtml(document.getElementById('q-phone').value);
+  const customerEmail = escapeHtml(document.getElementById('q-email').value);
+  const customerAddress = escapeHtml(document.getElementById('q-address').value);
+
+  const businessName = escapeHtml(settings.businessName);
+  const customMessage = escapeHtml(settings.customMessage);
+  const contactName = escapeHtml(settings.contactName);
+  const businessPhone = escapeHtml(settings.businessPhone);
+  const businessEmail = escapeHtml(settings.businessEmail);
+
+  const element = document.createElement('div');
+
+  const data = getQuoteData();
   function exportQuotePDF() {
     const data = getQuoteData();
     const element = document.createElement('div');
@@ -1700,10 +1715,16 @@ function exportQuotePDF() {
 
   function openShareModal() { document.getElementById('share-modal').classList.remove('hidden'); }
   function closeShareModal() { document.getElementById('share-modal').classList.add('hidden'); }
-  function copyQuoteToClipboard() {
+  async function copyQuoteToClipboard() {
+  try {
     const t = document.getElementById('quote-preview-text').textContent;
-    navigator.clipboard.writeText(t).then(() => { showToast('Quote copied!'); closeShareModal(); });
+    await navigator.clipboard.writeText(t);
+    showToast('Quote copied!', 'success');
+    closeShareModal();
+  } catch (e) {
+    showToast('Copy failed', 'error');
   }
+}
   function emailQuote() {
     const t = document.getElementById('quote-preview-text').textContent;
     const email = document.getElementById('q-email').value;
