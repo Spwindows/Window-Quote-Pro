@@ -760,6 +760,105 @@
     .share-option-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
     .share-option-label { font-size: 0.75rem; font-weight: 800; color: #6b7280; }
 
+    /* SETTINGS LOCK */
+    .settings-lock {
+      padding: 1.5rem;
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: #f9fafb;
+      border-radius: 0.75rem;
+      border: 1px dashed #d1d5db;
+    }
+
+    /* SUBSCRIPTION STATUS */
+    .sub-status-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #fff 100%);
+      border: 1px solid #dbeafe;
+      border-radius: 1rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .sub-status-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .sub-plan-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.3rem 0.7rem;
+      border-radius: 9999px;
+      line-height: 1;
+    }
+
+    .sub-plan-trial {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .sub-plan-active {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+    }
+
+    .sub-plan-free {
+      background: #f3f4f6;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+    }
+
+    .sub-plan-expired {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .sub-status-detail {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+    }
+
+    .sub-warning {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #dc2626;
+      margin-bottom: 0.75rem;
+    }
+
+    .sub-trial-bar {
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+
+    .sub-trial-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #1d4ed8);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .sub-trial-bar-fill.low {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+
+    .sub-trial-bar-fill.critical {
+      background: linear-gradient(90deg, #dc2626, #b91c1c);
+    }
+
     /* ONBOARDING */
     .onboarding-step { margin-bottom: 1.5rem; }
     .onboarding-step-number {
@@ -776,6 +875,7 @@
       margin-bottom: 0.5rem;
     }
     .onboarding-step-title { font-weight: 800; font-size: 0.95rem; color: #111827; margin-bottom: 0.5rem; }
+    .onboarding-step .btn.gst-active { background: #2563eb; color: #fff; border-color: #2563eb; }
 
     @media (max-width: 520px) {
       .field-grid-2, .summary-stats, .kpi-grid, .revenue-grid, .job-detail-grid, .rate-grid {
@@ -821,8 +921,8 @@
         <div class="onboarding-step-number">3</div>
         <div class="onboarding-step-title">Enable GST?</div>
         <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-          <button class="btn btn-secondary" onclick="setOnboardingGST(true)" style="flex: 1;">Yes (10%)</button>
-          <button class="btn btn-secondary" onclick="setOnboardingGST(false)" style="flex: 1;">No</button>
+          <button class="btn btn-secondary" id="gst-yes-btn" onclick="setOnboardingGST(true)" style="flex: 1;">Yes (10%)</button>
+          <button class="btn btn-secondary" id="gst-no-btn" onclick="setOnboardingGST(false)" style="flex: 1;">No</button>
         </div>
       </div>
       <button class="btn btn-primary btn-full" onclick="completeOnboarding()" type="button">Get Started</button>
@@ -942,8 +1042,9 @@
         </div>
       </div>
 
-      <!-- PRO TAB (AUTH, TEAM, DASHBOARD) -->
+      <!-- PRO TAB (AUTH, ACCOUNT, BILLING, TEAM) -->
       <div id="tab-pro" class="hidden">
+        <!-- STATE 1: Not signed in -->
         <div id="pro-auth-panel">
           <div class="card">
             <div class="card-title">Access Pro Features</div>
@@ -968,58 +1069,67 @@
             </div>
           </div>
         </div>
-        <div id="pro-team-setup" class="hidden">
-          <div class="card">
-            <div class="card-title">Join or Create Team</div>
-            <div class="field-stack">
-              <div>
-                <label class="field-label">Business Name</label>
-                <input type="text" class="field-input" id="team-name-input" placeholder="My Cleaning Biz" />
-              </div>
-              <button class="btn btn-primary btn-full" id="create-team-btn" type="button">Create Team</button>
-              <div style="text-align:center;font-size:0.76rem;color:#9ca3af;margin:0.4rem 0;">OR</div>
-              <div>
-                <label class="field-label">Invite Code</label>
-                <input type="text" class="field-input" id="invite-code-input" placeholder="ABCD-1234" />
-              </div>
-              <button class="btn btn-secondary btn-full" id="join-team-btn" type="button">Join with Code</button>
-              <button class="btn btn-danger-soft btn-full btn-sm" id="setup-signout-btn" type="button" style="margin-top:1rem;">Sign Out</button>
-            </div>
-          </div>
-        </div>
+        <!-- STATE 2: Signed in - dashboard shell (always visible when signed in) -->
         <div id="pro-dashboard" class="hidden">
-          <div class="card">
+          <!-- Section A: Account -->
+          <div class="card" id="pro-account-card">
             <div class="team-header">
               <div>
-                <div class="team-name" id="team-name-display">My Business</div>
+                <div class="team-name" id="team-name-display">My Account</div>
                 <div class="team-meta" id="team-email-display">user@example.com</div>
               </div>
               <span class="role-badge role-owner" id="team-role-badge">Owner</span>
             </div>
-            <div class="kpi-grid">
-              <div class="kpi-card">
-                <div class="kpi-label">Active Jobs</div>
-                <div class="kpi-val" id="kpi-active">0</div>
-              </div>
-              <div class="kpi-card">
-                <div class="kpi-label">Weekly Completion</div>
-                <div class="kpi-val" id="kpi-weekly">0</div>
-              </div>
-            </div>
-            <div class="revenue-grid">
-              <div class="revenue-card">
-                <div class="revenue-label">Paid Total</div>
-                <div class="revenue-val" id="kpi-collected">$0</div>
-              </div>
-              <div class="revenue-card">
-                <div class="revenue-label">Quoted Total</div>
-                <div class="revenue-val revenue-pending" id="kpi-pending">$0</div>
-              </div>
-            </div>
             <button class="btn btn-danger-soft btn-full btn-sm" id="pro-signout-btn" type="button">Sign Out</button>
           </div>
-          <div class="chip-strip" id="job-filters" style="margin-bottom:1rem;"></div>
-          <div id="jobs-list-container"></div>
+          <!-- Section B: Subscription / Billing (always visible when signed in) -->
+          <div id="subscription-status-container"></div>
+          <!-- Section C: Team Setup (only when no team) -->
+          <div id="pro-team-setup" class="hidden">
+            <div class="card">
+              <div class="card-title">Join or Create Team</div>
+              <div class="field-stack">
+                <div>
+                  <label class="field-label">Business Name</label>
+                  <input type="text" class="field-input" id="team-name-input" placeholder="My Cleaning Biz" />
+                </div>
+                <button class="btn btn-primary btn-full" id="create-team-btn" type="button">Create Team</button>
+                <div style="text-align:center;font-size:0.76rem;color:#9ca3af;margin:0.4rem 0;">OR</div>
+                <div>
+                  <label class="field-label">Invite Code</label>
+                  <input type="text" class="field-input" id="invite-code-input" placeholder="ABCD-1234" />
+                </div>
+                <button class="btn btn-secondary btn-full" id="join-team-btn" type="button">Join with Code</button>
+              </div>
+            </div>
+          </div>
+          <!-- Section D: Team Dashboard (only when team exists) -->
+          <div id="pro-team-dashboard" class="hidden">
+            <div class="card">
+              <div class="kpi-grid">
+                <div class="kpi-card">
+                  <div class="kpi-label">Active Jobs</div>
+                  <div class="kpi-val" id="kpi-active">0</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-label">Weekly Completion</div>
+                  <div class="kpi-val" id="kpi-weekly">0</div>
+                </div>
+              </div>
+              <div class="revenue-grid">
+                <div class="revenue-card">
+                  <div class="revenue-label">Paid Total</div>
+                  <div class="revenue-val" id="kpi-collected">$0</div>
+                </div>
+                <div class="revenue-card">
+                  <div class="revenue-label">Quoted Total</div>
+                  <div class="revenue-val revenue-pending" id="kpi-pending">$0</div>
+                </div>
+              </div>
+            </div>
+            <div class="chip-strip" id="job-filters" style="margin-bottom:1rem;"></div>
+            <div id="jobs-list-container"></div>
+          </div>
         </div>
       </div>
 
@@ -1207,7 +1317,7 @@
     hourlyRate: 0,
     travelFee: 0,
     discount: 0,
-    externalOnlyPercent: 0,
+    externalOnlyPercent: 60,
     gstEnabled: true,
     gstRate: 10
   };
@@ -1232,21 +1342,36 @@
     teamName: '',
     teamRole: '',
     inviteCode: '',
-    jobs: []
+    jobs: [],
+    // Subscription / entitlement state
+    subscription: null,   // { plan, status, trial_ends_at, current_period_end }
+    entitlementSource: null  // 'personal' or 'team' - where the effective entitlement came from
   };
 
   function showToast(message, type = '') {
-    const container = document.getElementById('toast-container');
+    const container = el('toast-container');
     if (!container) return;
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.textContent = String(message || '');
-    container.appendChild(el);
-    setTimeout(() => { if (el.parentNode) el.remove(); }, 3000);
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast ${type}`;
+    toastEl.textContent = String(message || '');
+    container.appendChild(toastEl);
+    setTimeout(() => { if (toastEl.parentNode) toastEl.remove(); }, 3000);
   }
 
   function escapeHtml(value) {
     return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+  }
+
+  /** Null-safe getElementById. Returns element or null without throwing. */
+  function el(id) {
+    return document.getElementById(id) || null;
+  }
+
+  /** Safe numeric parser. Returns Number(val) if defined and finite, else fallback. */
+  function safeNum(val, fallback) {
+    if (val === undefined || val === null || val === '') return fallback;
+    const n = Number(val);
+    return Number.isFinite(n) ? n : fallback;
   }
 
   function normalizeStatus(status) {
@@ -1266,6 +1391,220 @@
     return String(proState.teamRole || '').toLowerCase() === 'owner';
   }
 
+  // ============================================================
+  // SUBSCRIPTION / ENTITLEMENT MODULE
+  // ============================================================
+
+  /**
+   * Compute the effective entitlement status from proState.subscription.
+   * Returns one of: 'free', 'trial', 'active', 'past_due', 'cancelled', 'expired'.
+   */
+  function getEntitlementStatus() {
+    const sub = proState.subscription;
+    if (!sub) return 'free';
+
+    const status = String(sub.status || '').toLowerCase();
+    const plan = String(sub.plan || '').toLowerCase();
+
+    // Active paid subscription
+    if (status === 'active' && plan === 'pro') return 'active';
+
+    // Trial: check if still within trial window
+    if (status === 'trialing' || plan === 'trial') {
+      // FIX: No trial_ends_at date means the trial hasn't been properly initialized or has expired.
+      // Do not allow infinite access.
+      if (!sub.trial_ends_at) return 'expired';
+      if (new Date(sub.trial_ends_at) > new Date()) return 'trial';
+      return 'expired'; // trial has ended
+    }
+
+    // Past due (payment failed but grace period)
+    if (status === 'past_due') return 'past_due';
+
+    // Cancelled
+    if (status === 'cancelled' || status === 'canceled') return 'cancelled';
+
+    // Expired
+    if (status === 'expired') return 'expired';
+
+    return 'free';
+  }
+
+  /**
+   * Returns true if the user has Pro-level access.
+   * Pro access = active subscription OR active trial.
+   */
+  function hasProAccess() {
+    const s = getEntitlementStatus();
+    return s === 'active' || s === 'trial';
+  }
+
+  /**
+   * Get the number of trial days remaining, or null if not on trial.
+   */
+  function getTrialDaysRemaining() {
+    const sub = proState.subscription;
+    if (!sub || !sub.trial_ends_at) return null;
+    const status = getEntitlementStatus();
+    if (status !== 'trial') return null;
+    const diff = new Date(sub.trial_ends_at) - new Date();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  /**
+   * Get display info for the current plan.
+   * Returns { label, badgeClass, warning, trialDays, trialPercent }.
+   */
+  function getPlanDisplayInfo() {
+    const status = getEntitlementStatus();
+    const trialDays = getTrialDaysRemaining();
+
+    const info = {
+      label: 'Free',
+      badgeClass: 'sub-plan-free',
+      headerBadgeText: 'FREE',
+      headerBadgeClass: 'badge-free',
+      warning: null,
+      trialDays: null,
+      trialPercent: 0
+    };
+
+    switch (status) {
+      case 'active':
+        info.label = 'Pro';
+        info.badgeClass = 'sub-plan-active';
+        info.headerBadgeText = 'PRO';
+        info.headerBadgeClass = 'badge-pro';
+        break;
+      case 'trial':
+        info.label = `Trial (${trialDays} day${trialDays !== 1 ? 's' : ''} left)`;
+        info.badgeClass = 'sub-plan-trial';
+        info.headerBadgeText = 'TRIAL';
+        info.headerBadgeClass = 'badge-pro';
+        info.trialDays = trialDays;
+        info.trialPercent = Math.max(0, Math.min(100, (trialDays / 14) * 100));
+        if (trialDays <= 3) info.warning = `Your trial expires in ${trialDays} day${trialDays !== 1 ? 's' : ''}. Upgrade to keep Pro features.`;
+        break;
+      case 'past_due':
+        info.label = 'Past Due';
+        info.badgeClass = 'sub-plan-expired';
+        info.headerBadgeText = 'PAST DUE';
+        info.headerBadgeClass = 'badge-free';
+        info.warning = 'Your payment failed. Please update your billing to restore Pro access.';
+        break;
+      case 'cancelled':
+        info.label = 'Cancelled';
+        info.badgeClass = 'sub-plan-expired';
+        info.headerBadgeText = 'FREE';
+        info.headerBadgeClass = 'badge-free';
+        info.warning = 'Your subscription has been cancelled. Upgrade to restore Pro features.';
+        break;
+      case 'expired':
+        info.label = 'Trial Expired';
+        info.badgeClass = 'sub-plan-expired';
+        info.headerBadgeText = 'FREE';
+        info.headerBadgeClass = 'badge-free';
+        info.warning = 'Your free trial has ended. Upgrade to keep using Pro features.';
+        break;
+      default:
+        break;
+    }
+    return info;
+  }
+
+  /**
+   * Fetch the effective entitlement from Supabase and store in proState.
+   * Calls ensure_subscription() which:
+   *   1. Creates a personal trial if none exists (idempotent)
+   *   2. Returns the full effective entitlement (personal vs team, highest wins)
+   */
+  async function loadSubscription(sb) {
+    try {
+      const { data, error } = await sb.rpc('ensure_subscription');
+      if (error) { console.error('Subscription load error:', error); return; }
+      const eff = Array.isArray(data) ? data[0] : data;
+      if (!eff) return;
+      proState.subscription = {
+        id: eff.personal_id || eff.team_sub_id || null,
+        plan: eff.effective_plan || 'free',
+        status: eff.effective_status || 'expired',
+        trial_ends_at: eff.effective_trial_ends_at || null,
+        current_period_end: eff.effective_current_period_end || null,
+        stripe_customer_id: eff.personal_stripe_customer_id || null,
+        _source: eff.effective_source || 'personal',
+        _score: eff.effective_score || 0,
+        _personal: eff.personal_id ? { plan: eff.personal_plan, status: eff.personal_status } : null,
+        _team: eff.team_sub_id ? { plan: eff.team_sub_plan, status: eff.team_sub_status, team_id: eff.team_sub_team_id } : null
+      };
+      proState.entitlementSource = eff.effective_source || 'personal';
+    } catch (e) { console.error('Subscription load failed:', e); }
+  }
+
+  /**
+   * Render the subscription status UI inside the Pro dashboard.
+   */
+  function renderSubscriptionUI() {
+    const container = el('subscription-status-container');
+    if (!container) return;
+
+    // Show for any signed-in user (not gated by team membership)
+    if (!proState.user) { container.innerHTML = ''; return; }
+
+    const info = getPlanDisplayInfo();
+    const status = getEntitlementStatus();
+
+    let html = '<div class="sub-status-card">';
+    html += '<div class="sub-status-header">';
+    html += `<span style="font-weight:800;font-size:0.95rem;color:#111827;">Subscription</span>`;
+    html += `<span class="sub-plan-badge ${info.badgeClass}">${escapeHtml(info.label)}</span>`;
+    html += '</div>';
+
+    // Trial progress bar
+    if (status === 'trial' && info.trialDays !== null) {
+      const barClass = info.trialDays <= 3 ? 'critical' : (info.trialDays <= 7 ? 'low' : '');
+      html += '<div class="sub-trial-bar">';
+      html += `<div class="sub-trial-bar-fill ${barClass}" style="width:${info.trialPercent}%"></div>`;
+      html += '</div>';
+      html += `<div class="sub-status-detail">${info.trialDays} of 14 trial days remaining</div>`;
+    }
+
+    // Warning banner
+    if (info.warning) {
+      html += `<div class="sub-warning">${escapeHtml(info.warning)}</div>`;
+    }
+
+    // Active subscription detail
+    if (status === 'active') {
+      const sub = proState.subscription;
+      if (sub && sub.current_period_end) {
+        const renewDate = new Date(sub.current_period_end).toLocaleDateString();
+        html += `<div class="sub-status-detail">Renews on ${renewDate}</div>`;
+      }
+    }
+
+    // Entitlement source indicator (proState.entitlementSource is the canonical source)
+    if (proState.entitlementSource === 'team' && status !== 'free') {
+      html += `<div class="sub-status-detail" style="color:#6366f1;">Access via team subscription</div>`;
+    }
+
+    // Upgrade CTA (show for non-active plans)
+    if (status !== 'active') {
+      html += `<button class="btn btn-primary btn-full btn-sm" id="upgrade-cta-btn" type="button" onclick="handleUpgradeClick()">Upgrade to Pro - $49/month</button>`;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  /**
+   * Placeholder for upgrade button click.
+   * Will be replaced with Stripe Checkout integration.
+   */
+  function handleUpgradeClick() {
+    // PLACEHOLDER: This will open Stripe Checkout in a future release
+    showToast('Billing integration coming soon! You are on a free trial.', 'success');
+  }
+
   function loadLocalSettings() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -1276,7 +1615,7 @@
       if (Array.isArray(parsed.services)) {
         services = services.map(service => {
           const saved = parsed.services.find(item => item.id === service.id);
-          return saved ? { ...service, rate: Number(saved.rate) || service.rate, minutes: Number(saved.minutes) || service.minutes } : service;
+          return saved ? { ...service, rate: safeNum(saved.rate, service.rate), minutes: safeNum(saved.minutes, service.minutes) } : service;
         });
       }
     } catch (e) { console.error('Failed to load local settings:', e); }
@@ -1299,6 +1638,52 @@
     } catch (e) { console.error('Supabase init failed', e); return null; }
   }
 
+  /** Apply remote team_settings row to local settings + services. */
+  function applyTeamSettings(s) {
+    settings = {
+      businessName: s.business_name || settings.businessName,
+      contactName: s.contact_name || settings.contactName,
+      businessPhone: s.contact_phone || settings.businessPhone,
+      businessEmail: s.contact_email || settings.businessEmail,
+      customMessage: s.default_message || settings.customMessage,
+      pricingMode: s.pricing_mode || settings.pricingMode,
+      hourlyRate: safeNum(s.hourly_rate, settings.hourlyRate),
+      travelFee: safeNum(s.travel_fee, settings.travelFee),
+      discount: safeNum(s.discount, settings.discount),
+      externalOnlyPercent: safeNum(s.external_only_percent, settings.externalOnlyPercent),
+      gstEnabled: !!s.gst_enabled,
+      gstRate: safeNum(s.gst_rate, settings.gstRate)
+    };
+    if (s.rates) {
+      services = services.map(svc => {
+        const remoteRate = s.rates[svc.id];
+        const remoteMin = s.minutes ? s.minutes[svc.id] : null;
+        return {
+          ...svc,
+          rate: safeNum(remoteRate, svc.rate),
+          minutes: safeNum(remoteMin, svc.minutes)
+        };
+      });
+    }
+  }
+
+  /** Set up (or replace) the Supabase Realtime subscription for team jobs. */
+  function setupRealtimeChannel(sb) {
+    try {
+      if (realtimeChannel) { realtimeChannel.unsubscribe(); realtimeChannel = null; }
+      realtimeChannel = sb.channel(`team-jobs-${proState.teamId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `team_id=eq.${proState.teamId}` }, async () => {
+          try {
+            const { data: updatedJobs } = await sb.from('jobs').select('*').eq('team_id', proState.teamId).order('created_at', { ascending: false });
+            proState.jobs = updatedJobs || [];
+            renderJobsList();
+            updateKPIs();
+          } catch (e) { console.error('Realtime refresh failed', e); }
+        })
+        .subscribe();
+    } catch (e) { console.error('Realtime setup failed', e); }
+  }
+
   async function bootPro() {
     const sb = await getSb();
     if (!sb) return;
@@ -1308,12 +1693,9 @@
     try {
       const { data: team, error } = await sb.rpc('get_my_team');
 
-const noTeam =
-  error ||
-  !team ||
-  (Array.isArray(team) && team.length === 0);
+      const noTeam = error || !team || (Array.isArray(team) && team.length === 0);
 
-if (noTeam) {
+      if (noTeam) {
         proState.teamId = null;
         if (pendingInviteCode) {
           try {
@@ -1324,15 +1706,17 @@ if (noTeam) {
               return await bootPro();
             }
           } catch (e) { console.error('Auto-join failed', e); }
-          document.getElementById('invite-code-input').value = pendingInviteCode || '';
+          const inviteInput = el('invite-code-input');
+          if (inviteInput) inviteInput.value = pendingInviteCode || '';
         }
-      } else {const t = Array.isArray(team) ? team[0] : team;
+      } else {
+        const t = Array.isArray(team) ? team[0] : team;
 
-if (!t) {
-  proState.teamId = null;
-  renderProUI();
-  return;
-}
+        if (!t) {
+          proState.teamId = null;
+          renderProUI();
+          return;
+        }
         proState.teamId = t.team_id;
         proState.teamName = t.business_name;
         proState.teamRole = t.role;
@@ -1344,46 +1728,16 @@ if (!t) {
         proState.jobs = jobs || [];
 
         const { data: s } = await sb.from('team_settings').select('*').eq('team_id', proState.teamId).single();
-        if (s) {
-          settings = {
-            businessName: s.business_name || settings.businessName,
-            contactName: s.contact_name || settings.contactName,
-            businessPhone: s.contact_phone || settings.businessPhone,
-            businessEmail: s.contact_email || settings.businessEmail,
-            customMessage: s.default_message || settings.customMessage,
-            pricingMode: s.pricing_mode || settings.pricingMode,
-            hourlyRate: Number(s.hourly_rate) || settings.hourlyRate,
-            travelFee: Number(s.travel_fee) || settings.travelFee,
-            discount: Number(s.discount) || settings.discount,
-            externalOnlyPercent: Number(s.external_only_percent) || settings.externalOnlyPercent,
-            gstEnabled: !!s.gst_enabled,
-            gstRate: Number(s.gst_rate) || settings.gstRate
-          };
-          if (s.rates) {
-            services = services.map(svc => {
-              const remoteRate = s.rates[svc.id];
-              const remoteMin = s.minutes ? s.minutes[svc.id] : null;
-              return { 
-                ...svc, 
-                rate: remoteRate !== undefined ? Number(remoteRate) : svc.rate,
-                minutes: remoteMin !== undefined ? Number(remoteMin) : svc.minutes
-              };
-            });
-          }
-        }
+        if (s) applyTeamSettings(s);
 
-        if (realtimeChannel) realtimeChannel.unsubscribe();
-        realtimeChannel = sb.channel('team-jobs')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `team_id=eq.${proState.teamId}` }, async (payload) => {
-            const { data: updatedJobs } = await sb.from('jobs').select('*').eq('team_id', proState.teamId).order('created_at', { ascending: false });
-            proState.jobs = updatedJobs || [];
-            renderJobsList();
-            updateKPIs();
-          })
-          .subscribe();
+        setupRealtimeChannel(sb);
       }
     } catch (e) { console.error(e); }
+
+    // Load subscription entitlement (works with or without team)
+    try { await loadSubscription(sb); } catch (e) { console.error('Subscription load error', e); }
     renderProUI();
+    renderSubscriptionUI();
     syncSettingsForm();
     renderSettingsGrids();
     updateKPIs();
@@ -1392,14 +1746,14 @@ if (!t) {
   }
 
   async function handleAuth() {
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
+    const email = (el('auth-email') || {}).value || '';
+    const password = (el('auth-password') || {}).value || '';
     const sb = await getSb();
     if (!sb) return;
     try {
       let res;
       if (authMode === 'signup') {
-        const name = document.getElementById('auth-name').value;
+        const name = (el('auth-name') || {}).value || '';
         res = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
       } else {
         res = await sb.auth.signInWithPassword({ email, password });
@@ -1411,7 +1765,7 @@ if (!t) {
   }
 
   async function createTeam() {
-    const name = document.getElementById('team-name-input').value.trim();
+    const name = ((el('team-name-input') || {}).value || '').trim();
     if (!name) return showToast('Enter business name', 'error');
     const sb = await getSb();
     if (!sb) return;
@@ -1424,7 +1778,7 @@ if (!t) {
   }
 
   async function joinTeam() {
-    const code = document.getElementById('invite-code-input').value.trim();
+    const code = ((el('invite-code-input') || {}).value || '').trim();
     if (!code) return showToast('Enter invite code', 'error');
     const sb = await getSb();
     if (!sb) return;
@@ -1457,15 +1811,16 @@ if (!t) {
 
   async function saveTeamJob() {
     if (!proState.teamId) return showToast('Join a team first', 'error');
+    if (!hasProAccess()) return showToast('Saving jobs requires a Pro subscription', 'error');
     const sb = await getSb();
     if (!sb) return;
     const data = getQuoteData();
     const payload = {
       team_id: proState.teamId,
-      customer_name: document.getElementById('q-name').value.trim() || 'Customer',
-      customer_phone: document.getElementById('q-phone').value.trim(),
-      customer_email: document.getElementById('q-email').value.trim(),
-      service_address: document.getElementById('q-address').value.trim(),
+      customer_name: ((el('q-name') || {}).value || '').trim() || 'Customer',
+      customer_phone: ((el('q-phone') || {}).value || '').trim(),
+      customer_email: ((el('q-email') || {}).value || '').trim(),
+      service_address: ((el('q-address') || {}).value || '').trim(),
       quoted_price: data.total,
       items_summary: services.filter(s => s.count > 0).map(s => `${s.count} ${s.name}`).join(', '),
       status: 'quoted',
@@ -1517,6 +1872,7 @@ if (!t) {
     try {
       const sb = await getSb();
       if (proState.teamId && canAccessSettings()) {
+        // Updated RPC: No teamId parameter required, server-side owner check enforced
         const { error } = await sb.rpc('reset_team_data');
         if (error) throw error;
       }
@@ -1531,7 +1887,7 @@ if (!t) {
   }
 
   function renderSteppers() {
-    const container = document.getElementById('steppers-container');
+    const container = el('steppers-container');
     if (!container) return;
     container.innerHTML = services.map(s => `
       <div class="stepper-row ${s.count > 0 ? 'active' : ''}">
@@ -1561,13 +1917,14 @@ if (!t) {
       if (windowServiceIds.includes(s.id)) windowSub += line; else nonWindowSub += line;
     });
 
-    const adjWindowSub = quoteState.externalOnly ? windowSub * (Number(settings.externalOnlyPercent) / 100) : windowSub;
+    const extPct = safeNum(settings.externalOnlyPercent, 60);
+    const adjWindowSub = quoteState.externalOnly ? windowSub * (extPct / 100) : windowSub;
     let subtotal = 0;
 
     if (settings.pricingMode === 'per-window') {
       subtotal = adjWindowSub + nonWindowSub;
     } else {
-      let hourlyBase = estimatedHours * Number(settings.hourlyRate);
+      let hourlyBase = estimatedHours * safeNum(settings.hourlyRate, 0);
       if (quoteState.externalOnly && windowSub > 0) {
         const fullMix = windowSub + nonWindowSub;
         if (fullMix > 0) hourlyBase *= (adjWindowSub + nonWindowSub) / fullMix;
@@ -1575,114 +1932,128 @@ if (!t) {
       subtotal = hourlyBase;
     }
 
-    const baseTotal = Math.max(0, subtotal + Number(settings.travelFee) - Number(settings.discount));
-    const gstAmount = settings.gstEnabled ? baseTotal * (Number(settings.gstRate) / 100) : 0;
+    const baseTotal = Math.max(0, subtotal + safeNum(settings.travelFee, 0) - safeNum(settings.discount, 0));
+    const gstAmount = settings.gstEnabled ? baseTotal * (safeNum(settings.gstRate, 10) / 100) : 0;
     return { itemCount, totalMinutes, estimatedHours, windowSub, adjWindowSub, nonWindowSub, subtotal, baseTotal, gstAmount, total: baseTotal + gstAmount };
   }
 
-  function updateQuoteDisplay() {
-  const data = getQuoteData();
-  document.getElementById('footer-total').textContent = `$${data.total.toFixed(2)}`;
-  document.getElementById('footer-count').textContent = `${data.itemCount} items selected${settings.gstEnabled ? ' • inc GST' : ' • ex GST'}`;
-  
-  const chips = document.getElementById('service-chips');
-  if (chips) {
-    chips.innerHTML = services
-      .filter(s => s.count > 0)
-      .map(s => `<div class="chip">${s.count} × ${s.name}</div>`)
-      .join('');
-  }
+  /** Build the plain-text quote summary for sharing/preview. */
+  function buildQuoteSummaryText(data) {
+    const customerName = (el('q-name') ? el('q-name').value.trim() : '') || 'Customer';
+    const addr = el('q-address') ? el('q-address').value.trim() : '';
+    const extPct = safeNum(settings.externalOnlyPercent, 60);
 
-  const stats = document.getElementById('quote-summary-stats');
-  if (stats) {
-    stats.innerHTML = `
-      <div class="summary-stat"><div class="summary-stat-label">Items</div><div class="summary-stat-value">${data.itemCount}</div></div>
-      <div class="summary-stat"><div class="summary-stat-label">Total</div><div class="summary-stat-value">$${data.total.toFixed(2)}</div></div>
-      <div class="summary-stat"><div class="summary-stat-label">Minutes</div><div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div></div>
-      <div class="summary-stat"><div class="summary-stat-label">Hours</div><div class="summary-stat-value">${data.estimatedHours.toFixed(2)}</div></div>
-    `;
-  }
+    let summary = `*QUOTE FROM ${String(settings.businessName).toUpperCase()}*\n\n`;
+    summary += `Hi ${customerName},\n`;
+    if (addr) summary += `Address: ${addr}\n`;
 
-  let summary = `*QUOTE FROM ${String(settings.businessName).toUpperCase()}*\n\n`;
-  summary += `Hi ${document.getElementById('q-name').value.trim() || 'Customer'},\n`;
-
-  const addr = document.getElementById('q-address').value.trim();
-  if (addr) summary += `Address: ${addr}\n`;
-
-  if (quoteState.externalOnly) {
-    summary += `• Full Window Price: $${data.windowSub.toFixed(2)}\n`;
-    summary += `• External Window Price (${settings.externalOnlyPercent}%): $${data.adjWindowSub.toFixed(2)}\n`;
-    if (data.nonWindowSub > 0) {
-      summary += `• Non-Window Services: $${data.nonWindowSub.toFixed(2)}\n`;
-    }
-  }
-
-  summary += `\n*SERVICES:*\n`;
-
-  const selected = services.filter(s => s.count > 0);
-  if (!selected.length) {
-    summary += `• No items added yet\n`;
-  } else {
-    selected.forEach(s => {
-      let line = s.count * s.rate;
-      if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
-        line *= (Number(settings.externalOnlyPercent) / 100);
+    if (quoteState.externalOnly) {
+      summary += `• Full Window Price: $${data.windowSub.toFixed(2)}\n`;
+      summary += `• External Window Price (${extPct}%): $${data.adjWindowSub.toFixed(2)}\n`;
+      if (data.nonWindowSub > 0) {
+        summary += `• Non-Window Services: $${data.nonWindowSub.toFixed(2)}\n`;
       }
-      summary += `• ${s.count} × ${s.name} = $${line.toFixed(2)}\n`;
-    });
+    }
+
+    summary += `\n*SERVICES:*\n`;
+    const selected = services.filter(s => s.count > 0);
+    if (!selected.length) {
+      summary += `• No items added yet\n`;
+    } else {
+      selected.forEach(s => {
+        let line = s.count * s.rate;
+        if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
+          line *= (extPct / 100);
+        }
+        summary += `• ${s.count} × ${s.name} = $${line.toFixed(2)}\n`;
+      });
+    }
+
+    summary += `\n*PRICING:*\nSubtotal: $${data.subtotal.toFixed(2)}\n`;
+    if (safeNum(settings.travelFee, 0) > 0) summary += `Travel Fee: +$${safeNum(settings.travelFee, 0).toFixed(2)}\n`;
+    if (safeNum(settings.discount, 0) > 0) summary += `Discount: -$${safeNum(settings.discount, 0).toFixed(2)}\n`;
+
+    if (settings.gstEnabled) {
+      summary += `Base Total: $${data.baseTotal.toFixed(2)}\n`;
+      summary += `GST (${safeNum(settings.gstRate, 10)}%): +$${data.gstAmount.toFixed(2)}\n`;
+    }
+
+    summary += `\n*TOTAL: $${data.total.toFixed(2)}*\n${settings.gstEnabled ? '(inc GST)' : '(ex GST)'}\n\n`;
+    summary += `Time Estimate: ${data.estimatedHours.toFixed(2)} hours\n`;
+    summary += `Items: ${data.itemCount}\n\n`;
+    summary += `${settings.customMessage}\n\n`;
+    summary += `Please let us know if you'd like to proceed. Thank you!`;
+    return summary;
   }
 
-  summary += `\n*PRICING:*\nSubtotal: $${data.subtotal.toFixed(2)}\n`;
-  if (settings.travelFee > 0) summary += `Travel Fee: +$${Number(settings.travelFee).toFixed(2)}\n`;
-  if (settings.discount > 0) summary += `Discount: -$${Number(settings.discount).toFixed(2)}\n`;
+  function updateQuoteDisplay() {
+    const data = getQuoteData();
+    const footerTotal = el('footer-total');
+    const footerCount = el('footer-count');
+    if (footerTotal) footerTotal.textContent = `$${data.total.toFixed(2)}`;
+    if (footerCount) footerCount.textContent = `${data.itemCount} items selected${settings.gstEnabled ? ' • inc GST' : ' • ex GST'}`;
 
-  if (settings.gstEnabled) {
-    summary += `Base Total: $${data.baseTotal.toFixed(2)}\n`;
-    summary += `GST (${settings.gstRate}%): +$${data.gstAmount.toFixed(2)}\n`;
+    const chips = el('service-chips');
+    if (chips) {
+      chips.innerHTML = services
+        .filter(s => s.count > 0)
+        .map(s => `<div class="chip">${s.count} × ${s.name}</div>`)
+        .join('');
+    }
+
+    const stats = el('quote-summary-stats');
+    if (stats) {
+      stats.innerHTML = `
+        <div class="summary-stat"><div class="summary-stat-label">Items</div><div class="summary-stat-value">${data.itemCount}</div></div>
+        <div class="summary-stat"><div class="summary-stat-label">Total</div><div class="summary-stat-value">$${data.total.toFixed(2)}</div></div>
+        <div class="summary-stat"><div class="summary-stat-label">Minutes</div><div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div></div>
+        <div class="summary-stat"><div class="summary-stat-label">Hours</div><div class="summary-stat-value">${data.estimatedHours.toFixed(2)}</div></div>
+      `;
+    }
+
+    const previewEl = el('quote-preview-text');
+    if (previewEl) previewEl.textContent = buildQuoteSummaryText(data);
+
+    const saveTeamBtn = el('save-team-job-btn');
+    if (saveTeamBtn) saveTeamBtn.classList.toggle('hidden', !proState.teamId || !hasProAccess());
   }
 
-  summary += `\n*TOTAL: $${data.total.toFixed(2)}*\n${settings.gstEnabled ? '(inc GST)' : '(ex GST)'}\n\n`;
-  summary += `Time Estimate: ${data.estimatedHours.toFixed(2)} hours\n`;
-  summary += `Items: ${data.itemCount}\n\n`;
-  summary += `${settings.customMessage}\n\n`;
-  summary += `Please let us know if you'd like to proceed. Thank you!`;
-
-  document.getElementById('quote-preview-text').textContent = summary;
-
-  const saveTeamBtn = document.getElementById('save-team-job-btn');
-  if (saveTeamBtn) {
-    saveTeamBtn.classList.toggle('hidden', !proState.teamId);
-  }
-}
-
-function exportQuotePDF() {
-  if (!proState.teamId) {
-    showToast('PDF export is a Pro feature', 'error');
-    return;
-  }
-
-  const data = getQuoteData();
-
-  const customerName = escapeHtml(document.getElementById('q-name').value || 'Customer');
-  const customerPhone = escapeHtml(document.getElementById('q-phone').value);
-  const customerEmail = escapeHtml(document.getElementById('q-email').value);
-  const customerAddress = escapeHtml(document.getElementById('q-address').value);
-
+/** Build the HTML string used for PDF rendering. */
+function buildPdfHtml(data) {
+  const customerName = escapeHtml((el('q-name') ? el('q-name').value : '') || 'Customer');
+  const customerPhone = escapeHtml(el('q-phone') ? el('q-phone').value : '');
+  const customerEmail = escapeHtml(el('q-email') ? el('q-email').value : '');
+  const customerAddress = escapeHtml(el('q-address') ? el('q-address').value : '');
   const businessName = escapeHtml(settings.businessName);
   const customMessage = escapeHtml(settings.customMessage);
   const contactName = escapeHtml(settings.contactName);
   const businessPhone = escapeHtml(settings.businessPhone);
   const businessEmail = escapeHtml(settings.businessEmail);
+  const extPct = safeNum(settings.externalOnlyPercent, 60);
+  const travelFee = safeNum(settings.travelFee, 0);
+  const discount = safeNum(settings.discount, 0);
+  const gstRate = safeNum(settings.gstRate, 10);
 
-  const element = document.createElement('div');
+  const serviceRows = services.filter(s => s.count > 0).map(s => {
+    let line = s.count * s.rate;
+    if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
+      line *= (extPct / 100);
+    }
+    return `
+      <tr style="border-bottom: 1px solid #f3f4f6;">
+        <td style="padding: 12px; font-size: 14px;">${escapeHtml(s.name)} ${quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id) ? '(External Only)' : ''}</td>
+        <td style="padding: 12px; text-align: center; font-size: 14px;">${s.count}</td>
+        <td style="padding: 12px; text-align: right; font-size: 14px;">$${line.toFixed(2)}</td>
+      </tr>
+    `;
+  }).join('');
 
-  element.innerHTML = `
+  return `
     <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
       <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px;">
         <h1 style="margin: 0; color: #2563eb; font-size: 32px;">${businessName}</h1>
         <p style="margin: 5px 0; color: #6b7280;">Professional Quote</p>
       </div>
-
       <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div>
           <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Customer</h3>
@@ -1697,7 +2068,6 @@ function exportQuotePDF() {
           <p style="margin: 2px 0;">Valid for: 30 Days</p>
         </div>
       </div>
-
       <div style="margin-bottom: 30px;">
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
@@ -1707,83 +2077,74 @@ function exportQuotePDF() {
               <th style="padding: 12px; text-align: right; font-size: 12px; text-transform: uppercase;">Total</th>
             </tr>
           </thead>
-          <tbody>
-            ${services.filter(s => s.count > 0).map(s => {
-              let line = s.count * s.rate;
-              if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
-                line *= (Number(settings.externalOnlyPercent) / 100);
-              }
-              return `
-                <tr style="border-bottom: 1px solid #f3f4f6;">
-                  <td style="padding: 12px; font-size: 14px;">${escapeHtml(s.name)} ${quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id) ? '(External Only)' : ''}</td>
-                  <td style="padding: 12px; text-align: center; font-size: 14px;">${s.count}</td>
-                  <td style="padding: 12px; text-align: right; font-size: 14px;">$${line.toFixed(2)}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
+          <tbody>${serviceRows}</tbody>
         </table>
       </div>
-
       <div style="margin-left: auto; width: 250px; background: #f9fafb; padding: 20px; border-radius: 12px;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
           <span>Subtotal:</span><span>$${data.subtotal.toFixed(2)}</span>
         </div>
-
-        ${settings.travelFee > 0 ? `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
-            <span>Travel Fee:</span><span>+$${Number(settings.travelFee).toFixed(2)}</span>
-          </div>
-        ` : ''}
-
-        ${settings.discount > 0 ? `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
-            <span>Discount:</span><span>-$${Number(settings.discount).toFixed(2)}</span>
-          </div>
-        ` : ''}
-
-        ${settings.gstEnabled ? `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-            <span>GST (${settings.gstRate}%):</span><span>+$${data.gstAmount.toFixed(2)}</span>
-          </div>
-        ` : ''}
-
+        ${travelFee > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Travel Fee:</span><span>+$${travelFee.toFixed(2)}</span></div>` : ''}
+        ${discount > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Discount:</span><span>-$${discount.toFixed(2)}</span></div>` : ''}
+        ${settings.gstEnabled ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px;"><span>GST (${gstRate}%):</span><span>+$${data.gstAmount.toFixed(2)}</span></div>` : ''}
         <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px; color: #111827;">
           <span>TOTAL:</span><span>$${data.total.toFixed(2)}</span>
         </div>
       </div>
-
       <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; text-align: center;">
         <p style="margin-bottom: 10px;">${customMessage}</p>
         <p>Contact: ${contactName} • ${businessPhone} • ${businessEmail}</p>
       </div>
     </div>
   `;
+}
+
+async function exportQuotePDF() {
+  if (!hasProAccess()) {
+    showToast('PDF export requires a Pro subscription', 'error');
+    return;
+  }
+  if (typeof html2pdf === 'undefined') {
+    showToast('PDF library not loaded. Check your connection.', 'error');
+    return;
+  }
+
+  const data = getQuoteData();
+  const pdfElement = document.createElement('div');
+  pdfElement.innerHTML = buildPdfHtml(data);
+
+  const rawName = (el('q-name') ? el('q-name').value : '') || 'customer';
+  const safeName = rawName.replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'customer';
 
   const opt = {
     margin: 0,
-    filename: `quote-${document.getElementById('q-name').value || 'customer'}.pdf`,
+    filename: `quote-${safeName}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2 },
     jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
   };
 
-  html2pdf().set(opt).from(element).save();
+  try {
+    await html2pdf().set(opt).from(pdfElement).save();
+    showToast('PDF exported!', 'success');
+  } catch (e) {
+    console.error('PDF export error', e);
+    showToast('PDF export failed', 'error');
+  }
   closeShareModal();
-  showToast('PDF exported!', 'success');
 }
 
 function openShareModal() {
-  document.getElementById('share-modal').classList.remove('hidden');
+  const modal = el('share-modal'); if (modal) modal.classList.remove('hidden');
 }
 
 function closeShareModal() {
-  document.getElementById('share-modal').classList.add('hidden');
+  const modal = el('share-modal'); if (modal) modal.classList.add('hidden');
 }
 
 async function copyQuoteToClipboard() {
   try {
-    const t = document.getElementById('quote-preview-text').textContent;
+    const t = (el('quote-preview-text') || {}).textContent || '';
     await navigator.clipboard.writeText(t);
     showToast('Quote copied!', 'success');
     closeShareModal();
@@ -1793,61 +2154,122 @@ async function copyQuoteToClipboard() {
 }
 
 function emailQuote() {
-  const t = document.getElementById('quote-preview-text').textContent;
-  const email = document.getElementById('q-email').value;
-  window.location.href = `mailto:${email}?subject=Quote from ${settings.businessName}&body=${encodeURIComponent(t)}`;
+  const t = (el('quote-preview-text') || {}).textContent || '';
+  const email = (el('q-email') || {}).value || '';
+  window.location.href = `mailto:${email}?subject=${encodeURIComponent('Quote from ' + settings.businessName)}&body=${encodeURIComponent(t)}`;
   closeShareModal();
 }
 
 function smsQuote() {
-  const t = document.getElementById('quote-preview-text').textContent;
-  const phone = document.getElementById('q-phone').value;
+  const t = (el('quote-preview-text') || {}).textContent || '';
+  const phone = (el('q-phone') || {}).value || '';
   window.location.href = `sms:${phone}?body=${encodeURIComponent(t)}`;
   closeShareModal();
 }
 
-function whatsappQuote() {
-  const t = document.getElementById('quote-preview-text').textContent;
-  const phone = document.getElementById('q-phone').value.replace(/\D/g, '');
+function whatsappQuote() {  const t = (el('quote-preview-text') || {}).textContent || '';
+  let phone = ((el('q-phone') || {}).value || '').replace(/\s+/g, '');
+  if (phone.startsWith('0')) phone = '61' + phone.slice(1);
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(t)}`, '_blank');
   closeShareModal();
 }
-  function showOnboarding() { document.getElementById('onboarding-modal').classList.remove('hidden'); }
-  function skipOnboarding() { document.getElementById('onboarding-modal').classList.add('hidden'); localStorage.setItem('wqp-onboarding-done', 'true'); }
-  function setOnboardingGST(enabled) { settings.gstEnabled = enabled; }
+  function showOnboarding() { const m = el('onboarding-modal'); if (m) m.classList.remove('hidden'); }
+  function skipOnboarding() { const m = el('onboarding-modal'); if (m) m.classList.add('hidden'); localStorage.setItem('wqp-onboarding-done', 'true'); }
+  function setOnboardingGST(enabled) {
+    settings.gstEnabled = enabled;
+    const yesBtn = el('gst-yes-btn'); if (yesBtn) yesBtn.classList.toggle('gst-active', enabled);
+    const noBtn = el('gst-no-btn'); if (noBtn) noBtn.classList.toggle('gst-active', !enabled);
+  }
   function completeOnboarding() {
-    settings.businessName = document.getElementById('onboarding-business-name').value || settings.businessName;
-    settings.pricingMode = document.getElementById('onboarding-pricing-mode').value;
+    settings.businessName = (el('onboarding-business-name') || {}).value || settings.businessName;
+    settings.pricingMode = (el('onboarding-pricing-mode') || {}).value || settings.pricingMode;
     saveLocalSettings();
     skipOnboarding();
     updateQuoteDisplay();
   }
 
   function switchTab(t) {
-    document.querySelectorAll('[id^="tab-"]').forEach(el => { if (el.id.startsWith('tab-') && !el.id.endsWith('-btn')) el.classList.add('hidden'); });
-    document.getElementById(`tab-${t}`).classList.remove('hidden');
+    document.querySelectorAll('[id^="tab-"]').forEach(tabEl => { if (tabEl.id.startsWith('tab-') && !tabEl.id.endsWith('-btn')) tabEl.classList.add('hidden'); });
+    const target = el(`tab-${t}`);
+    if (target) target.classList.remove('hidden');
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    const btn = document.getElementById(`tab-${t}-btn`); if (btn) btn.classList.add('active');
-    document.getElementById('quote-footer').classList.toggle('hidden', t !== 'quote');
+    const btn = el(`tab-${t}-btn`); if (btn) btn.classList.add('active');
+    const footer = el('quote-footer');
+    if (footer) footer.classList.toggle('hidden', t !== 'quote');
   }
 
   function renderProUI() {
-    const auth = document.getElementById('pro-auth-panel');
-    const setup = document.getElementById('pro-team-setup');
-    const dash = document.getElementById('pro-dashboard');
-    const badge = document.getElementById('pro-badge');
-    auth.classList.add('hidden'); setup.classList.add('hidden'); dash.classList.add('hidden');
-    badge.textContent = proState.teamId ? 'PRO' : 'FREE';
-    badge.className = proState.teamId ? 'badge-pro' : 'badge-free';
-    if (!proState.user) auth.classList.remove('hidden');
-    else if (!proState.teamId) setup.classList.remove('hidden');
-    else {
-      dash.classList.remove('hidden');
-      document.getElementById('team-name-display').textContent = proState.teamName;
-      document.getElementById('team-email-display').textContent = proState.user.email;
-      const role = document.getElementById('team-role-badge');
-      role.textContent = proState.teamRole === 'owner' ? 'Owner' : 'Staff';
-      role.className = `role-badge ${proState.teamRole === 'owner' ? 'role-owner' : 'role-staff'}`;
+    const auth = el('pro-auth-panel');
+    const dash = el('pro-dashboard');
+    const teamSetup = el('pro-team-setup');
+    const teamDash = el('pro-team-dashboard');
+    const badge = el('pro-badge');
+
+    // Hide everything first
+    if (auth) auth.classList.add('hidden');
+    if (dash) dash.classList.add('hidden');
+    if (teamSetup) teamSetup.classList.add('hidden');
+    if (teamDash) teamDash.classList.add('hidden');
+
+    // Badge driven by entitlement
+    const planInfo = getPlanDisplayInfo();
+    if (badge) {
+      badge.textContent = planInfo.headerBadgeText;
+      badge.className = planInfo.headerBadgeClass;
+    }
+
+    // Header subtitle: show team + plan if in team, plan only if signed in, default otherwise
+    const headerSub = el('header-sub');
+    if (headerSub) {
+      if (proState.user && proState.teamId) {
+        headerSub.textContent = `${proState.teamName} \u2022 ${planInfo.label}`;
+      } else if (proState.user) {
+        headerSub.textContent = planInfo.label;
+      } else {
+        headerSub.textContent = 'Fast quoting for window cleaners';
+      }
+    }
+
+    // STATE 1: Not signed in -> show auth panel only
+    if (!proState.user) {
+      if (auth) auth.classList.remove('hidden');
+      return;
+    }
+
+    // STATE 2: Signed in -> always show dashboard shell
+    if (dash) dash.classList.remove('hidden');
+
+    // Section A: Account card - populate with user info
+    const nameEl = el('team-name-display');
+    const emailEl = el('team-email-display');
+    const roleEl = el('team-role-badge');
+
+    if (proState.teamId) {
+      // In a team: show team name and role
+      if (nameEl) nameEl.textContent = proState.teamName;
+      if (emailEl) emailEl.textContent = proState.user.email;
+      if (roleEl) {
+        roleEl.textContent = proState.teamRole === 'owner' ? 'Owner' : 'Staff';
+        roleEl.className = `role-badge ${proState.teamRole === 'owner' ? 'role-owner' : 'role-staff'}`;
+        roleEl.style.display = '';
+      }
+    } else {
+      // Solo user: show account info, hide role badge
+      if (nameEl) nameEl.textContent = proState.user.user_metadata?.full_name || 'My Account';
+      if (emailEl) emailEl.textContent = proState.user.email;
+      if (roleEl) roleEl.style.display = 'none';
+    }
+
+    // Section B: Subscription status renders via renderSubscriptionUI() (always visible)
+
+    // Section C: Team setup (only when no team)
+    if (!proState.teamId) {
+      if (teamSetup) teamSetup.classList.remove('hidden');
+    }
+
+    // Section D: Team dashboard with KPIs and jobs (only when team exists)
+    if (proState.teamId) {
+      if (teamDash) teamDash.classList.remove('hidden');
     }
   }
 
@@ -1878,17 +2300,22 @@ function whatsappQuote() {
     .filter(j => normalizeStatus(j.status) !== 'completed')
     .reduce((sum, j) => sum + (parseFloat(j.quoted_price) || 0), 0);
 
-  document.getElementById('kpi-active').textContent = active;
-  document.getElementById('kpi-weekly').textContent = weekly;
-  document.getElementById('kpi-collected').textContent = `$${collected.toFixed(0)}`;
-  document.getElementById('kpi-pending').textContent = `$${pending.toFixed(0)}`;
+  const kpiActive = el('kpi-active');
+  const kpiWeekly = el('kpi-weekly');
+  const kpiCollected = el('kpi-collected');
+  const kpiPending = el('kpi-pending');
+  if (kpiActive) kpiActive.textContent = active;
+  if (kpiWeekly) kpiWeekly.textContent = weekly;
+  if (kpiCollected) kpiCollected.textContent = `$${collected.toFixed(0)}`;
+  if (kpiPending) kpiPending.textContent = `$${pending.toFixed(0)}`;
 }
 
   function renderJobsList() {
-    const container = document.getElementById('jobs-list-container');
+    const container = el('jobs-list-container');
     let jobs = proState.jobs.filter(j => normalizeStatus(j.status) === jobFilter);
     const filters = [{v:'quoted',l:'Quoted'},{v:'accepted',l:'Accepted'},{v:'in_progress',l:'Active'},{v:'completed',l:'Done'}];
-    document.getElementById('job-filters').innerHTML = filters.map(f => `<div class="chip" style="${jobFilter===f.v?'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;':''}" onclick="jobFilter='${f.v}';renderJobsList();">${f.l}</div>`).join('');
+    const filtersEl = el('job-filters');
+    if (filtersEl) filtersEl.innerHTML = filters.map(f => `<div class="chip" style="${jobFilter===f.v?'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;':''}" onclick="jobFilter='${f.v}';renderJobsList();">${f.l}</div>`).join('');
     if (!jobs.length) { container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>'; return; }
     container.innerHTML = jobs.map(j => `
       <div class="job-card">
@@ -1918,42 +2345,70 @@ function whatsappQuote() {
 
   function syncSettingsForm() {
     const isOwner = canAccessSettings();
-    document.getElementById('settings-owner-view').classList.toggle('hidden', !isOwner);
-    document.getElementById('settings-staff-lock').classList.toggle('hidden', isOwner);
+    const ownerView = el('settings-owner-view');
+    const staffLock = el('settings-staff-lock');
+    if (ownerView) ownerView.classList.toggle('hidden', !isOwner);
+    if (staffLock) staffLock.classList.toggle('hidden', isOwner);
     if (!isOwner) return;
-    document.getElementById('s-bizname').value = settings.businessName;
-    document.getElementById('s-contact').value = settings.contactName;
-    document.getElementById('s-phone').value = settings.businessPhone;
-    document.getElementById('s-email').value = settings.businessEmail;
-    document.getElementById('s-message').value = settings.customMessage;
-    document.getElementById('settings-pricing-mode').value = settings.pricingMode;
-    document.getElementById('settings-hourly-rate').value = settings.hourlyRate;
-    document.getElementById('settings-external-percent').value = settings.externalOnlyPercent;
-    document.getElementById('settings-travel-fee').value = settings.travelFee;
-    document.getElementById('settings-discount').value = settings.discount;
-    document.getElementById('settings-gst-enabled').checked = settings.gstEnabled;
-    document.getElementById('settings-gst-rate').value = settings.gstRate;
-    document.getElementById('team-invite-code').value = proState.inviteCode || '';
+    const setVal = (id, val) => { const e = el(id); if (e) e.value = val; };
+    const setChecked = (id, val) => { const e = el(id); if (e) e.checked = val; };
+    setVal('s-bizname', settings.businessName);
+    setVal('s-contact', settings.contactName);
+    setVal('s-phone', settings.businessPhone);
+    setVal('s-email', settings.businessEmail);
+    setVal('s-message', settings.customMessage);
+    setVal('settings-pricing-mode', settings.pricingMode);
+    setVal('settings-hourly-rate', settings.hourlyRate);
+    setVal('settings-external-percent', settings.externalOnlyPercent);
+    setVal('settings-travel-fee', settings.travelFee);
+    setVal('settings-discount', settings.discount);
+    setChecked('settings-gst-enabled', settings.gstEnabled);
+    setVal('settings-gst-rate', settings.gstRate);
+    setVal('team-invite-code', proState.inviteCode || '');
   }
 
   function renderSettingsGrids() {
     if (!canAccessSettings()) return;
-    document.getElementById('settings-rates-grid').innerHTML = services.map(s => `
-      <div class="rate-card">
-        <div class="rate-card-label">${s.name} ($)</div>
-        <input type="number" class="rate-card-input" value="${s.rate}" onchange="updateServiceRate('${s.id}', this.value)" />
-      </div>
-    `).join('');
-    document.getElementById('settings-minutes-grid').innerHTML = services.map(s => `
-      <div class="rate-card">
-        <div class="rate-card-label">${s.name} (min)</div>
-        <input type="number" class="rate-card-input" value="${s.minutes}" onchange="updateServiceMinutes('${s.id}', this.value)" />
-      </div>
-    `).join('');
+    const ratesGrid = el('settings-rates-grid');
+    const minsGrid = el('settings-minutes-grid');
+    if (ratesGrid) {
+      ratesGrid.innerHTML = services.map(s => `
+        <div class="rate-card">
+          <div class="rate-card-label">${s.name} ($)</div>
+          <input type="number" class="rate-card-input" value="${s.rate}" onchange="updateServiceRate('${s.id}', this.value)" />
+        </div>
+      `).join('');
+    }
+    if (minsGrid) {
+      minsGrid.innerHTML = services.map(s => `
+        <div class="rate-card">
+          <div class="rate-card-label">${s.name} (min)</div>
+          <input type="number" class="rate-card-input" value="${s.minutes}" onchange="updateServiceMinutes('${s.id}', this.value)" />
+        </div>
+      `).join('');
+    }
   }
 
-  function updateServiceRate(id, val) { const s = services.find(x => x.id === id); if (s) s.rate = Number(val); updateQuoteDisplay(); }
-  function updateServiceMinutes(id, val) { const s = services.find(x => x.id === id); if (s) s.minutes = Number(val); updateQuoteDisplay(); }
+  function updateServiceRate(id, val) { const s = services.find(x => x.id === id); if (s) s.rate = safeNum(val, s.rate); updateQuoteDisplay(); }
+  function updateServiceMinutes(id, val) { const s = services.find(x => x.id === id); if (s) s.minutes = safeNum(val, s.minutes); updateQuoteDisplay(); }
+
+  /** Safely bind onclick to an element by ID. */
+  function bindClick(id, handler) {
+    const e = el(id);
+    if (e) e.onclick = handler;
+  }
+
+  /** Sign-out handler shared by both sign-out buttons. */
+  async function handleSignOut() {
+    const sb = await getSb();
+    if (sb) {
+      if (realtimeChannel) { realtimeChannel.unsubscribe(); realtimeChannel = null; }
+      await sb.auth.signOut();
+    }
+    proState.subscription = null;
+    proState.entitlementSource = null;
+    location.reload();
+  }
 
   document.addEventListener('DOMContentLoaded', async () => {
     loadLocalSettings();
@@ -1964,94 +2419,79 @@ function whatsappQuote() {
     await bootPro();
     if (!localStorage.getItem('wqp-onboarding-done')) showOnboarding();
 
-    document.getElementById('auth-signin-tab').onclick = () => { authMode = 'signin'; document.getElementById('auth-signin-tab').classList.add('active'); document.getElementById('auth-signup-tab').classList.remove('active'); document.getElementById('auth-name-field').classList.add('hidden'); document.getElementById('auth-submit-btn').textContent = 'Sign In'; };
-    document.getElementById('auth-signup-tab').onclick = () => { authMode = 'signup'; document.getElementById('auth-signup-tab').classList.add('active'); document.getElementById('auth-signin-tab').classList.remove('active'); document.getElementById('auth-name-field').classList.remove('hidden'); document.getElementById('auth-submit-btn').textContent = 'Create Account'; };
-    document.getElementById('auth-submit-btn').onclick = handleAuth;
-    document.getElementById('pro-signout-btn').onclick = async () => { const sb = await getSb(); if (sb) await sb.auth.signOut(); location.reload(); };
-    document.getElementById('setup-signout-btn').onclick = async () => { const sb = await getSb(); if (sb) await sb.auth.signOut(); location.reload(); };
-    document.getElementById('create-team-btn').onclick = createTeam;
-    document.getElementById('join-team-btn').onclick = joinTeam;
-    document.getElementById('save-team-job-btn').onclick = saveTeamJob;
-    document.getElementById('share-quote-btn').onclick = openShareModal;
-    document.getElementById('clear-counts-btn').onclick = () => { services.forEach(s => s.count = 0); renderSteppers(); updateQuoteDisplay(); };
-    document.getElementById('global-reset-btn').onclick = () => {
-  if (!confirm('Reset this quote?')) return;
-
-  services.forEach(s => s.count = 0);
-
-  quoteState.externalOnly = false;
-
-  document.getElementById('q-name').value = '';
-  document.getElementById('q-phone').value = '';
-  document.getElementById('q-email').value = '';
-  document.getElementById('q-address').value = '';
-
-  document.getElementById('external-only-toggle').checked = false;
-
-  renderSteppers();
-  updateQuoteDisplay();
-};
-    document.getElementById('external-only-toggle').onchange = (e) => { quoteState.externalOnly = e.target.checked; updateQuoteDisplay(); };
-    document.getElementById('save-settings-btn').onclick = async () => {
-      settings.businessName = document.getElementById('s-bizname').value;
-      settings.contactName = document.getElementById('s-contact').value;
-      settings.businessPhone = document.getElementById('s-phone').value;
-      settings.businessEmail = document.getElementById('s-email').value;
-      settings.customMessage = document.getElementById('s-message').value;
-      settings.pricingMode = document.getElementById('settings-pricing-mode').value;
-      settings.hourlyRate = Number(document.getElementById('settings-hourly-rate').value);
-      settings.externalOnlyPercent = Number(document.getElementById('settings-external-percent').value);
-      settings.travelFee = Number(document.getElementById('settings-travel-fee').value);
-      settings.discount = Number(document.getElementById('settings-discount').value);
-      settings.gstEnabled = document.getElementById('settings-gst-enabled').checked;
-      settings.gstRate = Number(document.getElementById('settings-gst-rate').value);
+    bindClick('auth-signin-tab', () => {
+      authMode = 'signin';
+      const signinTab = el('auth-signin-tab'); if (signinTab) signinTab.classList.add('active');
+      const signupTab = el('auth-signup-tab'); if (signupTab) signupTab.classList.remove('active');
+      const nameField = el('auth-name-field'); if (nameField) nameField.classList.add('hidden');
+      const submitBtn = el('auth-submit-btn'); if (submitBtn) submitBtn.textContent = 'Sign In';
+    });
+    bindClick('auth-signup-tab', () => {
+      authMode = 'signup';
+      const signupTab = el('auth-signup-tab'); if (signupTab) signupTab.classList.add('active');
+      const signinTab = el('auth-signin-tab'); if (signinTab) signinTab.classList.remove('active');
+      const nameField = el('auth-name-field'); if (nameField) nameField.classList.remove('hidden');
+      const submitBtn = el('auth-submit-btn'); if (submitBtn) submitBtn.textContent = 'Create Account';
+    });
+    bindClick('auth-submit-btn', handleAuth);
+    bindClick('pro-signout-btn', handleSignOut);
+    bindClick('create-team-btn', createTeam);
+    bindClick('join-team-btn', joinTeam);
+    bindClick('save-team-job-btn', saveTeamJob);
+    bindClick('share-quote-btn', openShareModal);
+    bindClick('clear-counts-btn', () => { services.forEach(s => s.count = 0); renderSteppers(); updateQuoteDisplay(); });
+    bindClick('global-reset-btn', () => {
+      if (!confirm('Reset this quote?')) return;
+      services.forEach(s => s.count = 0);
+      quoteState.externalOnly = false;
+      const setVal = (id, v) => { const e = el(id); if (e) e.value = v; };
+      setVal('q-name', ''); setVal('q-phone', ''); setVal('q-email', ''); setVal('q-address', '');
+      const extToggle = el('external-only-toggle'); if (extToggle) extToggle.checked = false;
+      renderSteppers();
+      updateQuoteDisplay();
+    });
+    const extToggle = el('external-only-toggle');
+    if (extToggle) extToggle.onchange = (e) => { quoteState.externalOnly = e.target.checked; updateQuoteDisplay(); };
+    bindClick('save-settings-btn', async () => {
+      const getVal = (id) => { const e = el(id); return e ? e.value : ''; };
+      const getChecked = (id) => { const e = el(id); return e ? e.checked : false; };
+      settings.businessName = getVal('s-bizname');
+      settings.contactName = getVal('s-contact');
+      settings.businessPhone = getVal('s-phone');
+      settings.businessEmail = getVal('s-email');
+      settings.customMessage = getVal('s-message');
+      settings.pricingMode = getVal('settings-pricing-mode');
+      settings.hourlyRate = safeNum(getVal('settings-hourly-rate'), settings.hourlyRate);
+      settings.externalOnlyPercent = safeNum(getVal('settings-external-percent'), settings.externalOnlyPercent);
+      settings.travelFee = safeNum(getVal('settings-travel-fee'), settings.travelFee);
+      settings.discount = safeNum(getVal('settings-discount'), settings.discount);
+      settings.gstEnabled = getChecked('settings-gst-enabled');
+      settings.gstRate = safeNum(getVal('settings-gst-rate'), settings.gstRate);
       saveLocalSettings();
       await saveSettingsToServer();
       updateQuoteDisplay();
-    };
-    document.getElementById('reset-all-btn').onclick = resetAllData;
-document.getElementById('copy-invite-btn').onclick = async () => {
-  if (!proState.inviteCode) {
-    showToast('No invite code available', 'error');
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(proState.inviteCode);
-    showToast('Copied!', 'success');
-  } catch (e) {
-    showToast('Copy failed', 'error');
-  }
-};
-document.getElementById('share-invite-btn').onclick = async () => {
-  if (!proState.inviteCode) {
-    showToast('No invite code available', 'error');
-    return;
-  }
-
-  const joinUrl =
-    `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(proState.inviteCode)}`;
-
-  const msg =
-    `Join my Window Quote Pro team.\n` +
-    `Invite Code: ${proState.inviteCode}\n` +
-    `Open this link: ${joinUrl}`;
-
-  try {
-    if (navigator.share) {
-      await navigator.share({
-        title: 'Join Team',
-        text: msg,
-        url: joinUrl
-      });
-    } else {
-      await navigator.clipboard.writeText(msg);
-      showToast('Join message copied!', 'success');
-    }
-  } catch (e) {
-    showToast('Share cancelled', 'error');
-  }
-};
+    });
+    bindClick('reset-all-btn', resetAllData);
+    bindClick('copy-invite-btn', async () => {
+      if (!proState.inviteCode) { showToast('No invite code available', 'error'); return; }
+      try {
+        await navigator.clipboard.writeText(proState.inviteCode);
+        showToast('Copied!', 'success');
+      } catch (e) { showToast('Copy failed', 'error'); }
+    });
+    bindClick('share-invite-btn', async () => {
+      if (!proState.inviteCode) { showToast('No invite code available', 'error'); return; }
+      const joinUrl = `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(proState.inviteCode)}`;
+      const msg = `Join my Window Quote Pro team.\nInvite Code: ${proState.inviteCode}\nOpen this link: ${joinUrl}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: 'Join Team', text: msg, url: joinUrl });
+        } else {
+          await navigator.clipboard.writeText(msg);
+          showToast('Join message copied!', 'success');
+        }
+      } catch (e) { showToast('Share cancelled', 'error'); }
+    });
 });
   </script>
 </body>
