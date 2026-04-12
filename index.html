@@ -1648,70 +1648,119 @@ function exportQuotePDF() {
 
   const element = document.createElement('div');
 
+  const data = getQuoteData();function exportQuotePDF() {
+  if (!proState.teamId) {
+    showToast('PDF export is a Pro feature', 'error');
+    return;
+  }
+
   const data = getQuoteData();
-  function exportQuotePDF() {
-    const data = getQuoteData();
-    const element = document.createElement('div');
-    element.innerHTML = `
-      <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
-        <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px;">
-          <h1 style="margin: 0; color: #2563eb; font-size: 32px;">${businessName}</h1>
-          <p style="margin: 5px 0; color: #6b7280;">Professional Quote</p>
+
+  const customerName = escapeHtml(document.getElementById('q-name').value || 'Customer');
+  const customerPhone = escapeHtml(document.getElementById('q-phone').value);
+  const customerEmail = escapeHtml(document.getElementById('q-email').value);
+  const customerAddress = escapeHtml(document.getElementById('q-address').value);
+
+  const businessName = escapeHtml(settings.businessName);
+  const customMessage = escapeHtml(settings.customMessage);
+  const contactName = escapeHtml(settings.contactName);
+  const businessPhone = escapeHtml(settings.businessPhone);
+  const businessEmail = escapeHtml(settings.businessEmail);
+
+  const element = document.createElement('div');
+
+  element.innerHTML = `
+    <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
+      <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px;">
+        <h1 style="margin: 0; color: #2563eb; font-size: 32px;">${businessName}</h1>
+        <p style="margin: 5px 0; color: #6b7280;">Professional Quote</p>
+      </div>
+
+      <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Customer</h3>
+          <p style="margin: 2px 0;"><strong>${customerName}</strong></p>
+          <p style="margin: 2px 0;">${customerPhone}</p>
+          <p style="margin: 2px 0;">${customerEmail}</p>
+          <p style="margin: 2px 0;">${customerAddress}</p>
         </div>
-        <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-          <div>
-            <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Customer</h3>
-            <p style="margin: 2px 0;"><strong>${customerName}</strong></p>
-            <p style="margin: 2px 0;">${customerPhone}</p>
-            <p style="margin: 2px 0;">${customerEmail}</p>
-            <p style="margin: 2px 0;">${customerAddress}</p>
-          </div>
-          <div style="text-align: right;">
-            <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Quote Details</h3>
-            <p style="margin: 2px 0;">Date: ${new Date().toLocaleDateString()}</p>
-            <p style="margin: 2px 0;">Valid for: 30 Days</p>
-          </div>
-        </div>
-        <div style="margin-bottom: 30px;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
-                <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Service</th>
-                <th style="padding: 12px; text-align: center; font-size: 12px; text-transform: uppercase;">Qty</th>
-                <th style="padding: 12px; text-align: right; font-size: 12px; text-transform: uppercase;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${services.filter(s => s.count > 0).map(s => {
-                let line = s.count * s.rate;
-                if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) line *= (Number(settings.externalOnlyPercent) / 100);
-                return `<tr style="border-bottom: 1px solid #f3f4f6;">
-                  <td style="padding: 12px; font-size: 14px;">${s.name} ${quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id) ? '(External Only)' : ''}</td>
-                  <td style="padding: 12px; text-align: center; font-size: 14px;">${s.count}</td>
-                  <td style="padding: 12px; text-align: right; font-size: 14px;">$${line.toFixed(2)}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-        <div style="margin-left: auto; width: 250px; background: #f9fafb; padding: 20px; border-radius: 12px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Subtotal:</span><span>$${data.subtotal.toFixed(2)}</span></div>
-          ${settings.travelFee > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Travel Fee:</span><span>+$${Number(settings.travelFee).toFixed(2)}</span></div>` : ''}
-          ${settings.discount > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Discount:</span><span>-$${Number(settings.discount).toFixed(2)}</span></div>` : ''}
-          ${settings.gstEnabled ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px;"><span>GST (${settings.gstRate}%):</span><span>+$${data.gstAmount.toFixed(2)}</span></div>` : ''}
-          <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px; color: #111827;"><span>TOTAL:</span><span>$${data.total.toFixed(2)}</span></div>
-        </div>
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; text-align: center;">
-          <p style="margin-bottom: 10px;">${customMessage}</p>
-<p>Contact: ${contactName} • ${businessPhone} • ${businessEmail}</p>
+        <div style="text-align: right;">
+          <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Quote Details</h3>
+          <p style="margin: 2px 0;">Date: ${new Date().toLocaleDateString()}</p>
+          <p style="margin: 2px 0;">Valid for: 30 Days</p>
         </div>
       </div>
-    `;
-    const opt = { margin: 0, filename: `quote-${document.getElementById('q-name').value || 'customer'}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' } };
-    html2pdf().set(opt).from(element).save();
-    closeShareModal();
-    showToast('PDF exported!', 'success');
-  }
+
+      <div style="margin-bottom: 30px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Service</th>
+              <th style="padding: 12px; text-align: center; font-size: 12px; text-transform: uppercase;">Qty</th>
+              <th style="padding: 12px; text-align: right; font-size: 12px; text-transform: uppercase;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${services.filter(s => s.count > 0).map(s => {
+              let line = s.count * s.rate;
+              if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
+                line *= (Number(settings.externalOnlyPercent) / 100);
+              }
+              return `
+                <tr style="border-bottom: 1px solid #f3f4f6;">
+                  <td style="padding: 12px; font-size: 14px;">${escapeHtml(s.name)} ${quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id) ? '(External Only)' : ''}</td>
+                  <td style="padding: 12px; text-align: center; font-size: 14px;">${s.count}</td>
+                  <td style="padding: 12px; text-align: right; font-size: 14px;">$${line.toFixed(2)}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-left: auto; width: 250px; background: #f9fafb; padding: 20px; border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+          <span>Subtotal:</span><span>$${data.subtotal.toFixed(2)}</span>
+        </div>
+        ${settings.travelFee > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+            <span>Travel Fee:</span><span>+$${Number(settings.travelFee).toFixed(2)}</span>
+          </div>
+        ` : ''}
+        ${settings.discount > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+            <span>Discount:</span><span>-$${Number(settings.discount).toFixed(2)}</span>
+          </div>
+        ` : ''}
+        ${settings.gstEnabled ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+            <span>GST (${settings.gstRate}%):</span><span>+$${data.gstAmount.toFixed(2)}</span>
+          </div>
+        ` : ''}
+        <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px; color: #111827;">
+          <span>TOTAL:</span><span>$${data.total.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; text-align: center;">
+        <p style="margin-bottom: 10px;">${customMessage}</p>
+        <p>Contact: ${contactName} • ${businessPhone} • ${businessEmail}</p>
+      </div>
+    </div>
+  `;
+
+  const opt = {
+    margin: 0,
+    filename: `quote-${document.getElementById('q-name').value || 'customer'}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+  };
+
+  html2pdf().set(opt).from(element).save();
+  closeShareModal();
+  showToast('PDF exported!', 'success');
+}
 
   function openShareModal() { document.getElementById('share-modal').classList.remove('hidden'); }
   function closeShareModal() { document.getElementById('share-modal').classList.add('hidden'); }
