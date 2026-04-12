@@ -1757,16 +1757,37 @@ if (!t) {
   }
 
   function updateKPIs() {
-    const jobs = proState.jobs || [];
-    const active = jobs.filter(j => !['completed', 'cancelled'].includes(normalizeStatus(j.status))).length;
-    const weekly = jobs.filter(j => normalizeStatus(j.status) === 'completed').length;
-    const collected = jobs.filter(j => normalizeStatus(j.status) === 'completed').reduce((sum, j) => sum + (parseFloat(j.quoted_price) || 0), 0);
-    const pending = jobs.filter(j => normalizeStatus(j.status) !== 'completed').reduce((sum, j) => sum + (parseFloat(j.quoted_price) || 0), 0);
-    document.getElementById('kpi-active').textContent = active;
-    document.getElementById('kpi-weekly').textContent = weekly;
-    document.getElementById('kpi-collected').textContent = `$${collected.toFixed(0)}`;
-    document.getElementById('kpi-pending').textContent = `$${pending.toFixed(0)}`;
-  }
+  const jobs = proState.jobs || [];
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  const day = startOfWeek.getDay(); // Sunday = 0
+  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setDate(startOfWeek.getDate() - day);
+
+  const active = jobs.filter(j =>
+    !['completed', 'cancelled'].includes(normalizeStatus(j.status))
+  ).length;
+
+  const weekly = jobs.filter(j => {
+    if (normalizeStatus(j.status) !== 'completed') return false;
+    if (!j.completed_at) return false;
+    const completedAt = new Date(j.completed_at);
+    return completedAt >= startOfWeek;
+  }).length;
+
+  const collected = jobs
+    .filter(j => normalizeStatus(j.status) === 'completed')
+    .reduce((sum, j) => sum + (parseFloat(j.quoted_price) || 0), 0);
+
+  const pending = jobs
+    .filter(j => normalizeStatus(j.status) !== 'completed')
+    .reduce((sum, j) => sum + (parseFloat(j.quoted_price) || 0), 0);
+
+  document.getElementById('kpi-active').textContent = active;
+  document.getElementById('kpi-weekly').textContent = weekly;
+  document.getElementById('kpi-collected').textContent = `$${collected.toFixed(0)}`;
+  document.getElementById('kpi-pending').textContent = `$${pending.toFixed(0)}`;
+}
 
   function renderJobsList() {
     const container = document.getElementById('jobs-list-container');
@@ -1895,10 +1916,35 @@ if (!t) {
     };
     document.getElementById('reset-all-btn').onclick = resetAllData;
     document.getElementById('copy-invite-btn').onclick = () => { navigator.clipboard.writeText(proState.inviteCode); showToast('Copied!'); };
-    document.getElementById('share-invite-btn').onclick = () => {
-      const msg = `Join my Window Quote Pro team with code: ${proState.inviteCode}`;
-      if (navigator.share) navigator.share({ title: 'Join Team', text: msg });
-      else { navigator.clipboard.writeText(msg); showToast('Join message copied!'); }
+    document.getElementById('share-invite-btn').onclick = async () => {
+  if (!proState.inviteCode) {
+    showToast('No invite code available', 'error');
+    return;
+  }
+
+  const joinUrl =
+    `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(proState.inviteCode)}`;
+
+  const msg =
+    `Join my Window Quote Pro team.\n` +
+    `Invite Code: ${proState.inviteCode}\n` +
+    `Open this link: ${joinUrl}`;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Join Team',
+        text: msg,
+        url: joinUrl
+      });
+    } else {
+      await navigator.clipboard.writeText(msg);
+      showToast('Join message copied!', 'success');
+    }
+  } catch (e) {
+    showToast('Share cancelled', 'error');
+  }
+};
     };
   });
   </script>
