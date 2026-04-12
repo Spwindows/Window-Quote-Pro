@@ -1307,7 +1307,13 @@
     proState.user = user;
     try {
       const { data: team, error } = await sb.rpc('get_my_team');
-      if (error || !team) {
+
+const noTeam =
+  error ||
+  !team ||
+  (Array.isArray(team) && team.length === 0);
+
+if (noTeam) {
         proState.teamId = null;
         if (pendingInviteCode) {
           try {
@@ -1320,8 +1326,13 @@
           } catch (e) { console.error('Auto-join failed', e); }
           document.getElementById('invite-code-input').value = pendingInviteCode || '';
         }
-      } else {
-        const t = Array.isArray(team) ? team[0] : team;
+      } else {const t = Array.isArray(team) ? team[0] : team;
+
+if (!t) {
+  proState.teamId = null;
+  renderProUI();
+  return;
+}
         proState.teamId = t.team_id;
         proState.teamName = t.business_name;
         proState.teamRole = t.role;
@@ -1847,7 +1858,23 @@
     document.getElementById('save-team-job-btn').onclick = saveTeamJob;
     document.getElementById('share-quote-btn').onclick = openShareModal;
     document.getElementById('clear-counts-btn').onclick = () => { services.forEach(s => s.count = 0); renderSteppers(); updateQuoteDisplay(); };
-    document.getElementById('global-reset-btn').onclick = () => { if (confirm('Reset this quote?')) { services.forEach(s => s.count = 0); renderSteppers(); updateQuoteDisplay(); } };
+    document.getElementById('global-reset-btn').onclick = () => {
+  if (!confirm('Reset this quote?')) return;
+
+  services.forEach(s => s.count = 0);
+
+  quoteState.externalOnly = false;
+
+  document.getElementById('q-name').value = '';
+  document.getElementById('q-phone').value = '';
+  document.getElementById('q-email').value = '';
+  document.getElementById('q-address').value = '';
+
+  document.getElementById('external-only-toggle').checked = false;
+
+  renderSteppers();
+  updateQuoteDisplay();
+};
     document.getElementById('external-only-toggle').onchange = (e) => { quoteState.externalOnly = e.target.checked; updateQuoteDisplay(); };
     document.getElementById('save-settings-btn').onclick = async () => {
       settings.businessName = document.getElementById('s-bizname').value;
