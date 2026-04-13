@@ -1871,29 +1871,44 @@
   }
 
   async function saveTeamJob() {
-    if (!proState.teamId) return showToast('Join a team first', 'error');
-    if (!hasProAccess()) return showToast('Saving jobs requires a Pro subscription', 'error');
-    const sb = await getSb();
-    if (!sb) return;
-    const data = getQuoteData();
-    const payload = {
-      team_id: proState.teamId,
-      customer_name: ((el('q-name') || {}).value || '').trim() || 'Customer',
-      customer_phone: ((el('q-phone') || {}).value || '').trim(),
-      customer_email: ((el('q-email') || {}).value || '').trim(),
-      service_address: ((el('q-address') || {}).value || '').trim(),
-      quoted_price: data.total,
-      items_summary: services.filter(s => s.count > 0).map(s => `${s.count} ${s.name}`).join(', '),
-      status: 'quoted',
-      created_by: proState.user.id
-    };
-    try {
-      const { error } = await sb.from('jobs').insert(payload);
-      if (error) throw error;
-      showToast('Job saved to team!');
-      await bootPro();
-    } catch (e) { showToast(e.message, 'error'); }
+  if (!proState.teamId) return showToast('Join a team first', 'error');
+  if (!hasProAccess()) return showToast('Saving jobs requires a Pro subscription', 'error');
+
+  const sb = await getSb();
+  if (!sb) return;
+
+  const data = getQuoteData();
+
+  const selectedDate = ((el('job-date') || {}).value || '').trim();
+  const selectedTime = ((el('job-time') || {}).value || '').trim();
+
+  let scheduledAt = null;
+  if (selectedDate && selectedTime) {
+    scheduledAt = new Date(`${selectedDate}T${selectedTime}`).toISOString();
   }
+
+  const payload = {
+    team_id: proState.teamId,
+    customer_name: ((el('q-name') || {}).value || '').trim() || 'Customer',
+    customer_phone: ((el('q-phone') || {}).value || '').trim(),
+    customer_email: ((el('q-email') || {}).value || '').trim(),
+    service_address: ((el('q-address') || {}).value || '').trim(),
+    quoted_price: data.total,
+    items_summary: services.filter(s => s.count > 0).map(s => `${s.count} ${s.name}`).join(', '),
+    status: 'quoted',
+    scheduled_at: scheduledAt,
+    created_by: proState.user.id
+  };
+
+  try {
+    const { error } = await sb.from('jobs').insert(payload);
+    if (error) throw error;
+    showToast('Job saved to team!');
+    await bootPro();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
 
   async function saveSettingsToServer() {
     if (!proState.teamId || !canAccessSettings()) return;
