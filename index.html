@@ -2384,39 +2384,93 @@ function whatsappQuote() {  const t = (el('quote-preview-text') || {}).textConte
   if (kpiCollected) kpiCollected.textContent = `$${collected.toFixed(0)}`;
   if (kpiPending) kpiPending.textContent = `$${pending.toFixed(0)}`;
 }
+function formatScheduledAt(value) {
+  if (!value) return 'Not scheduled';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return 'Not scheduled';
+  return d.toLocaleString();
+}
 
-  function renderJobsList() {
-    const container = el('jobs-list-container');
-    let jobs = proState.jobs.filter(j => normalizeStatus(j.status) === jobFilter);
-    const filters = [{v:'quoted',l:'Quoted'},{v:'accepted',l:'Accepted'},{v:'in_progress',l:'Active'},{v:'completed',l:'Done'}];
-    const filtersEl = el('job-filters');
-    if (filtersEl) filtersEl.innerHTML = filters.map(f => `<div class="chip" style="${jobFilter===f.v?'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;':''}" onclick="jobFilter='${f.v}';renderJobsList();">${f.l}</div>`).join('');
-    if (!jobs.length) { container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>'; return; }
-    container.innerHTML = jobs.map(j => `
-      <div class="job-card">
-        <div class="job-card-header" onclick="document.getElementById('job-body-${j.id}').classList.toggle('hidden')">
-          <div>
-            <div class="job-card-name">${escapeHtml(j.customer_name)}</div>
-            <div class="job-card-meta"><span>$${(parseFloat(j.quoted_price)||0).toFixed(2)}</span><span>•</span><span>${displayStatus(j.status)}</span></div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"></path></svg>
-        </div>
-        <div class="job-card-body hidden" id="job-body-${j.id}">
-          <div class="job-detail-grid">
-            <div><div class="job-detail-label">Address</div><div class="job-detail-val">${escapeHtml(j.service_address||'N/A')}</div></div>
-            <div><div class="job-detail-label">Phone</div><div class="job-detail-val">${escapeHtml(j.customer_phone||'N/A')}</div></div>
-            <div><div class="job-detail-label">Items</div><div class="job-detail-val">${escapeHtml(j.items_summary||'N/A')}</div></div>
-            <div><div class="job-detail-label">Status</div><div class="job-detail-val">${displayStatus(j.status)}</div></div>
-          </div>
-          <div class="job-actions">
-            <button class="btn btn-secondary btn-sm" onclick="updateJobStatus('${j.id}', 'accepted')">Accept</button>
-            <button class="btn btn-primary btn-sm" onclick="updateJobStatus('${j.id}', 'in_progress')">Start</button>
-            <button class="btn btn-success btn-sm" onclick="updateJobStatus('${j.id}', 'completed')">Complete</button>
-          </div>
-        </div>
+function renderJobsList() {
+  const container = el('jobs-list-container');
+  let jobs = proState.jobs.filter(j => normalizeStatus(j.status) === jobFilter);
+
+  const filters = [
+    { v: 'quoted', l: 'Quoted' },
+    { v: 'accepted', l: 'Accepted' },
+    { v: 'in_progress', l: 'Active' },
+    { v: 'completed', l: 'Done' }
+  ];
+
+  const filtersEl = el('job-filters');
+  if (filtersEl) {
+    filtersEl.innerHTML = filters.map(f => `
+      <div class="chip" style="${jobFilter === f.v ? 'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;' : ''}" onclick="jobFilter='${f.v}';renderJobsList();">
+        ${f.l}
       </div>
     `).join('');
   }
+
+  if (!jobs.length) {
+    container.innerHTML = '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
+    return;
+  }
+
+  container.innerHTML = jobs.map(j => `
+    <div class="job-card">
+      <div class="job-card-header" onclick="document.getElementById('job-body-${j.id}').classList.toggle('hidden')">
+        <div>
+          <div class="job-card-name">${escapeHtml(j.customer_name)}</div>
+          <div class="job-card-meta">
+            <span>$${(parseFloat(j.quoted_price) || 0).toFixed(2)}</span>
+            <span>•</span>
+            <span>${displayStatus(j.status)}</span>
+            <span>•</span>
+            <span>${escapeHtml(formatScheduledAt(j.scheduled_at))}</span>
+          </div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="m6 9 6 6 6-6"></path>
+        </svg>
+      </div>
+
+      <div class="job-card-body hidden" id="job-body-${j.id}">
+        <div class="job-detail-grid">
+          <div>
+            <div class="job-detail-label">Address</div>
+            <div class="job-detail-val">${escapeHtml(j.service_address || 'N/A')}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Phone</div>
+            <div class="job-detail-val">${escapeHtml(j.customer_phone || 'N/A')}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Items</div>
+            <div class="job-detail-val">${escapeHtml(j.items_summary || 'N/A')}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Status</div>
+            <div class="job-detail-val">${displayStatus(j.status)}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Scheduled</div>
+            <div class="job-detail-val">${escapeHtml(formatScheduledAt(j.scheduled_at))}</div>
+          </div>
+          <div>
+            <div class="job-detail-label">Created</div>
+            <div class="job-detail-val">${escapeHtml(formatScheduledAt(j.created_at))}</div>
+          </div>
+        </div>
+
+        <div class="job-actions">
+          <button class="btn btn-secondary btn-sm" onclick="updateJobStatus('${j.id}', 'accepted')">Accept</button>
+          <button class="btn btn-primary btn-sm" onclick="updateJobStatus('${j.id}', 'in_progress')">Start</button>
+          <button class="btn btn-success btn-sm" onclick="updateJobStatus('${j.id}', 'completed')">Complete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
 
   function syncSettingsForm() {
     const isOwner = canAccessSettings();
