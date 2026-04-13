@@ -1513,31 +1513,92 @@
   }
 
   /**
+   * Normalize a raw RPC row into a consistent subscription shape.
+   * Handles both effective_* prefixed (v3 hybrid) and unprefixed (v1/v2) column names.
+   */
+  function normalizeSubscriptionRow(row) {
+    if (!row) return null;
+    // Detect which shape we received: effective_* prefixed or plain columns
+    const hasPrefixed = row.effective_plan !== undefined || row.effective_status !== undefined;
+    if (hasPrefixed) {
+      return {
+        id: row.personal_id || row.team_sub_id || row.id || null,
+        plan: row.effective_plan || 'free',
+        status: row.effective_status || 'expired',
+        trial_ends_at: row.effective_trial_ends_at || row.trial_ends_at || null,
+        current_period_end: row.effective_current_period_end || row.current_period_end || null,
+        stripe_customer_id: row.personal_stripe_customer_id || row.stripe_customer_id || null,
+        _source: row.effective_source || 'personal',
+        _score: row.effective_score || 0,
+        _personal: row.personal_id ? { plan: row.personal_plan, status: row.personal_status } : null,
+        _team: row.team_sub_id ? { plan: row.team_sub_plan, status: row.team_sub_status, team_id: row.team_sub_team_id } : null
+      };
+    }
+    // Unprefixed shape (old get_my_subscription or simple ensure_subscription)
+    return {
+      id: row.id || null,
+      plan: row.plan || 'free',
+      status: row.status || 'expired',
+      trial_ends_at: row.trial_ends_at || null,
+      current_period_end: row.current_period_end || null,
+      stripe_customer_id: row.stripe_customer_id || null,
+      _source: 'personal',
+      _score: 0,
+      _personal: null,
+      _team: null
+    };
+  }
+
+  /**
    * Fetch the effective entitlement from Supabase and store in proState.
-   * Calls ensure_subscription() which:
-   *   1. Creates a personal trial if none exists (idempotent)
-   *   2. Returns the full effective entitlement (personal vs team, highest wins)
+   * Tries RPCs in order: ensure_subscription -> get_effective_entitlement -> get_my_subscription.
+   * Handles both v3 hybrid (effective_* prefixed) and v1/v2 (plain) response shapes.
    */
   async function loadSubscription(sb) {
+    let row = null;
+    // Strategy 1: ensure_subscription (v3 hybrid - creates trial if needed + returns effective entitlement)
     try {
       const { data, error } = await sb.rpc('ensure_subscription');
-      if (error) { console.error('Subscription load error:', error); return; }
-      const eff = Array.isArray(data) ? data[0] : data;
-      if (!eff) return;
-      proState.subscription = {
-        id: eff.personal_id || eff.team_sub_id || null,
-        plan: eff.effective_plan || 'free',
-        status: eff.effective_status || 'expired',
-        trial_ends_at: eff.effective_trial_ends_at || null,
-        current_period_end: eff.effective_current_period_end || null,
-        stripe_customer_id: eff.personal_stripe_customer_id || null,
-        _source: eff.effective_source || 'personal',
-        _score: eff.effective_score || 0,
-        _personal: eff.personal_id ? { plan: eff.personal_plan, status: eff.personal_status } : null,
-        _team: eff.team_sub_id ? { plan: eff.team_sub_plan, status: eff.team_sub_status, team_id: eff.team_sub_team_id } : null
-      };
-      proState.entitlementSource = eff.effective_source || 'personal';
-    } catch (e) { console.error('Subscription load failed:', e); }
+      if (!error && data) {
+        row = Array.isArray(data) ? data[0] : data;
+      } else if (error) {
+        console.warn('ensure_subscription unavailable:', error.message);
+      }
+    } catch (e) { console.warn('ensure_subscription call failed:', e.message); }
+
+    // Strategy 2: get_effective_entitlement (v3 hybrid - read-only, no trial creation)
+    if (!row) {
+      try {
+        const { data, error } = await sb.rpc('get_effective_entitlement');
+        if (!error && data) {
+          row = Array.isArray(data) ? data[0] : data;
+        }
+      } catch (e) { console.warn('get_effective_entitlement unavailable:', e.message); }
+    }
+
+    // Strategy 3: get_my_subscription (v1/v2 - personal subscription only)
+    if (!row) {
+      try {
+        const { data, error } = await sb.rpc('get_my_subscription');
+        if (!error && data) {
+          row = Array.isArray(data) ? data[0] : data;
+        }
+      } catch (e) { console.warn('get_my_subscription unavailable:', e.message); }
+    }
+
+    // Normalize whatever we got into a consistent shape
+    const sub = normalizeSubscriptionRow(row);
+    if (sub) {
+      proState.subscription = sub;
+      proState.entitlementSource = sub._source || 'personal';
+    } else {
+      // No subscription data at all - user is free
+      proState.subscription = { id: null, plan: 'free', status: 'expired', trial_ends_at: null, current_period_end: null, stripe_customer_id: null, _source: 'personal', _score: 0, _personal: null, _team: null };
+      proState.entitlementSource = 'personal';
+    }
+
+    // Debug: Log the resolved entitlement for troubleshooting
+    console.log('[Entitlement] Resolved:', { plan: proState.subscription.plan, status: proState.subscription.status, source: proState.entitlementSource, trial_ends_at: proState.subscription.trial_ends_at, hasProAccess: hasProAccess() });
   }
 
   /**
@@ -1872,7 +1933,6 @@
     try {
       const sb = await getSb();
       if (proState.teamId && canAccessSettings()) {
-        // Updated RPC: No teamId parameter required, server-side owner check enforced
         const { error } = await sb.rpc('reset_team_data');
         if (error) throw error;
       }
@@ -2493,6 +2553,3 @@ function whatsappQuote() {  const t = (el('quote-preview-text') || {}).textConte
       } catch (e) { showToast('Share cancelled', 'error'); }
     });
 });
-  </script>
-</body>
-</html>
