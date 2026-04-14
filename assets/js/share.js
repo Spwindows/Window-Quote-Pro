@@ -11,78 +11,82 @@ async function exportQuotePDF() {
     return;
   }
 
+  let mount = null;
+
   try {
     const data = getQuoteData();
 
     const rawName = (el('q-name')?.value || 'customer').trim();
     const safeName = rawName.replace(/[^a-zA-Z0-9 _-]/g, '') || 'customer';
 
-    let pdfElement = document.getElementById('pdf-export-container');
+    mount = document.createElement('div');
+    mount.id = 'pdf-export-mount';
 
-    if (!pdfElement) {
-      pdfElement = document.createElement('div');
-      pdfElement.id = 'pdf-export-container';
+    Object.assign(mount.style, {
+      position: 'fixed',
+      inset: '0',
+      background: '#ffffff',
+      zIndex: '99999',
+      overflow: 'auto',
+      padding: '0',
+      margin: '0',
+      opacity: '0.01',
+      pointerEvents: 'none'
+    });
 
-      Object.assign(pdfElement.style, {
-        position: 'fixed',
-        left: '-99999px',
-        top: '0',
-        width: '800px',
-        background: '#ffffff',
-        padding: '0',
-        margin: '0',
-        zIndex: '-1',
-        visibility: 'visible',
-        opacity: '1'
-      });
+    mount.innerHTML = `
+      <div id="pdf-export-inner" style="
+        width: 794px;
+        min-height: 1123px;
+        margin: 0 auto;
+        background: #ffffff;
+      ">
+        ${buildPdfHtml(data)}
+      </div>
+    `;
 
-      document.body.appendChild(pdfElement);
-    }
+    document.body.appendChild(mount);
 
-    pdfElement.innerHTML = buildPdfHtml(data);
+    const target = document.getElementById('pdf-export-inner');
+    if (!target) throw new Error('PDF target not created');
 
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-    const worker = html2pdf()
+    await html2pdf()
       .set({
-        margin: 10,
+        margin: 0,
         filename: `quote-${safeName}.pdf`,
-        image: {
-          type: 'jpeg',
-          quality: 1
-        },
+        image: { type: 'jpeg', quality: 1 },
         html2canvas: {
           scale: 2,
           useCORS: true,
           backgroundColor: '#ffffff',
           logging: false,
           scrollX: 0,
-          scrollY: 0
+          scrollY: 0,
+          windowWidth: 794,
+          windowHeight: target.scrollHeight || 1123
         },
         jsPDF: {
-          unit: 'mm',
-          format: 'a4',
+          unit: 'px',
+          format: [794, Math.max(1123, target.scrollHeight || 1123)],
           orientation: 'portrait'
         }
       })
-      .from(pdfElement);
-
-    await worker.save();
+      .from(target)
+      .save();
 
     showToast('PDF exported!', 'success');
-
-    setTimeout(() => {
-      if (pdfElement) pdfElement.innerHTML = '';
-    }, 1000);
-
+    closeShareModal();
   } catch (e) {
     console.error('PDF export failed:', e);
     showToast('PDF export failed', 'error');
+  } finally {
+    if (mount && mount.parentNode) {
+      mount.parentNode.removeChild(mount);
+    }
   }
-
-  closeShareModal();
 }
-
 function openShareModal() {
   const modal = el('share-modal');
   if (modal) modal.classList.remove('hidden');
