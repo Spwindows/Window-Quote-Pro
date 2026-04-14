@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', async () => {
   console.log("START DOMContentLoaded");
 
@@ -48,8 +47,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindClick('create-team-btn', createTeam);
   bindClick('join-team-btn', joinTeam);
   bindClick('save-team-job-btn', saveTeamJob);
-  bindClick('share-quote-btn', openShareModal);
   bindClick('save-team-job-inline-btn', saveTeamJob);
+  bindClick('share-quote-btn', openShareModal);
 
   bindClick('clear-counts-btn', () => {
     services.forEach(s => { s.count = 0; });
