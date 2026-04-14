@@ -1,3 +1,11 @@
+console.log("config loaded");
+console.log("state loaded");
+console.log("helpers loaded");
+console.log("quote loaded");
+console.log("settings loaded");
+console.log("subscription loaded");
+console.log("pro loaded");
+console.log("app loaded");
 function updateCount(id, delta) {
   const s = services.find(x => x.id === id);
   if (s) {
