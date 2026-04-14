@@ -1,11 +1,5 @@
-console.log("config loaded");
-console.log("state loaded");
-console.log("helpers loaded");
-console.log("quote loaded");
-console.log("settings loaded");
-console.log("subscription loaded");
-console.log("pro loaded");
-console.log("app loaded");document.addEventListener('DOMContentLoaded', async () => {
+
+document.addEventListener('DOMContentLoaded', async () => {
  console.log("START DOMContentLoaded");
 
 console.log("1");
@@ -176,11 +170,12 @@ console.log("FINISHED");
     }
   });
 
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch((err) => {
-        console.error("Service worker registration failed:", err);
-      });
+  /*
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch((err) => {
+      console.error("Service worker registration failed:", err);
     });
-  }
-});
+  });
+}
+*/
