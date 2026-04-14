@@ -239,7 +239,10 @@ function renderSubscriptionUI() {
     html += `<div class="sub-status-detail" style="color:#6366f1;">Access via team subscription</div>`;
   }
 
-  if (status !== 'active') {
+  // BUG FIX 1: Only show Upgrade CTA if user has personal entitlement and it's not active
+  // Staff users with team entitlement should NOT see this CTA
+  const isPersonalUser = proState.entitlementSource !== 'team';
+  if (status !== 'active' && isPersonalUser) {
     html += `<button class="btn btn-primary btn-full btn-sm" id="upgrade-cta-btn" type="button" onclick="handleUpgradeClick()">Upgrade to Pro - $49/month</button>`;
   }
 

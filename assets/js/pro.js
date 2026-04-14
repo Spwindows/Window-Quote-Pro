@@ -49,14 +49,31 @@ async function bootPro() {
 
       if (pendingInviteCode) {
         try {
-          const { error: joinErr } = await sb.rpc('join_team_by_invite', { p_invite_code: pendingInviteCode });
-          if (!joinErr) {
+          // BUG FIX 2: Validate invite code format before attempting join
+          if (!isValidInviteCode(pendingInviteCode)) {
+            console.warn('Invalid invite code format:', pendingInviteCode);
+            showToast('Invalid invite code format', 'error');
             localStorage.removeItem('pending_invite');
             pendingInviteCode = null;
-            return await bootPro();
+          } else {
+            const { error: joinErr } = await sb.rpc('join_team_by_invite', { p_invite_code: pendingInviteCode });
+            if (!joinErr) {
+              localStorage.removeItem('pending_invite');
+              pendingInviteCode = null;
+              return await bootPro();
+            } else {
+              // BUG FIX 2: Clear pending invite on failure and show error
+              console.error('Auto-join failed:', joinErr.message);
+              showToast('Failed to join team with invite code', 'error');
+              localStorage.removeItem('pending_invite');
+              pendingInviteCode = null;
+            }
           }
         } catch (e) {
           console.error('Auto-join failed', e);
+          showToast('Failed to join team', 'error');
+          localStorage.removeItem('pending_invite');
+          pendingInviteCode = null;
         }
 
         const inviteInput = el('invite-code-input');
@@ -168,6 +185,11 @@ async function joinTeam() {
   const code = ((el('invite-code-input') || {}).value || '').trim();
   if (!code) return showToast('Enter invite code', 'error');
 
+  // BUG FIX 2: Validate invite code format
+  if (!isValidInviteCode(code)) {
+    return showToast('Invalid invite code format', 'error');
+  }
+
   const sb = await getSb();
   if (!sb) return;
 
@@ -180,6 +202,14 @@ async function joinTeam() {
   } catch (e) {
     showToast(e.message, 'error');
   }
+}
+
+// BUG FIX 2: Helper function to validate invite code format
+function isValidInviteCode(code) {
+  if (!code || typeof code !== 'string') return false;
+  // Invite codes should be alphanumeric with hyphens, typically 8-16 chars
+  // Format: XXXX-XXXX or similar
+  return /^[A-Za-z0-9\-]{4,16}$/.test(code.trim());
 }
 
 function renderProUI() {
@@ -238,6 +268,8 @@ function renderProUI() {
     if (roleEl) roleEl.style.display = 'none';
   }
 
+  // BUG FIX 1: Only show team setup UI for users without a team
+  // Staff users should NOT see Create Team UI
   if (!proState.teamId) {
     if (teamSetup) teamSetup.classList.remove('hidden');
   }

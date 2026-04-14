@@ -205,6 +205,7 @@ function buildPdfHtml(data) {
     `;
   }).join('');
 
+  // BUG FIX 3: Replace CSS Grid/Flex with table-based layout for better html2canvas compatibility
   return `
     <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
       <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px;">
@@ -212,19 +213,23 @@ function buildPdfHtml(data) {
         <p style="margin: 5px 0; color: #6b7280;">Professional Quote</p>
       </div>
 
-      <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div>
-          <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Customer</h3>
-          <p style="margin: 2px 0;"><strong>${customerName}</strong></p>
-          <p style="margin: 2px 0;">${customerPhone}</p>
-          <p style="margin: 2px 0;">${customerEmail}</p>
-          <p style="margin: 2px 0;">${customerAddress}</p>
-        </div>
-        <div style="text-align: right;">
-          <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Quote Details</h3>
-          <p style="margin: 2px 0;">Date: ${new Date().toLocaleDateString()}</p>
-          <p style="margin: 2px 0;">Valid for: 30 Days</p>
-        </div>
+      <div style="margin-bottom: 30px; width: 100%;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="width: 50%; vertical-align: top; padding-right: 10px;">
+              <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Customer</h3>
+              <p style="margin: 2px 0;"><strong>${customerName}</strong></p>
+              <p style="margin: 2px 0;">${customerPhone}</p>
+              <p style="margin: 2px 0;">${customerEmail}</p>
+              <p style="margin: 2px 0;">${customerAddress}</p>
+            </td>
+            <td style="width: 50%; vertical-align: top; padding-left: 10px; text-align: right;">
+              <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Quote Details</h3>
+              <p style="margin: 2px 0;">Date: ${new Date().toLocaleDateString()}</p>
+              <p style="margin: 2px 0;">Valid for: 30 Days</p>
+            </td>
+          </tr>
+        </table>
       </div>
 
       <div style="margin-bottom: 30px;">
@@ -241,15 +246,19 @@ function buildPdfHtml(data) {
       </div>
 
       <div style="margin-left: auto; width: 250px; background: #f9fafb; padding: 20px; border-radius: 12px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
-          <span>Subtotal:</span><span>$${data.subtotal.toFixed(2)}</span>
-        </div>
-        ${travelFee > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Travel Fee:</span><span>+$${travelFee.toFixed(2)}</span></div>` : ''}
-        ${discount > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Discount:</span><span>-$${discount.toFixed(2)}</span></div>` : ''}
-        ${settings.gstEnabled ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px;"><span>GST (${gstRate}%):</span><span>+$${data.gstAmount.toFixed(2)}</span></div>` : ''}
-        <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px; color: #111827;">
-          <span>TOTAL:</span><span>$${data.total.toFixed(2)}</span>
-        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr style="margin-bottom: 8px;">
+            <td style="padding: 4px 0; font-size: 14px;">Subtotal:</td>
+            <td style="padding: 4px 0; font-size: 14px; text-align: right;">$${data.subtotal.toFixed(2)}</td>
+          </tr>
+          ${travelFee > 0 ? `<tr style="margin-bottom: 8px;"><td style="padding: 4px 0; font-size: 14px;">Travel Fee:</td><td style="padding: 4px 0; font-size: 14px; text-align: right;">+$${travelFee.toFixed(2)}</td></tr>` : ''}
+          ${discount > 0 ? `<tr style="margin-bottom: 8px;"><td style="padding: 4px 0; font-size: 14px;">Discount:</td><td style="padding: 4px 0; font-size: 14px; text-align: right;">-$${discount.toFixed(2)}</td></tr>` : ''}
+          ${settings.gstEnabled ? `<tr style="margin-bottom: 8px; border-top: 1px solid #e5e7eb; padding-top: 8px;"><td style="padding: 4px 0; font-size: 14px;">GST (${gstRate}%):</td><td style="padding: 4px 0; font-size: 14px; text-align: right;">+$${data.gstAmount.toFixed(2)}</td></tr>` : ''}
+          <tr style="border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px;">
+            <td style="padding: 8px 0; font-weight: 900; font-size: 20px; color: #111827;">TOTAL:</td>
+            <td style="padding: 8px 0; font-weight: 900; font-size: 20px; text-align: right; color: #111827;">$${data.total.toFixed(2)}</td>
+          </tr>
+        </table>
       </div>
 
       <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; text-align: center;">
