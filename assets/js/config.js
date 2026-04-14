@@ -1,3 +1,11 @@
+console.log("config loaded");
+console.log("state loaded");
+console.log("helpers loaded");
+console.log("quote loaded");
+console.log("settings loaded");
+console.log("subscription loaded");
+console.log("pro loaded");
+console.log("app loaded");
 const SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM';
 const STORAGE_KEY = 'window-quote-pro-v5-settings';
