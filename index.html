@@ -251,21 +251,33 @@
             <div class="card" style="margin-bottom:1rem;">
               <div class="card-title">Save Current Quote to Team</div>
               <div class="field-grid-2">
-                <div>
-                  <label class="field-label">Job Date</label>
-                  <input type="date" class="field-input" id="job-date" />
-                </div>
-                <div>
-                  <label class="field-label">Job Time</label>
-                  <input type="time" class="field-input" id="job-time" />
-                </div>
-              </div>
-            </div>
-            <div id="jobs-list-container"></div>
-          </div>
-        </div>
-      </div>
+                <div class="card" style="margin-bottom:1rem;">
+  <div class="card" style="margin-bottom:1rem;">
+  <div class="card-title">Save Current Quote to Team</div>
 
+  <div class="field-grid-2">
+    <div>
+      <label class="field-label">Job Date</label>
+      <input type="date" class="field-input" id="job-date" />
+    </div>
+
+    <div>
+      <label class="field-label">Job Time</label>
+      <input type="time" class="field-input" id="job-time" />
+    </div>
+  </div>
+
+  <button
+    class="btn btn-primary btn-full"
+    id="save-team-job-inline-btn"
+    type="button"
+    style="margin-top:0.9rem;"
+  >
+    Add Scheduled Job
+  </button>
+</div>
+
+<div id="jobs-list-container"></div>
       <!-- SETTINGS TAB -->
       <div id="tab-settings" class="hidden">
         <div id="settings-owner-view" class="hidden">
