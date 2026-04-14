@@ -20,10 +20,12 @@ async function bootPro() {
 
   try {
     const { data, error } = await sb.auth.getUser();
+
     if (error) {
       console.warn('getUser error:', error.message);
     }
-    user = data ? data.user : null;
+
+    user = data?.user || null;
   } catch (e) {
     console.error('getUser failed:', e);
   }
@@ -37,6 +39,7 @@ async function bootPro() {
     proState.jobs = [];
     proState.subscription = null;
     proState.entitlementSource = null;
+
     renderProUI();
     renderSubscriptionUI();
     return;
@@ -50,6 +53,7 @@ async function bootPro() {
     if (error) {
       console.error('get_my_team failed:', error.message);
       showToast('Could not load your team right now', 'error');
+
       proState.teamId = null;
       proState.teamName = '';
       proState.teamRole = '';
@@ -58,7 +62,7 @@ async function bootPro() {
     } else {
       const t = Array.isArray(team) ? team[0] : team;
 
-      if (!t || !t.team_id) {
+      if (!t?.team_id) {
         proState.teamId = null;
         proState.teamName = '';
         proState.teamRole = '';
@@ -69,30 +73,29 @@ async function bootPro() {
           const inviteCode = normalizeInviteCode(pendingInviteCode);
 
           if (!isValidInviteCodeFormat(inviteCode)) {
-            console.warn('Invalid pending invite code format:', pendingInviteCode);
             showToast('Invalid invite code format', 'error');
             localStorage.removeItem('pending_invite');
             pendingInviteCode = null;
           } else {
             try {
-              const { error: joinErr } = await sb.rpc('join_team_by_invite', { p_invite_code: inviteCode });
+              const { error: joinErr } = await sb.rpc(
+                'join_team_by_invite',
+                { p_invite_code: inviteCode }
+              );
 
               if (joinErr) {
-                console.error('Auto-join failed:', joinErr.message);
-                showToast(joinErr.message || 'Failed to join team with invite code', 'error');
+                showToast(joinErr.message || 'Failed to join team', 'error');
               } else {
                 localStorage.removeItem('pending_invite');
                 pendingInviteCode = null;
                 return await bootPro();
               }
             } catch (e) {
-              console.error('Auto-join failed', e);
-              showToast('Failed to join team', 'error');
+              console.error('Auto join failed', e);
             }
 
             const inviteInput = el('invite-code-input');
             if (inviteInput) inviteInput.value = inviteCode;
-            pendingInviteCode = inviteCode;
           }
         }
       } else {
@@ -117,7 +120,7 @@ async function bootPro() {
           proState.jobs = jobs || [];
         }
 
-        const { data: s, error: settingsError } = await sb
+        const { data: teamSettings, error: settingsError } = await sb
           .from('team_settings')
           .select('*')
           .eq('team_id', proState.teamId)
@@ -127,19 +130,21 @@ async function bootPro() {
           console.error('Team settings load failed:', settingsError.message);
         }
 
-        if (s) applyTeamSettings(s);
+        if (teamSettings) {
+          applyTeamSettings(teamSettings);
+        }
 
         setupRealtimeChannel(sb);
       }
     }
   } catch (e) {
-    console.error('bootPro team load failed', e);
+    console.error('bootPro failed', e);
   }
 
   try {
     await loadSubscription(sb);
   } catch (e) {
-    console.error('Subscription load error', e);
+    console.error('Subscription load failed', e);
   }
 
   renderProUI();
@@ -154,13 +159,13 @@ async function bootPro() {
 async function handleAuth() {
   const email = ((el('auth-email') || {}).value || '').trim();
   const password = (el('auth-password') || {}).value || '';
-  const sb = await getSb();
-  if (!sb) return;
 
   if (!email || !password) {
-    showToast('Enter email and password', 'error');
-    return;
+    return showToast('Enter email and password', 'error');
   }
+
+  const sb = await getSb();
+  if (!sb) return;
 
   try {
     let res;
@@ -171,17 +176,26 @@ async function handleAuth() {
       res = await sb.auth.signUp({
         email,
         password,
-        options: { data: { full_name: name } }
+        options: {
+          data: { full_name: name }
+        }
       });
 
       if (res.error) throw res.error;
 
       if (!res.data?.session) {
-        showToast('Account created. Check your email to confirm your account.', 'success');
+        showToast(
+          'Account created. Check email to confirm account.',
+          'success'
+        );
         return;
       }
     } else {
-      res = await sb.auth.signInWithPassword({ email, password });
+      res = await sb.auth.signInWithPassword({
+        email,
+        password
+      });
+
       if (res.error) throw res.error;
     }
 
@@ -194,13 +208,19 @@ async function handleAuth() {
 
 async function createTeam() {
   const name = ((el('team-name-input') || {}).value || '').trim();
-  if (!name) return showToast('Enter business name', 'error');
+
+  if (!name) {
+    return showToast('Enter business name', 'error');
+  }
 
   const sb = await getSb();
   if (!sb) return;
 
   try {
-    const { error } = await sb.rpc('create_team', { p_business_name: name });
+    const { error } = await sb.rpc('create_team', {
+      p_business_name: name
+    });
+
     if (error) throw error;
 
     showToast('Team created!', 'success');
@@ -212,7 +232,10 @@ async function createTeam() {
 
 async function joinTeam() {
   const rawCode = ((el('invite-code-input') || {}).value || '').trim();
-  if (!rawCode) return showToast('Enter invite code', 'error');
+
+  if (!rawCode) {
+    return showToast('Enter invite code', 'error');
+  }
 
   const code = normalizeInviteCode(rawCode);
 
@@ -227,7 +250,10 @@ async function joinTeam() {
   if (!sb) return;
 
   try {
-    const { error } = await sb.rpc('join_team_by_invite', { p_invite_code: code });
+    const { error } = await sb.rpc('join_team_by_invite', {
+      p_invite_code: code
+    });
+
     if (error) throw error;
 
     localStorage.removeItem('pending_invite');
@@ -247,10 +273,9 @@ function renderProUI() {
   const teamDash = el('pro-team-dashboard');
   const badge = el('pro-badge');
 
-  if (auth) auth.classList.add('hidden');
-  if (dash) dash.classList.add('hidden');
-  if (teamSetup) teamSetup.classList.add('hidden');
-  if (teamDash) teamDash.classList.add('hidden');
+  [auth, dash, teamSetup, teamDash].forEach(x => {
+    if (x) x.classList.add('hidden');
+  });
 
   const planInfo = getPlanDisplayInfo();
 
@@ -260,6 +285,7 @@ function renderProUI() {
   }
 
   const headerSub = el('header-sub');
+
   if (headerSub) {
     if (proState.user && proState.teamId) {
       headerSub.textContent = `${proState.teamName} • ${planInfo.label}`;
@@ -286,22 +312,29 @@ function renderProUI() {
     if (emailEl) emailEl.textContent = proState.user.email;
 
     if (roleEl) {
-      roleEl.textContent = proState.teamRole === 'owner' ? 'Owner' : 'Staff';
-      roleEl.className = `role-badge ${proState.teamRole === 'owner' ? 'role-owner' : 'role-staff'}`;
+      roleEl.textContent =
+        proState.teamRole === 'owner' ? 'Owner' : 'Staff';
+
+      roleEl.className =
+        `role-badge ${proState.teamRole === 'owner'
+          ? 'role-owner'
+          : 'role-staff'}`;
+
       roleEl.style.display = '';
     }
-  } else {
-    if (nameEl) nameEl.textContent = proState.user.user_metadata?.full_name || 'My Account';
-    if (emailEl) emailEl.textContent = proState.user.email;
-    if (roleEl) roleEl.style.display = 'none';
-  }
 
-  if (!proState.teamId) {
-    if (teamSetup) teamSetup.classList.remove('hidden');
-  }
-
-  if (proState.teamId) {
     if (teamDash) teamDash.classList.remove('hidden');
+  } else {
+    if (nameEl) {
+      nameEl.textContent =
+        proState.user.user_metadata?.full_name || 'My Account';
+    }
+
+    if (emailEl) emailEl.textContent = proState.user.email;
+
+    if (roleEl) roleEl.style.display = 'none';
+
+    if (teamSetup) teamSetup.classList.remove('hidden');
   }
 }
 
@@ -313,6 +346,7 @@ async function handleSignOut() {
       realtimeChannel.unsubscribe();
       realtimeChannel = null;
     }
+
     await sb.auth.signOut();
   }
 
@@ -321,5 +355,6 @@ async function handleSignOut() {
 
   proState.subscription = null;
   proState.entitlementSource = null;
+
   location.reload();
 }
