@@ -47,11 +47,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindClick('create-team-btn', createTeam);
   bindClick('join-team-btn', joinTeam);
   bindClick('save-team-job-btn', saveTeamJob);
-  bindClick('save-team-job-inline-btn', saveTeamJob);
   bindClick('share-quote-btn', openShareModal);
 
   bindClick('clear-counts-btn', () => {
-    services.forEach(s => { s.count = 0; });
+    services.forEach(s => {
+      s.count = 0;
+    });
+
     renderSteppers();
     updateQuoteDisplay();
   });
@@ -59,7 +61,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindClick('global-reset-btn', () => {
     if (!confirm('Reset this quote?')) return;
 
-    services.forEach(s => { s.count = 0; });
+    services.forEach(s => {
+      s.count = 0;
+    });
+
     quoteState.externalOnly = false;
 
     const setVal = (id, v) => {
@@ -80,6 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   const extToggle = el('external-only-toggle');
+
   if (extToggle) {
     extToggle.onchange = e => {
       quoteState.externalOnly = e.target.checked;
@@ -104,12 +110,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     settings.businessEmail = getVal('s-email');
     settings.customMessage = getVal('s-message');
     settings.pricingMode = getVal('settings-pricing-mode');
-    settings.hourlyRate = safeNum(getVal('settings-hourly-rate'), settings.hourlyRate);
-    settings.externalOnlyPercent = safeNum(getVal('settings-external-percent'), settings.externalOnlyPercent);
-    settings.travelFee = safeNum(getVal('settings-travel-fee'), settings.travelFee);
-    settings.discount = safeNum(getVal('settings-discount'), settings.discount);
+    settings.hourlyRate = safeNum(
+      getVal('settings-hourly-rate'),
+      settings.hourlyRate
+    );
+    settings.externalOnlyPercent = safeNum(
+      getVal('settings-external-percent'),
+      settings.externalOnlyPercent
+    );
+    settings.travelFee = safeNum(
+      getVal('settings-travel-fee'),
+      settings.travelFee
+    );
+    settings.discount = safeNum(
+      getVal('settings-discount'),
+      settings.discount
+    );
     settings.gstEnabled = getChecked('settings-gst-enabled');
-    settings.gstRate = safeNum(getVal('settings-gst-rate'), settings.gstRate);
+    settings.gstRate = safeNum(
+      getVal('settings-gst-rate'),
+      settings.gstRate
+    );
 
     saveLocalSettings();
     await saveSettingsToServer();
@@ -120,8 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   bindClick('copy-invite-btn', async () => {
     if (!proState.inviteCode) {
-      showToast('No invite code available', 'error');
-      return;
+      return showToast('No invite code available', 'error');
     }
 
     try {
@@ -134,16 +154,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   bindClick('share-invite-btn', async () => {
     if (!proState.inviteCode) {
-      showToast('No invite code available', 'error');
-      return;
+      return showToast('No invite code available', 'error');
     }
 
-    const joinUrl = `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(proState.inviteCode)}`;
-    const msg = `Join my Window Quote Pro team.\nInvite Code: ${proState.inviteCode}\nOpen this link: ${joinUrl}`;
+    const joinUrl =
+      `${window.location.origin}${window.location.pathname}` +
+      `?invite=${encodeURIComponent(proState.inviteCode)}`;
+
+    const msg =
+      `Join my Window Quote Pro team.\n` +
+      `Invite Code: ${proState.inviteCode}\n` +
+      `Open this link: ${joinUrl}`;
 
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Join Team', text: msg, url: joinUrl });
+        await navigator.share({
+          title: 'Join Team',
+          text: msg,
+          url: joinUrl
+        });
       } else {
         await navigator.clipboard.writeText(msg);
         showToast('Join message copied!', 'success');
