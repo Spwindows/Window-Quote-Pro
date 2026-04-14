@@ -2,39 +2,46 @@ console.log("[WQP] state.js loaded");
 
 let pendingInviteCode = null;
 
+function normalizeInviteCode(code) {
+  return String(code || '').trim().toUpperCase();
+}
+
+function isValidInviteCodeFormat(code) {
+  const normalized = normalizeInviteCode(code);
+  if (!normalized) return false;
+  return /^[A-Z0-9-]{4,16}$/.test(normalized);
+}
+
 (function checkInviteFromURL() {
   const params = new URLSearchParams(window.location.search);
-  const invite = params.get('invite');
+  const inviteFromUrl = params.get('invite');
 
-  if (invite) {
-    // BUG FIX 2: Validate and normalize invite code from URL
-    const normalizedInvite = (invite || '').trim().toUpperCase();
+  if (inviteFromUrl) {
+    const normalizedInvite = normalizeInviteCode(inviteFromUrl);
+
     if (isValidInviteCodeFormat(normalizedInvite)) {
       pendingInviteCode = normalizedInvite;
       localStorage.setItem('pending_invite', normalizedInvite);
     } else {
-      console.warn('Invalid invite code from URL:', invite);
+      console.warn('Invalid invite code from URL:', inviteFromUrl);
       localStorage.removeItem('pending_invite');
       pendingInviteCode = null;
     }
+    return;
+  }
+
+  const storedInvite = normalizeInviteCode(localStorage.getItem('pending_invite'));
+
+  if (isValidInviteCodeFormat(storedInvite)) {
+    pendingInviteCode = storedInvite;
   } else {
-    pendingInviteCode = localStorage.getItem('pending_invite');
-    // Validate stored invite code
-    if (pendingInviteCode && !isValidInviteCodeFormat(pendingInviteCode)) {
-      console.warn('Stored invite code is invalid:', pendingInviteCode);
-      localStorage.removeItem('pending_invite');
-      pendingInviteCode = null;
+    if (storedInvite) {
+      console.warn('Stored invite code is invalid:', storedInvite);
     }
+    localStorage.removeItem('pending_invite');
+    pendingInviteCode = null;
   }
 })();
-
-// BUG FIX 2: Helper function to validate invite code format
-function isValidInviteCodeFormat(code) {
-  if (!code || typeof code !== 'string') return false;
-  // Invite codes should be alphanumeric with hyphens, typically 4-16 chars
-  // Format: XXXX-XXXX or similar
-  return /^[A-Z0-9\-]{4,16}$/.test(code.trim());
-}
 
 let supabaseClient = null;
 let realtimeChannel = null;

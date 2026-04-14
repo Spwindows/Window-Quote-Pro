@@ -17,6 +17,7 @@ async function bootPro() {
   if (!sb) return;
 
   let user = null;
+
   try {
     const { data, error } = await sb.auth.getUser();
     if (error) {
@@ -29,6 +30,13 @@ async function bootPro() {
 
   if (!user) {
     proState.user = null;
+    proState.teamId = null;
+    proState.teamName = '';
+    proState.teamRole = '';
+    proState.inviteCode = '';
+    proState.jobs = [];
+    proState.subscription = null;
+    proState.entitlementSource = null;
     renderProUI();
     renderSubscriptionUI();
     return;
@@ -38,85 +46,94 @@ async function bootPro() {
 
   try {
     const { data: team, error } = await sb.rpc('get_my_team');
-    const noTeam = error || !team || (Array.isArray(team) && team.length === 0);
 
-    if (noTeam) {
+    if (error) {
+      console.error('get_my_team failed:', error.message);
+      showToast('Could not load your team right now', 'error');
       proState.teamId = null;
       proState.teamName = '';
       proState.teamRole = '';
       proState.inviteCode = '';
       proState.jobs = [];
+    } else {
+      const t = Array.isArray(team) ? team[0] : team;
 
-      if (pendingInviteCode) {
-        try {
-          // BUG FIX 2: Validate invite code format before attempting join
-          if (!isValidInviteCode(pendingInviteCode)) {
-            console.warn('Invalid invite code format:', pendingInviteCode);
+      if (!t || !t.team_id) {
+        proState.teamId = null;
+        proState.teamName = '';
+        proState.teamRole = '';
+        proState.inviteCode = '';
+        proState.jobs = [];
+
+        if (pendingInviteCode) {
+          const inviteCode = normalizeInviteCode(pendingInviteCode);
+
+          if (!isValidInviteCodeFormat(inviteCode)) {
+            console.warn('Invalid pending invite code format:', pendingInviteCode);
             showToast('Invalid invite code format', 'error');
             localStorage.removeItem('pending_invite');
             pendingInviteCode = null;
           } else {
-            const { error: joinErr } = await sb.rpc('join_team_by_invite', { p_invite_code: pendingInviteCode });
-            if (!joinErr) {
-              localStorage.removeItem('pending_invite');
-              pendingInviteCode = null;
-              return await bootPro();
-            } else {
-              // BUG FIX 2: Clear pending invite on failure and show error
-              console.error('Auto-join failed:', joinErr.message);
-              showToast('Failed to join team with invite code', 'error');
-              localStorage.removeItem('pending_invite');
-              pendingInviteCode = null;
+            try {
+              const { error: joinErr } = await sb.rpc('join_team_by_invite', { p_invite_code: inviteCode });
+
+              if (joinErr) {
+                console.error('Auto-join failed:', joinErr.message);
+                showToast(joinErr.message || 'Failed to join team with invite code', 'error');
+              } else {
+                localStorage.removeItem('pending_invite');
+                pendingInviteCode = null;
+                return await bootPro();
+              }
+            } catch (e) {
+              console.error('Auto-join failed', e);
+              showToast('Failed to join team', 'error');
             }
+
+            const inviteInput = el('invite-code-input');
+            if (inviteInput) inviteInput.value = inviteCode;
+            pendingInviteCode = inviteCode;
           }
-        } catch (e) {
-          console.error('Auto-join failed', e);
-          showToast('Failed to join team', 'error');
-          localStorage.removeItem('pending_invite');
-          pendingInviteCode = null;
+        }
+      } else {
+        proState.teamId = t.team_id;
+        proState.teamName = t.business_name || '';
+        proState.teamRole = t.role || '';
+        proState.inviteCode = normalizeInviteCode(t.invite_code || '');
+
+        localStorage.removeItem('pending_invite');
+        pendingInviteCode = null;
+
+        const { data: jobs, error: jobsError } = await sb
+          .from('jobs')
+          .select('*')
+          .eq('team_id', proState.teamId)
+          .order('created_at', { ascending: false });
+
+        if (jobsError) {
+          console.error('Jobs load failed:', jobsError.message);
+          proState.jobs = [];
+        } else {
+          proState.jobs = jobs || [];
         }
 
-        const inviteInput = el('invite-code-input');
-        if (inviteInput) inviteInput.value = pendingInviteCode || '';
+        const { data: s, error: settingsError } = await sb
+          .from('team_settings')
+          .select('*')
+          .eq('team_id', proState.teamId)
+          .single();
+
+        if (settingsError && settingsError.code !== 'PGRST116') {
+          console.error('Team settings load failed:', settingsError.message);
+        }
+
+        if (s) applyTeamSettings(s);
+
+        setupRealtimeChannel(sb);
       }
-    } else {
-      const t = Array.isArray(team) ? team[0] : team;
-
-      if (!t) {
-        proState.teamId = null;
-        renderProUI();
-        renderSubscriptionUI();
-        return;
-      }
-
-      proState.teamId = t.team_id;
-      proState.teamName = t.business_name;
-      proState.teamRole = t.role;
-      proState.inviteCode = t.invite_code;
-
-      localStorage.removeItem('pending_invite');
-      pendingInviteCode = null;
-
-      const { data: jobs } = await sb
-        .from('jobs')
-        .select('*')
-        .eq('team_id', proState.teamId)
-        .order('created_at', { ascending: false });
-
-      proState.jobs = jobs || [];
-
-      const { data: s } = await sb
-        .from('team_settings')
-        .select('*')
-        .eq('team_id', proState.teamId)
-        .single();
-
-      if (s) applyTeamSettings(s);
-
-      setupRealtimeChannel(sb);
     }
   } catch (e) {
-    console.error(e);
+    console.error('bootPro team load failed', e);
   }
 
   try {
@@ -135,26 +152,38 @@ async function bootPro() {
 }
 
 async function handleAuth() {
-  const email = (el('auth-email') || {}).value || '';
+  const email = ((el('auth-email') || {}).value || '').trim();
   const password = (el('auth-password') || {}).value || '';
   const sb = await getSb();
   if (!sb) return;
+
+  if (!email || !password) {
+    showToast('Enter email and password', 'error');
+    return;
+  }
 
   try {
     let res;
 
     if (authMode === 'signup') {
-      const name = (el('auth-name') || {}).value || '';
+      const name = ((el('auth-name') || {}).value || '').trim();
+
       res = await sb.auth.signUp({
         email,
         password,
         options: { data: { full_name: name } }
       });
+
+      if (res.error) throw res.error;
+
+      if (!res.data?.session) {
+        showToast('Account created. Check your email to confirm your account.', 'success');
+        return;
+      }
     } else {
       res = await sb.auth.signInWithPassword({ email, password });
+      if (res.error) throw res.error;
     }
-
-    if (res.error) throw res.error;
 
     showToast('Welcome!', 'success');
     await bootPro();
@@ -182,13 +211,17 @@ async function createTeam() {
 }
 
 async function joinTeam() {
-  const code = ((el('invite-code-input') || {}).value || '').trim();
-  if (!code) return showToast('Enter invite code', 'error');
+  const rawCode = ((el('invite-code-input') || {}).value || '').trim();
+  if (!rawCode) return showToast('Enter invite code', 'error');
 
-  // BUG FIX 2: Validate invite code format
-  if (!isValidInviteCode(code)) {
+  const code = normalizeInviteCode(rawCode);
+
+  if (!isValidInviteCodeFormat(code)) {
     return showToast('Invalid invite code format', 'error');
   }
+
+  const input = el('invite-code-input');
+  if (input) input.value = code;
 
   const sb = await getSb();
   if (!sb) return;
@@ -197,19 +230,14 @@ async function joinTeam() {
     const { error } = await sb.rpc('join_team_by_invite', { p_invite_code: code });
     if (error) throw error;
 
+    localStorage.removeItem('pending_invite');
+    pendingInviteCode = null;
+
     showToast('Joined team!', 'success');
     await bootPro();
   } catch (e) {
     showToast(e.message, 'error');
   }
-}
-
-// BUG FIX 2: Helper function to validate invite code format
-function isValidInviteCode(code) {
-  if (!code || typeof code !== 'string') return false;
-  // Invite codes should be alphanumeric with hyphens, typically 8-16 chars
-  // Format: XXXX-XXXX or similar
-  return /^[A-Za-z0-9\-]{4,16}$/.test(code.trim());
 }
 
 function renderProUI() {
@@ -268,8 +296,6 @@ function renderProUI() {
     if (roleEl) roleEl.style.display = 'none';
   }
 
-  // BUG FIX 1: Only show team setup UI for users without a team
-  // Staff users should NOT see Create Team UI
   if (!proState.teamId) {
     if (teamSetup) teamSetup.classList.remove('hidden');
   }
@@ -289,6 +315,9 @@ async function handleSignOut() {
     }
     await sb.auth.signOut();
   }
+
+  localStorage.removeItem('pending_invite');
+  pendingInviteCode = null;
 
   proState.subscription = null;
   proState.entitlementSource = null;

@@ -74,7 +74,14 @@ async function saveTeamJob() {
 
   let scheduledAt = null;
   if (selectedDate && selectedTime) {
-    scheduledAt = new Date(`${selectedDate}T${selectedTime}`).toISOString();
+    const scheduledDate = new Date(`${selectedDate}T${selectedTime}`);
+    if (!Number.isNaN(scheduledDate.getTime())) {
+      scheduledAt = scheduledDate.toISOString();
+    }
+  }
+
+  if (!services.some(s => s.count > 0)) {
+    return showToast('Add at least one service before saving a job', 'error');
   }
 
   const payload = {
