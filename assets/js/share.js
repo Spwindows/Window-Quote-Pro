@@ -7,59 +7,77 @@ async function exportQuotePDF() {
   }
 
   if (typeof html2pdf === 'undefined') {
-    showToast('PDF library not loaded. Check your connection.', 'error');
+    showToast('PDF library not loaded.', 'error');
     return;
   }
 
-  const data = getQuoteData();
-  
-  // BUG FIX 2: To prevent blank PDF output, we MUST attach the element to the DOM
-  // and ensure it has a defined width and white background. 
-  // html2canvas often fails to capture elements that are not part of the active document.
-  
-  const containerId = 'pdf-export-container';
-  let pdfElement = document.getElementById(containerId);
-  if (!pdfElement) {
-    pdfElement = document.createElement('div');
-    pdfElement.id = containerId;
-    // Position off-screen but still part of the layout
-    pdfElement.style.position = 'absolute';
-    pdfElement.style.left = '-9999px';
-    pdfElement.style.top = '0';
-    pdfElement.style.width = '210mm'; // A4 width
-    pdfElement.style.background = 'white';
-    document.body.appendChild(pdfElement);
-  }
-  
-  pdfElement.innerHTML = buildPdfHtml(data);
-
-  const rawName = (el('q-name') ? el('q-name').value : '') || 'customer';
-  const safeName = rawName.replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'customer';
-
-  const opt = {
-    margin: 10, // Added margin for safety
-    filename: `quote-${safeName}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { 
-      scale: 2,
-      useCORS: true,
-      letterRendering: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    },
-    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-  };
-
   try {
-    // We use the element that is now attached to the DOM
-    await html2pdf().set(opt).from(pdfElement).save();
+    const data = getQuoteData();
+
+    const rawName = (el('q-name')?.value || 'customer').trim();
+    const safeName = rawName.replace(/[^a-zA-Z0-9 _-]/g, '') || 'customer';
+
+    let pdfElement = document.getElementById('pdf-export-container');
+
+    if (!pdfElement) {
+      pdfElement = document.createElement('div');
+      pdfElement.id = 'pdf-export-container';
+
+      Object.assign(pdfElement.style, {
+        position: 'fixed',
+        left: '-99999px',
+        top: '0',
+        width: '800px',
+        background: '#ffffff',
+        padding: '0',
+        margin: '0',
+        zIndex: '-1',
+        visibility: 'visible',
+        opacity: '1'
+      });
+
+      document.body.appendChild(pdfElement);
+    }
+
+    pdfElement.innerHTML = buildPdfHtml(data);
+
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    const worker = html2pdf()
+      .set({
+        margin: 10,
+        filename: `quote-${safeName}.pdf`,
+        image: {
+          type: 'jpeg',
+          quality: 1
+        },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          scrollX: 0,
+          scrollY: 0
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        }
+      })
+      .from(pdfElement);
+
+    await worker.save();
+
     showToast('PDF exported!', 'success');
+
+    setTimeout(() => {
+      if (pdfElement) pdfElement.innerHTML = '';
+    }, 1000);
+
   } catch (e) {
-    console.error('PDF export error', e);
+    console.error('PDF export failed:', e);
     showToast('PDF export failed', 'error');
-  } finally {
-    // Clean up or keep it hidden
-    pdfElement.innerHTML = '';
   }
 
   closeShareModal();
