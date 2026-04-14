@@ -182,11 +182,11 @@ function updateKPIs() {
   el('kpi-pending').textContent = `$${pending.toFixed(0)}`;
 }
 
-function formatScheduledAt(value) {
-  if (!value) return 'Not scheduled';
+function formatDateTime(value, emptyLabel = 'Not set') {
+  if (!value) return emptyLabel;
 
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return 'Not scheduled';
+  if (Number.isNaN(d.getTime())) return emptyLabel;
 
   return d.toLocaleString();
 }
@@ -279,7 +279,7 @@ function renderJobsList() {
               <span>•</span>
               <span>${displayStatus(j.status)}</span>
               <span>•</span>
-              <span>${escapeHtml(formatScheduledAt(j.scheduled_at))}</span>
+              <span>${escapeHtml(formatDateTime(j.scheduled_at, 'Not scheduled'))}</span>
             </div>
           </div>
 
@@ -307,8 +307,28 @@ function renderJobsList() {
             </div>
 
             <div>
+              <div class="job-detail-label">Created</div>
+              <div class="job-detail-val">${escapeHtml(formatDateTime(j.created_at, 'Unknown'))}</div>
+            </div>
+
+            <div>
+              <div class="job-detail-label">Accepted</div>
+              <div class="job-detail-val">${escapeHtml(formatDateTime(j.accepted_at, 'Not accepted yet'))}</div>
+            </div>
+
+            <div>
               <div class="job-detail-label">Scheduled</div>
-              <div class="job-detail-val">${escapeHtml(formatScheduledAt(j.scheduled_at))}</div>
+              <div class="job-detail-val">${escapeHtml(formatDateTime(j.scheduled_at, 'Not scheduled'))}</div>
+            </div>
+
+            <div>
+              <div class="job-detail-label">Started</div>
+              <div class="job-detail-val">${escapeHtml(formatDateTime(j.started_at, 'Not started yet'))}</div>
+            </div>
+
+            <div>
+              <div class="job-detail-label">Completed</div>
+              <div class="job-detail-val">${escapeHtml(formatDateTime(j.completed_at, 'Not completed yet'))}</div>
             </div>
           </div>
 
