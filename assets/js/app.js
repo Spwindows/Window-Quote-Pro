@@ -1,4 +1,11 @@
-document.addEventListener('DOMContentLoaded', async () => {
+console.log("config loaded");
+console.log("state loaded");
+console.log("helpers loaded");
+console.log("quote loaded");
+console.log("settings loaded");
+console.log("subscription loaded");
+console.log("pro loaded");
+console.log("app loaded");document.addEventListener('DOMContentLoaded', async () => {
   loadLocalSettings();
   renderSteppers();
   syncSettingsForm();
