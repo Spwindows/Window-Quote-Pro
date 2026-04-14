@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet" />
-<link rel="manifest" href="manifest.webmanifest" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
@@ -247,37 +247,36 @@
                 </div>
               </div>
             </div>
+
             <div class="chip-strip" id="job-filters" style="margin-bottom:1rem;"></div>
+
             <div class="card" style="margin-bottom:1rem;">
               <div class="card-title">Save Current Quote to Team</div>
               <div class="field-grid-2">
-                <div class="card" style="margin-bottom:1rem;">
-  <div class="card" style="margin-bottom:1rem;">
-  <div class="card-title">Save Current Quote to Team</div>
+                <div>
+                  <label class="field-label">Job Date</label>
+                  <input type="date" class="field-input" id="job-date" />
+                </div>
+                <div>
+                  <label class="field-label">Job Time</label>
+                  <input type="time" class="field-input" id="job-time" />
+                </div>
+              </div>
+              <button
+                class="btn btn-primary btn-full"
+                id="save-team-job-inline-btn"
+                type="button"
+                style="margin-top:0.9rem;"
+              >
+                Add Scheduled Job
+              </button>
+            </div>
 
-  <div class="field-grid-2">
-    <div>
-      <label class="field-label">Job Date</label>
-      <input type="date" class="field-input" id="job-date" />
-    </div>
+            <div id="jobs-list-container"></div>
+          </div>
+        </div>
+      </div>
 
-    <div>
-      <label class="field-label">Job Time</label>
-      <input type="time" class="field-input" id="job-time" />
-    </div>
-  </div>
-
-  <button
-    class="btn btn-primary btn-full"
-    id="save-team-job-inline-btn"
-    type="button"
-    style="margin-top:0.9rem;"
-  >
-    Add Scheduled Job
-  </button>
-</div>
-
-<div id="jobs-list-container"></div>
       <!-- SETTINGS TAB -->
       <div id="tab-settings" class="hidden">
         <div id="settings-owner-view" class="hidden">
@@ -402,7 +401,7 @@
             <div class="quote-price-sub" id="footer-count">0 items selected</div>
           </div>
           <div class="quote-footer-actions">
-            <button class="btn btn-secondary btn-sm hidden" id="save-team-job-btn" type="button">Save to Team</button>
+            <button class="btn btn-secondary btn-sm hidden" id="save-team-job-btn" type="button" style="display:none;">Save to Team</button>
             <button class="btn btn-primary btn-sm" id="share-quote-btn" type="button">Share</button>
           </div>
         </div>
@@ -434,17 +433,17 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./assets/js/config.js"></script>
-<script src="./assets/js/state.js"></script>
-<script src="./assets/js/helpers.js"></script>
-<script src="./assets/js/ui.js"></script>
-<script src="./assets/js/subscription.js"></script>
-<script src="./assets/js/settings.js"></script>
-<script src="./assets/js/quote.js"></script>
-<script src="./assets/js/share.js"></script>
-<script src="./assets/js/onboarding.js"></script>
-<script src="./assets/js/jobs.js"></script>
-<script src="./assets/js/pro.js"></script>
-<script src="./assets/js/app.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/state.js"></script>
+  <script src="./assets/js/helpers.js"></script>
+  <script src="./assets/js/ui.js"></script>
+  <script src="./assets/js/subscription.js"></script>
+  <script src="./assets/js/settings.js"></script>
+  <script src="./assets/js/quote.js"></script>
+  <script src="./assets/js/share.js"></script>
+  <script src="./assets/js/onboarding.js"></script>
+  <script src="./assets/js/jobs.js"></script>
+  <script src="./assets/js/pro.js"></script>
+  <script src="./assets/js/app.js"></script>
 </body>
 </html>
