@@ -1,11 +1,3 @@
-console.log("config loaded");
-console.log("state loaded");
-console.log("helpers loaded");
-console.log("quote loaded");
-console.log("settings loaded");
-console.log("subscription loaded");
-console.log("pro loaded");
-console.log("app loaded");
 function updateCount(id, delta) {
   const s = services.find(x => x.id === id);
   if (s) {
@@ -229,4 +221,41 @@ function buildPdfHtml(data) {
           <p style="margin: 2px 0;">${customerAddress}</p>
         </div>
         <div style="text-align: right;">
-          <h3 style="color: #374151; margin-bottom:
+          <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Quote Details</h3>
+          <p style="margin: 2px 0;">Date: ${new Date().toLocaleDateString()}</p>
+          <p style="margin: 2px 0;">Valid for: 30 Days</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Service</th>
+              <th style="padding: 12px; text-align: center; font-size: 12px; text-transform: uppercase;">Qty</th>
+              <th style="padding: 12px; text-align: right; font-size: 12px; text-transform: uppercase;">Total</th>
+            </tr>
+          </thead>
+          <tbody>${serviceRows}</tbody>
+        </table>
+      </div>
+
+      <div style="margin-left: auto; width: 250px; background: #f9fafb; padding: 20px; border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+          <span>Subtotal:</span><span>$${data.subtotal.toFixed(2)}</span>
+        </div>
+        ${travelFee > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Travel Fee:</span><span>+$${travelFee.toFixed(2)}</span></div>` : ''}
+        ${discount > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;"><span>Discount:</span><span>-$${discount.toFixed(2)}</span></div>` : ''}
+        ${settings.gstEnabled ? `<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px;"><span>GST (${gstRate}%):</span><span>+$${data.gstAmount.toFixed(2)}</span></div>` : ''}
+        <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px; color: #111827;">
+          <span>TOTAL:</span><span>$${data.total.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; text-align: center;">
+        <p style="margin-bottom: 10px;">${customMessage}</p>
+        <p>Contact: ${contactName} • ${businessPhone} • ${businessEmail}</p>
+      </div>
+    </div>
+  `;
+}
