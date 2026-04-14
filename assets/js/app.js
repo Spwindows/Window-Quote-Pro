@@ -6,6 +6,27 @@ console.log("settings loaded");
 console.log("subscription loaded");
 console.log("pro loaded");
 console.log("app loaded");document.addEventListener('DOMContentLoaded', async () => {
+ console.log("START DOMContentLoaded");
+
+console.log("1");
+loadLocalSettings();
+
+console.log("2");
+renderSteppers();
+
+console.log("3");
+syncSettingsForm();
+
+console.log("4");
+renderSettingsGrids();
+
+console.log("5");
+updateQuoteDisplay();
+
+console.log("6");
+await bootPro();
+
+console.log("FINISHED"); 
   loadLocalSettings();
   renderSteppers();
   syncSettingsForm();
