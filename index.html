@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0" />
+  <title>Window Quote Pro</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#ffffff" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div id="toast-container"></div>
+
+  <!-- ONBOARDING MODAL -->
+  <div id="onboarding-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="skipOnboarding()" type="button">&#10005;</button>
+      <div class="modal-header">Welcome to Window Quote Pro!</div>
+      <div class="modal-subtitle">Let's get you set up in 2 minutes</div>
+
+      <div class="onboarding-step">
+        <div class="onboarding-step-number">1</div>
+        <div class="onboarding-step-title">Business Name</div>
+        <input type="text" class="field-input" id="onboarding-business-name" placeholder="Your business name" />
+      </div>
+
+      <div class="onboarding-step">
+        <div class="onboarding-step-number">2</div>
+        <div class="onboarding-step-title">Default Pricing Mode</div>
+        <select class="field-select" id="onboarding-pricing-mode">
+          <option value="per-window">Per Item</option>
+          <option value="hourly">Hourly Estimate</option>
+        </select>
+      </div>
+
+      <div class="onboarding-step">
+        <div class="onboarding-step-number">3</div>
+        <div class="onboarding-step-title">Enable GST?</div>
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+          <button class="btn btn-secondary" id="gst-yes-btn" onclick="setOnboardingGST(true)" style="flex:1;" type="button">Yes (10%)</button>
+          <button class="btn btn-secondary" id="gst-no-btn" onclick="setOnboardingGST(false)" style="flex:1;" type="button">No</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="completeOnboarding()" type="button">Get Started</button>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div id="share-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="closeShareModal()" type="button">&#10005;</button>
+      <div class="modal-header">Share Quote</div>
+      <div class="modal-subtitle">Send a branded PDF quote to your customer</div>
+
+      <button class="btn btn-primary btn-full" id="export-pdf-btn" onclick="exportQuotePDF()" type="button" style="font-size:1rem; padding:0.85rem 1.25rem;">
+        &#128196; Send Quote PDF
+      </button>
+
+      <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #e5e7eb;">
+        <button class="btn btn-secondary btn-full btn-sm" onclick="copyQuoteToClipboard()" type="button">
+          &#128203; Copy as Plain Text
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM PRO UPSELL MODAL -->
+  <div id="upsell-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="closeUpsellModal()" type="button">&#10005;</button>
+      <div style="text-align:center; margin-bottom:0.5rem;">
+        <span style="display:inline-flex; align-items:center; justify-content:center; width:3rem; height:3rem; border-radius:0.75rem; background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%); margin-bottom:0.5rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </span>
+      </div>
+      <div class="modal-header" style="text-align:center;">Upgrade to Team Pro</div>
+      <div class="modal-subtitle" style="text-align:center;">Unlock powerful team features to grow your business</div>
+
+      <div style="display:flex; flex-direction:column; gap:0.65rem; margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
+          <span style="font-size:1.2rem;">&#128101;</span>
+          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Team Accounts</div><div style="font-size:0.78rem; color:#6b7280;">Manage your whole crew in one place</div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
+          <span style="font-size:1.2rem;">&#128233;</span>
+          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Staff Invites</div><div style="font-size:0.78rem; color:#6b7280;">Invite staff with a simple code or link</div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
+          <span style="font-size:1.2rem;">&#128203;</span>
+          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Shared Pipeline</div><div style="font-size:0.78rem; color:#6b7280;">All quotes and jobs visible to the team</div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
+          <span style="font-size:1.2rem;">&#128259;</span>
+          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Team Sync</div><div style="font-size:0.78rem; color:#6b7280;">Real-time updates across all devices</div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
+          <span style="font-size:1.2rem;">&#128200;</span>
+          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Team Performance Tracking</div><div style="font-size:0.78rem; color:#6b7280;">Track revenue, completions, and productivity</div></div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="upsell-upgrade-btn" type="button" onclick="handleUpgradeClick(); closeUpsellModal();">
+        Upgrade to Pro &mdash; $49/month
+      </button>
+      <button class="btn btn-secondary btn-full" onclick="closeUpsellModal()" type="button" style="margin-top:0.5rem;">Maybe Later</button>
+    </div>
+  </div>
+
+  <!-- COMPLETION NEXT-STEP MODAL -->
+  <div id="completion-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="closeCompletionModal()" type="button">&#10005;</button>
+      <div class="modal-header">Job Completed!</div>
+      <div class="modal-subtitle">What would you like to do next?</div>
+
+      <div class="completion-options">
+        <button class="btn btn-primary btn-full" id="completion-invoice-btn" type="button">
+          <span class="btn-icon-text">&#128196; Send Invoice</span>
+        </button>
+        <button class="btn btn-success btn-full" id="completion-payment-btn" type="button">
+          <span class="btn-icon-text">&#128181; Record Payment</span>
+        </button>
+        <button class="btn btn-secondary btn-full" id="completion-later-btn" type="button">
+          Do This Later
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT RECORDING MODAL -->
+  <div id="payment-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="closePaymentModal()" type="button">&#10005;</button>
+      <div class="modal-header">Record Payment</div>
+      <div class="modal-subtitle" id="pay-due-display">Amount due: $0.00</div>
+
+      <div class="field-stack">
+        <div>
+          <label class="field-label">Amount Received ($)</label>
+          <input type="number" class="field-input" id="pay-amount" min="0" step="0.01" placeholder="0.00" />
+        </div>
+        <div>
+          <label class="field-label">Payment Method</label>
+          <select class="field-select" id="pay-method">
+            <option value="cash">Cash</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="card">Card</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Notes (optional)</label>
+          <input type="text" class="field-input" id="pay-notes" placeholder="e.g. Paid on site" />
+        </div>
+        <button class="btn btn-success btn-full" id="payment-submit-btn" type="button">Confirm Payment</button>
+        <button class="btn btn-secondary btn-full" id="payment-cancel-btn" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT CONFIRMATION MODAL -->
+  <div id="payment-confirm-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="closePaymentConfirmModal()" type="button">&#10005;</button>
+      <div class="modal-header">Payment Recorded!</div>
+      <div class="modal-subtitle">Would you like to send a receipt?</div>
+
+      <div class="completion-options">
+        <button class="btn btn-primary btn-full" id="payconfirm-receipt-btn" type="button">
+          <span class="btn-icon-text">&#128196; Send Receipt</span>
+        </button>
+        <button class="btn btn-secondary btn-full" id="payconfirm-skip-btn" type="button">
+          Skip
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app">
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-brand">
+          <div class="header-logo">
+            <img src="logo.png" alt="Window Quote Pro" style="width:100%; height:100%; object-fit:cover; border-radius:var(--r-md);" />
+          </div>
+          <div>
+            <div class="header-title">Window Quote Pro</div>
+            <div class="header-sub" id="header-sub">Fast quoting for window cleaners</div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <button class="btn btn-secondary btn-sm" id="global-reset-btn" title="Reset Quote" type="button" style="display:flex; align-items:center; gap:0.4rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span style="font-size:0.75rem; font-weight:600;">Reset</span>
+          </button>
+          <span class="badge-free" id="pro-badge">FREE</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <!-- QUOTE TAB -->
+      <div id="tab-quote">
+        <div class="chip-strip" id="service-chips"></div>
+
+        <div class="card">
+          <div class="card-title">Customer Details</div>
+          <div class="field-grid-2">
+            <div class="field-full">
+              <label class="field-label">Name</label>
+              <input type="text" class="field-input" id="q-name" placeholder="John Smith" />
+            </div>
+            <div>
+              <label class="field-label">Phone</label>
+              <input type="tel" class="field-input" id="q-phone" placeholder="0400 000 000" />
+            </div>
+            <div>
+              <label class="field-label">Email</label>
+              <input type="email" class="field-input" id="q-email" placeholder="john@email.com" />
+            </div>
+            <div class="field-full">
+              <label class="field-label">Address</label>
+              <input type="text" class="field-input" id="q-address" placeholder="12 Smith St, Melbourne" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+            <span>Services & Counts</span>
+            <button class="btn btn-secondary btn-sm" id="clear-counts-btn" type="button">Clear All</button>
+          </div>
+          <div id="steppers-container"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Quote Type</div>
+          <div class="field-stack">
+            <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
+              <span class="toggle-switch">
+                <input type="checkbox" id="external-only-toggle" />
+                <span class="toggle-slider"></span>
+              </span>
+              External only
+            </label>
+            <div id="external-only-note" style="font-size:0.78rem; color:#6b7280; padding-left:3.5rem;">
+              Uses the owner-set external only percentage from Settings.
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="quotePreview">
+          <div class="card-title">Quote Summary</div>
+          <div class="summary-stats" id="quote-summary-stats"></div>
+          <pre class="quote-preview-pre" id="quote-preview-text">Start adding windows...</pre>
+        </div>
+      </div>
+
+      <!-- PRO TAB -->
+      <div id="tab-pro" class="hidden">
+        <div id="pro-auth-panel">
+          <div class="card">
+            <div class="card-title">Access Pro Features</div>
+
+            <div class="auth-tabs">
+              <button class="auth-tab active" id="auth-signin-tab" type="button">Sign In</button>
+              <button class="auth-tab" id="auth-signup-tab" type="button">Create Account</button>
+            </div>
+
+            <div class="field-stack">
+              <div id="auth-name-field" class="hidden">
+                <label class="field-label">Full Name</label>
+                <input type="text" class="field-input" id="auth-name" placeholder="Your Name" />
+              </div>
+              <div>
+                <label class="field-label">Email Address</label>
+                <input type="email" class="field-input" id="auth-email" placeholder="email@example.com" />
+              </div>
+              <div>
+                <label class="field-label">Password</label>
+                <input type="password" class="field-input" id="auth-password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" />
+              </div>
+              <button class="btn btn-primary btn-full" id="auth-submit-btn" type="button">Sign In</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="pro-dashboard" class="hidden">
+          <div class="card" id="pro-account-card">
+            <div class="team-header">
+              <div>
+                <div class="team-name" id="team-name-display">My Account</div>
+                <div class="team-meta" id="team-email-display">user@example.com</div>
+              </div>
+              <span class="role-badge role-owner" id="team-role-badge">Owner</span>
+            </div>
+            <button class="btn btn-danger-soft btn-full btn-sm" id="pro-signout-btn" type="button">Sign Out</button>
+          </div>
+
+          <div id="subscription-status-container"></div>
+
+          <div id="pro-team-setup" class="hidden">
+            <div class="card">
+              <div class="card-title">Join or Create Team</div>
+              <div class="field-stack">
+                <div>
+                  <label class="field-label">Business Name</label>
+                  <input type="text" class="field-input" id="team-name-input" placeholder="My Cleaning Biz" />
+                </div>
+
+                <button class="btn btn-primary btn-full" id="create-team-btn" type="button">Create Team</button>
+
+                <div style="text-align:center; font-size:0.76rem; color:#9ca3af; margin:0.4rem 0;">OR</div>
+
+                <div>
+                  <label class="field-label">Invite Code</label>
+                  <input type="text" class="field-input" id="invite-code-input" placeholder="ABCD-1234" />
+                </div>
+
+                <button class="btn btn-secondary btn-full" id="join-team-btn" type="button">Join with Code</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="pro-team-dashboard" class="hidden">
+            <div class="card">
+              <div class="kpi-grid">
+                <div class="kpi-card">
+                  <div class="kpi-label">Active Jobs</div>
+                  <div class="kpi-val" id="kpi-active">0</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-label">Weekly Completion</div>
+                  <div class="kpi-val" id="kpi-weekly">0</div>
+                </div>
+              </div>
+
+              <div class="revenue-grid">
+                <div class="revenue-card">
+                  <div class="revenue-label">Paid Total</div>
+                  <div class="revenue-val" id="kpi-collected">$0</div>
+                </div>
+                <div class="revenue-card">
+                  <div class="revenue-label">Quoted Total</div>
+                  <div class="revenue-val revenue-pending" id="kpi-pending">$0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chip-strip" id="job-filters" style="margin-bottom:1rem;"></div>
+
+            <div id="jobs-list-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="tab-settings" class="hidden">
+        <div id="settings-owner-view" class="hidden">
+          <div class="card">
+            <div class="card-title">Business Information</div>
+            <div class="field-stack">
+              <div>
+                <label class="field-label">Business Name</label>
+                <input type="text" class="field-input" id="s-bizname" placeholder="Your Business Name" />
+              </div>
+
+              <div class="field-grid-2">
+                <div>
+                  <label class="field-label">Contact Name</label>
+                  <input type="text" class="field-input" id="s-contact" placeholder="Contact Name" />
+                </div>
+                <div>
+                  <label class="field-label">Phone</label>
+                  <input type="tel" class="field-input" id="s-phone" placeholder="0400 000 000" />
+                </div>
+              </div>
+
+              <div>
+                <label class="field-label">Email</label>
+                <input type="email" class="field-input" id="s-email" placeholder="info@business.com.au" />
+              </div>
+
+              <div>
+                <label class="field-label">Default Message</label>
+                <textarea class="field-input" id="s-message" rows="3" placeholder="Thank you for choosing us!"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- LOGO UPLOAD (Pro only, owner only) -->
+          <div class="card hidden" id="logo-upload-section">
+            <div class="card-title">Business Logo (Pro)</div>
+            <div class="field-stack">
+              <div id="logo-preview" style="text-align:center; padding:0.5rem 0;">
+                <span style="color:#9ca3af; font-size:0.85rem;">No logo uploaded</span>
+              </div>
+              <div>
+                <label class="field-label">Upload Logo (max 2MB)</label>
+                <input type="file" class="field-input" id="logo-file-input" accept="image/*" />
+              </div>
+              <button class="btn btn-primary btn-sm" id="logo-upload-btn" type="button" style="display:none;">Saving...</button>
+              <button class="btn btn-danger-soft btn-sm hidden" id="logo-remove-btn" type="button">Remove Logo</button>
+              <div style="font-size:0.78rem; color:#6b7280;">
+                Your logo appears on PDF quotes, invoices, and receipts.
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="team-invite-card">
+            <div class="card-title">Team Invite</div>
+            <div class="field-stack">
+              <div>
+                <label class="field-label">Invite Code</label>
+                <input type="text" class="field-input" id="team-invite-code" readonly placeholder="No invite code yet" />
+              </div>
+
+              <div class="field-grid-2">
+                <button class="btn btn-secondary btn-full" id="copy-invite-btn" type="button">Copy Invite Code</button>
+                <button class="btn btn-primary btn-full" id="share-invite-btn" type="button">Share Join Message</button>
+              </div>
+
+              <div style="font-size:0.8rem; color:#6b7280;">
+                Staff can sign in, go to Pro, and use this invite code to join your team.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Pricing Method</div>
+            <div class="field-stack">
+              <div>
+                <label class="field-label">Quote Pricing Mode</label>
+                <select class="field-select" id="settings-pricing-mode">
+                  <option value="per-window">Per Item</option>
+                  <option value="hourly">Hourly Estimate</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Per Item Pricing</div>
+            <div class="rate-grid" id="settings-rates-grid"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Hourly Estimate Settings</div>
+
+            <div class="field-grid-2" style="margin-bottom:0.8rem;">
+              <div>
+                <label class="field-label">Hourly Rate</label>
+                <input type="number" min="0" step="1" class="field-input" id="settings-hourly-rate" />
+              </div>
+              <div>
+                <label class="field-label">External Only %</label>
+                <input type="number" min="0" max="100" step="1" class="field-input" id="settings-external-percent" />
+              </div>
+            </div>
+
+            <div class="field-grid-2">
+              <div>
+                <label class="field-label">Travel Fee</label>
+                <input type="number" min="0" step="1" class="field-input" id="settings-travel-fee" />
+              </div>
+              <div>
+                <label class="field-label">Discount</label>
+                <input type="number" min="0" step="1" class="field-input" id="settings-discount" />
+              </div>
+            </div>
+
+            <div style="margin-top:0.8rem;">
+              <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
+                <span class="toggle-switch">
+                  <input type="checkbox" id="settings-gst-enabled" />
+                  <span class="toggle-slider"></span>
+                </span>
+                Enable GST
+              </label>
+            </div>
+
+            <div style="margin-top:0.8rem;">
+              <label class="field-label">GST Rate (%)</label>
+              <input type="number" min="0" max="100" step="1" class="field-input" id="settings-gst-rate" />
+            </div>
+
+            <div class="card-title" style="margin-top:1rem;">Minutes per Item</div>
+            <div class="rate-grid" id="settings-minutes-grid"></div>
+          </div>
+
+          <button class="btn btn-primary btn-full" id="save-settings-btn" type="button">Save All Settings</button>
+          <button class="btn btn-danger-soft btn-full" id="reset-all-btn" type="button" style="margin-top:0.6rem;">Reset Everything (Owner)</button>
+        </div>
+
+        <div id="settings-staff-lock" class="hidden">
+          <div class="card">
+            <div class="settings-lock">
+              Only the team owner can change pricing, timing, GST, business details, and admin settings.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quote-footer" id="quote-footer">
+      <div class="quote-footer-inner">
+        <div class="quote-footer-card">
+          <div>
+            <div class="quote-price" id="footer-total">$0.00</div>
+            <div class="quote-price-sub" id="footer-count">0 items selected</div>
+          </div>
+
+          <div class="quote-footer-actions">
+            <button class="btn btn-secondary btn-sm" id="save-team-job-btn" type="button">
+              Add to Team
+            </button>
+            <button class="btn btn-primary btn-sm" id="share-quote-btn" type="button">
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-bar-inner">
+        <button class="tab-btn active" id="tab-quote-btn" type="button" onclick="switchTab('quote')">
+          <div class="tab-btn-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </div>
+          <div class="tab-btn-label">Quote</div>
+        </button>
+
+        <button class="tab-btn" id="tab-pro-btn" type="button" onclick="switchTab('pro')">
+          <div class="tab-btn-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <div class="tab-btn-label">Pro</div>
+        </button>
+
+        <button class="tab-btn" id="tab-settings-btn" type="button" onclick="switchTab('settings')">
+          <div class="tab-btn-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          <div class="tab-btn-label">Settings</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/state.js"></script>
+  <script src="./assets/js/helpers.js"></script>
+  <script src="./assets/js/ui.js"></script>
+  <script src="./assets/js/subscription.js"></script>
+  <script src="./assets/js/settings.js"></script>
+  <script src="./assets/js/quote.js"></script>
+  <script src="./assets/js/share.js"></script>
+  <script src="./assets/js/onboarding.js"></script>
+  <script src="./assets/js/jobs-core.js"></script>
+  <script src="./assets/js/jobs-render.js"></script>
+  <script src="./assets/js/jobs-payments.js"></script>
+  <script src="./assets/js/pro.js"></script>
+  <script src="./assets/js/pro-logo.js"></script>
+  <script src="./assets/js/app.js"></script>
+</body>
+</html>
