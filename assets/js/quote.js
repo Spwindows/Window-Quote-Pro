@@ -205,12 +205,10 @@ function buildPdfHtml(data) {
     `;
   }).join('');
 
-  const logoHtml = (typeof getLogoHtmlForPdf === 'function') ? getLogoHtmlForPdf() : '';
-
+  // BUG FIX 3: Replace CSS Grid/Flex with table-based layout for better html2canvas compatibility
   return `
     <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
       <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px;">
-        ${logoHtml}
         <h1 style="margin: 0; color: #2563eb; font-size: 32px;">${businessName}</h1>
         <p style="margin: 5px 0; color: #6b7280;">Professional Quote</p>
       </div>
