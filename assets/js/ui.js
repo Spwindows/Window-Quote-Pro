@@ -31,3 +31,14 @@ function switchTab(t) {
   const footer = el('quote-footer');
   if (footer) footer.classList.toggle('hidden', t !== 'quote');
 }
+
+/* ===== Upsell Modal Helpers ===== */
+function openUpsellModal() {
+  const modal = el('upsell-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeUpsellModal() {
+  const modal = el('upsell-modal');
+  if (modal) modal.classList.add('hidden');
+}
