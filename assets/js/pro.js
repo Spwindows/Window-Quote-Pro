@@ -1,573 +1,543 @@
-console.log("[WQP] jobs.js loaded");
+console.log("[WQP] pro.js loaded");
 
-function setupRealtimeChannel(sb) {
+async function getSb() {
+  if (supabaseClient) return supabaseClient;
+
   try {
-    if (realtimeChannel) {
-      realtimeChannel.unsubscribe();
-      realtimeChannel = null;
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return supabaseClient;
+  } catch (e) {
+    console.error('Supabase init failed', e);
+    return null;
+  }
+}
+
+async function bootPro() {
+  const sb = await getSb();
+  if (!sb) return;
+
+  let user = null;
+
+  try {
+    const { data, error } = await sb.auth.getUser();
+
+    if (error) {
+      console.warn('getUser error:', error.message);
     }
 
-    realtimeChannel = sb
-      .channel(`team-jobs-${proState.teamId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'jobs',
-          filter: `team_id=eq.${proState.teamId}`
-        },
-        async () => {
-          try {
-            const { data: updatedJobs } = await sb
-              .from('jobs')
-              .select('*')
-              .eq('team_id', proState.teamId)
-              .order('created_at', { ascending: false });
+    user = data?.user || null;
+  } catch (e) {
+    console.error('getUser failed:', e);
+  }
 
-            proState.jobs = updatedJobs || [];
-            renderJobsList();
-            updateKPIs();
-          } catch (e) {
-            console.error('Realtime refresh failed', e);
+  if (!user) {
+    proState.user = null;
+    proState.teamId = null;
+    proState.teamName = '';
+    proState.teamRole = '';
+    proState.inviteCode = '';
+    proState.jobs = [];
+    proState.subscription = null;
+    proState.entitlementSource = null;
+    proState.logoDataUrl = null;
+
+    renderProUI();
+    renderSubscriptionUI();
+    return;
+  }
+
+  proState.user = user;
+
+  try {
+    const { data: team, error } = await sb.rpc('get_my_team');
+
+    if (error) {
+      console.error('get_my_team failed:', error.message);
+      showToast('Could not load your team right now', 'error');
+
+      proState.teamId = null;
+      proState.teamName = '';
+      proState.teamRole = '';
+      proState.inviteCode = '';
+      proState.jobs = [];
+    } else {
+      const t = Array.isArray(team) ? team[0] : team;
+
+      if (!t?.team_id) {
+        proState.teamId = null;
+        proState.teamName = '';
+        proState.teamRole = '';
+        proState.inviteCode = '';
+        proState.jobs = [];
+
+        if (pendingInviteCode) {
+          const inviteCode = normalizeInviteCode(pendingInviteCode);
+
+          if (!isValidInviteCodeFormat(inviteCode)) {
+            showToast('Invalid invite code format', 'error');
+            localStorage.removeItem('pending_invite');
+            pendingInviteCode = null;
+          } else {
+            try {
+              const { error: joinErr } = await sb.rpc(
+                'join_team_by_invite',
+                { p_invite_code: inviteCode }
+              );
+
+              if (joinErr) {
+                showToast(joinErr.message || 'Failed to join team', 'error');
+              } else {
+                localStorage.removeItem('pending_invite');
+                pendingInviteCode = null;
+                return await bootPro();
+              }
+            } catch (e) {
+              console.error('Auto join failed', e);
+            }
+
+            const inviteInput = el('invite-code-input');
+            if (inviteInput) inviteInput.value = inviteCode;
           }
         }
-      )
-      .subscribe();
-  } catch (e) {
-    console.error('Realtime setup failed', e);
-  }
-}
+      } else {
+        proState.teamId = t.team_id;
+        proState.teamName = t.business_name || '';
+        proState.teamRole = t.role || '';
+        proState.inviteCode = normalizeInviteCode(t.invite_code || '');
 
-async function updateJobStatus(id, status) {
-  const sb = await getSb();
-  if (!sb) return;
+        localStorage.removeItem('pending_invite');
+        pendingInviteCode = null;
 
-  const patch = { status: normalizeStatus(status) };
-  const now = new Date().toISOString();
+        const { data: jobs, error: jobsError } = await sb
+          .from('jobs')
+          .select('*')
+          .eq('team_id', proState.teamId)
+          .order('created_at', { ascending: false });
 
-  if (patch.status === 'accepted') patch.accepted_at = now;
-  if (patch.status === 'in_progress') patch.started_at = now;
-  if (patch.status === 'completed') {
-    patch.completed_at = now;
-    /* Ensure payment fields are correctly initialised on completion.
-     * amount_due must equal quoted_price so the payment modal shows
-     * the correct amount owed. payment_status stays 'unpaid' unless
-     * it was already recorded (guard: only reset if currently unpaid). */
-    const jobBeingCompleted = proState.jobs.find(x => x.id === id);
-    if (jobBeingCompleted) {
-      const currentPs = jobBeingCompleted.payment_status || 'unpaid';
-      if (currentPs === 'unpaid') {
-        patch.payment_status = 'unpaid';
-        patch.amount_due     = parseFloat(jobBeingCompleted.quoted_price) || 0;
-        patch.amount_paid    = 0;
+        if (jobsError) {
+          console.error('Jobs load failed:', jobsError.message);
+          proState.jobs = [];
+        } else {
+          proState.jobs = jobs || [];
+        }
+
+        const { data: teamSettings, error: settingsError } = await sb
+          .from('team_settings')
+          .select('*')
+          .eq('team_id', proState.teamId)
+          .single();
+
+        if (settingsError && settingsError.code !== 'PGRST116') {
+          console.error('Team settings load failed:', settingsError.message);
+        }
+
+        if (teamSettings) {
+          applyTeamSettings(teamSettings);
+        }
+
+        setupRealtimeChannel(sb);
       }
     }
+  } catch (e) {
+    console.error('bootPro failed', e);
   }
 
   try {
-    const { error } = await sb.from('jobs').update(patch).eq('id', id);
-    if (error) throw error;
+    await loadSubscription(sb);
+  } catch (e) {
+    console.error('Subscription load failed', e);
+  }
 
-    const j = proState.jobs.find(x => x.id === id);
-    if (j) Object.assign(j, patch);
+  renderProUI();
+  renderSubscriptionUI();
+  syncSettingsForm();
+  renderSettingsGrids();
+  updateKPIs();
+  renderJobsList();
+  updateQuoteDisplay();
+}
 
-    renderJobsList();
-    updateKPIs();
+async function handleAuth() {
+  const email = ((el('auth-email') || {}).value || '').trim();
+  const password = (el('auth-password') || {}).value || '';
 
-    /* If completing, show next-step modal instead of generic toast */
-    if (patch.status === 'completed') {
-      showCompletionModal(id);
+  if (!email || !password) {
+    return showToast('Enter email and password', 'error');
+  }
+
+  const sb = await getSb();
+  if (!sb) return;
+
+  try {
+    let res;
+
+    if (authMode === 'signup') {
+      const name = ((el('auth-name') || {}).value || '').trim();
+
+      res = await sb.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: name }
+        }
+      });
+
+      if (res.error) throw res.error;
+
+      if (!res.data?.session) {
+        showToast(
+          'Account created. Check email to confirm account.',
+          'success'
+        );
+        return;
+      }
     } else {
-      showToast('Status updated!');
+      res = await sb.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (res.error) throw res.error;
     }
-  } catch (e) {
-    showToast(e.message, 'error');
-  }
-}
 
-async function scheduleAcceptedJob(id) {
-  const sb = await getSb();
-  if (!sb) return;
-
-  const dateEl = el(`schedule-date-${id}`);
-  const timeEl = el(`schedule-time-${id}`);
-
-  const date = dateEl?.value?.trim();
-  const time = timeEl?.value?.trim();
-
-  if (!date || !time) {
-    return showToast('Select both date and time', 'error');
-  }
-
-  const scheduledAt = new Date(`${date}T${time}`);
-
-  if (Number.isNaN(scheduledAt.getTime())) {
-    return showToast('Invalid date/time', 'error');
-  }
-
-  try {
-    const patch = {
-      scheduled_at: scheduledAt.toISOString(),
-      status: 'scheduled'
-    };
-
-    const { error } = await sb
-      .from('jobs')
-      .update(patch)
-      .eq('id', id);
-
-    if (error) throw error;
-
-    const job = proState.jobs.find(j => j.id === id);
-    if (job) Object.assign(job, patch);
-
-    renderJobsList();
-    updateKPIs();
-    showToast('Job scheduled!');
-  } catch (e) {
-    showToast(e.message, 'error');
-  }
-}
-
-async function saveTeamJob() {
-  if (!proState.teamId) return showToast('Join a team first', 'error');
-  if (!hasProAccess()) return showToast('Saving jobs requires a Pro subscription', 'error');
-
-  const sb = await getSb();
-  if (!sb) return;
-
-  const data = getQuoteData();
-
-  if (!services.some(s => s.count > 0)) {
-    return showToast('Add at least one service before saving a job', 'error');
-  }
-
-  const payload = {
-    team_id: proState.teamId,
-    customer_name: ((el('q-name') || {}).value || '').trim() || 'Customer',
-    customer_phone: ((el('q-phone') || {}).value || '').trim(),
-    customer_email: ((el('q-email') || {}).value || '').trim(),
-    service_address: ((el('q-address') || {}).value || '').trim(),
-    quoted_price: data.total,
-    items_summary: services
-      .filter(s => s.count > 0)
-      .map(s => `${s.count} ${s.name}`)
-      .join(', '),
-    status: 'quoted',
-    scheduled_at: null,
-    created_by: proState.user.id,
-    /* Payment columns default — explicit for clarity */
-    payment_status: 'unpaid',
-    amount_paid: 0,
-    amount_due: data.total
-  };
-
-  try {
-    const { error } = await sb.from('jobs').insert(payload);
-    if (error) throw error;
-
-    showToast('Quote saved to pipeline!');
+    showToast('Welcome!', 'success');
     await bootPro();
   } catch (e) {
     showToast(e.message, 'error');
   }
 }
 
-function updateKPIs() {
-  const jobs = proState.jobs || [];
-  const now = new Date();
-  const startOfWeek = new Date(now);
-  const day = startOfWeek.getDay();
+async function createTeam() {
+  const name = ((el('team-name-input') || {}).value || '').trim();
 
-  startOfWeek.setHours(0, 0, 0, 0);
-  startOfWeek.setDate(startOfWeek.getDate() - day);
-
-  const active = jobs.filter(j =>
-    ['scheduled', 'in_progress'].includes(normalizeStatus(j.status))
-  ).length;
-
-  const weekly = jobs.filter(j => {
-    if (normalizeStatus(j.status) !== 'completed') return false;
-    if (!j.completed_at) return false;
-    return new Date(j.completed_at) >= startOfWeek;
-  }).length;
-
-  /* Payment-aware KPIs — read directly from job row columns */
-  let paidTotal = 0;
-  let pendingTotal = 0;
-
-  jobs.forEach(j => {
-    const price = parseFloat(j.quoted_price) || 0;
-    const ps = j.payment_status || 'unpaid';
-    const amountPaid = parseFloat(j.amount_paid) || 0;
-
-    if (normalizeStatus(j.status) === 'completed' && ps === 'paid') {
-      paidTotal += amountPaid || price;
-    } else {
-      pendingTotal += price - amountPaid;
-    }
-  });
-
-  const kpiActive     = el('kpi-active');
-  const kpiWeekly     = el('kpi-weekly');
-  const kpiCollected  = el('kpi-collected');
-  const kpiPending    = el('kpi-pending');
-
-  if (kpiActive)    kpiActive.textContent    = active;
-  if (kpiWeekly)    kpiWeekly.textContent    = weekly;
-  if (kpiCollected) kpiCollected.textContent = `$${paidTotal.toFixed(0)}`;
-  if (kpiPending)   kpiPending.textContent   = `$${pendingTotal.toFixed(0)}`;
-}
-
-function formatDateTime(value, emptyLabel = 'Not set') {
-  if (!value) return emptyLabel;
-
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return emptyLabel;
-
-  return d.toLocaleString();
-}
-
-/* Payment badge — reads from job row columns (cloud-backed) */
-function paymentBadgeHtml(job) {
-  if (normalizeStatus(job.status) !== 'completed') return '';
-  const ps = job.payment_status || 'unpaid';
-  const cls   = ps === 'paid' ? 'pay-badge-paid'
-              : ps === 'partially_paid' ? 'pay-badge-partial'
-              : 'pay-badge-unpaid';
-  const label = ps === 'paid' ? 'Paid'
-              : ps === 'partially_paid' ? 'Partially Paid'
-              : 'Payment Due';
-  return `<span class="pay-badge ${cls}">${label}</span>`;
-}
-
-function renderJobsList() {
-  const container = el('jobs-list-container');
-  if (!container) return;
-
-  const jobs = proState.jobs.filter(j => normalizeStatus(j.status) === jobFilter);
-
-  const filters = [
-    { v: 'quoted',      l: 'Quoted'    },
-    { v: 'accepted',    l: 'Accepted'  },
-    { v: 'scheduled',   l: 'Scheduled' },
-    { v: 'in_progress', l: 'Active'    },
-    { v: 'completed',   l: 'Done'      }
-  ];
-
-  const filtersEl = el('job-filters');
-  if (filtersEl) {
-    filtersEl.innerHTML = filters.map(f => `
-      <div class="chip"
-        style="${jobFilter === f.v ? 'background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;' : ''}"
-        onclick="jobFilter='${f.v}';renderJobsList();">
-        ${f.l}
-      </div>
-    `).join('');
+  if (!name) {
+    return showToast('Enter business name', 'error');
   }
 
-  if (!jobs.length) {
-    container.innerHTML =
-      '<div style="text-align:center;padding:2rem;color:#9ca3af;">No jobs found.</div>';
+  const sb = await getSb();
+  if (!sb) return;
+
+  try {
+    const { error } = await sb.rpc('create_team', {
+      p_business_name: name
+    });
+
+    if (error) throw error;
+
+    showToast('Team created!', 'success');
+    await bootPro();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function joinTeam() {
+  const rawCode = ((el('invite-code-input') || {}).value || '').trim();
+
+  if (!rawCode) {
+    return showToast('Enter invite code', 'error');
+  }
+
+  const code = normalizeInviteCode(rawCode);
+
+  if (!isValidInviteCodeFormat(code)) {
+    return showToast('Invalid invite code format', 'error');
+  }
+
+  const input = el('invite-code-input');
+  if (input) input.value = code;
+
+  const sb = await getSb();
+  if (!sb) return;
+
+  try {
+    const { error } = await sb.rpc('join_team_by_invite', {
+      p_invite_code: code
+    });
+
+    if (error) throw error;
+
+    localStorage.removeItem('pending_invite');
+    pendingInviteCode = null;
+
+    showToast('Joined team!', 'success');
+    await bootPro();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function renderProUI() {
+  const auth = el('pro-auth-panel');
+  const dash = el('pro-dashboard');
+  const teamSetup = el('pro-team-setup');
+  const teamDash = el('pro-team-dashboard');
+  const badge = el('pro-badge');
+
+  [auth, dash, teamSetup, teamDash].forEach(x => {
+    if (x) x.classList.add('hidden');
+  });
+
+  const planInfo = getPlanDisplayInfo();
+
+  if (badge) {
+    badge.textContent = planInfo.headerBadgeText;
+    badge.className = planInfo.headerBadgeClass;
+  }
+
+  const headerSub = el('header-sub');
+
+  if (headerSub) {
+    if (proState.user && proState.teamId) {
+      headerSub.textContent = `${proState.teamName} • ${planInfo.label}`;
+    } else if (proState.user) {
+      headerSub.textContent = planInfo.label;
+    } else {
+      headerSub.textContent = 'Fast quoting for window cleaners';
+    }
+  }
+
+  if (!proState.user) {
+    if (auth) auth.classList.remove('hidden');
     return;
   }
 
-  container.innerHTML = jobs.map(j => {
-    const status = normalizeStatus(j.status);
-    /* Read payment state directly from the job object (Supabase columns) */
-    const ps          = j.payment_status || 'unpaid';
-    const amountPaid  = parseFloat(j.amount_paid) || 0;
-    const amountDue   = parseFloat(j.amount_due)  || 0;
-    const paidAt      = j.paid_at || null;
+  if (dash) dash.classList.remove('hidden');
 
-    let actionsHtml = '';
+  const nameEl = el('team-name-display');
+  const emailEl = el('team-email-display');
+  const roleEl = el('team-role-badge');
 
-    if (status === 'quoted') {
-      actionsHtml = `
-        <button class="btn btn-secondary btn-sm"
-          onclick="updateJobStatus('${j.id}', 'accepted')">
-          Accept
-        </button>
-      `;
+  if (proState.teamId) {
+    if (nameEl) nameEl.textContent = proState.teamName;
+    if (emailEl) emailEl.textContent = proState.user.email;
+
+    if (roleEl) {
+      roleEl.textContent =
+        proState.teamRole === 'owner' ? 'Owner' : 'Staff';
+
+      roleEl.className =
+        `role-badge ${proState.teamRole === 'owner'
+          ? 'role-owner'
+          : 'role-staff'}`;
+
+      roleEl.style.display = '';
     }
 
-    if (status === 'accepted') {
-      actionsHtml = `
-        <div class="field-grid-2" style="margin-bottom:0.75rem;">
-          <input type="date" class="field-input" id="schedule-date-${j.id}" />
-          <input type="time" class="field-input" id="schedule-time-${j.id}" />
-        </div>
-        <button class="btn btn-primary btn-sm"
-          onclick="scheduleAcceptedJob('${j.id}')">
-          Schedule Job
-        </button>
-      `;
+    if (teamDash) teamDash.classList.remove('hidden');
+  } else {
+    if (nameEl) {
+      nameEl.textContent =
+        proState.user.user_metadata?.full_name || 'My Account';
     }
 
-    if (status === 'scheduled') {
-      actionsHtml = `
-        <button class="btn btn-primary btn-sm"
-          onclick="updateJobStatus('${j.id}', 'in_progress')">
-          Start
-        </button>
-      `;
-    }
+    if (emailEl) emailEl.textContent = proState.user.email;
 
-    if (status === 'in_progress') {
-      actionsHtml = `
-        <button class="btn btn-success btn-sm"
-          onclick="updateJobStatus('${j.id}', 'completed')">
-          Complete
-        </button>
-      `;
-    }
+    if (roleEl) roleEl.style.display = 'none';
 
-    /* Completed jobs: show payment actions based on cloud payment_status */
-    if (status === 'completed') {
-      if (ps !== 'paid') {
-        actionsHtml = `
-          <div class="job-completed-actions">
-            <button class="btn btn-primary btn-sm" onclick="openInvoiceForJob('${j.id}')">Send Invoice</button>
-            <button class="btn btn-success btn-sm" onclick="openPaymentModal('${j.id}')">Record Payment</button>
-          </div>
-        `;
-      } else {
-        actionsHtml = `
-          <div class="job-completed-actions">
-            <button class="btn btn-secondary btn-sm" onclick="openReceiptForJob('${j.id}')">View Receipt</button>
-          </div>
-        `;
-      }
-    }
-
-    return `
-      <div class="job-card">
-        <div class="job-card-header"
-          onclick="document.getElementById('job-body-${j.id}').classList.toggle('hidden')">
-
-          <div>
-            <div class="job-card-name">${escapeHtml(j.customer_name)} ${paymentBadgeHtml(j)}</div>
-            <div class="job-card-meta">
-              <span>$${(parseFloat(j.quoted_price) || 0).toFixed(2)}</span>
-              <span>•</span>
-              <span>${displayStatus(j.status)}</span>
-              <span>•</span>
-              <span>${escapeHtml(formatDateTime(j.scheduled_at, 'Not scheduled'))}</span>
-            </div>
-          </div>
-
-          <svg width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="m6 9 6 6 6-6"></path>
-          </svg>
-        </div>
-
-        <div class="job-card-body hidden" id="job-body-${j.id}">
-          <div class="job-detail-grid">
-            <div>
-              <div class="job-detail-label">Address</div>
-              <div class="job-detail-val">${escapeHtml(j.service_address || 'N/A')}</div>
-            </div>
-
-            <div>
-              <div class="job-detail-label">Phone</div>
-              <div class="job-detail-val">${escapeHtml(j.customer_phone || 'N/A')}</div>
-            </div>
-
-            <div>
-              <div class="job-detail-label">Items</div>
-              <div class="job-detail-val">${escapeHtml(j.items_summary || 'N/A')}</div>
-            </div>
-
-            <div>
-              <div class="job-detail-label">Created</div>
-              <div class="job-detail-val">${escapeHtml(formatDateTime(j.created_at, 'Unknown'))}</div>
-            </div>
-
-            <div>
-              <div class="job-detail-label">Accepted</div>
-              <div class="job-detail-val">${escapeHtml(formatDateTime(j.accepted_at, 'Not accepted yet'))}</div>
-            </div>
-
-            <div>
-              <div class="job-detail-label">Scheduled</div>
-              <div class="job-detail-val">${escapeHtml(formatDateTime(j.scheduled_at, 'Not scheduled'))}</div>
-            </div>
-
-            <div>
-              <div class="job-detail-label">Started</div>
-              <div class="job-detail-val">${escapeHtml(formatDateTime(j.started_at, 'Not started yet'))}</div>
-            </div>
-
-            <div>
-              <div class="job-detail-label">Completed</div>
-              <div class="job-detail-val">${escapeHtml(formatDateTime(j.completed_at, 'Not completed yet'))}</div>
-            </div>
-
-            ${status === 'completed' ? `
-            <div>
-              <div class="job-detail-label">Payment</div>
-              <div class="job-detail-val">${
-                ps === 'paid'           ? `Paid ($${amountPaid.toFixed(2)})`
-              : ps === 'partially_paid' ? `Partially Paid ($${amountPaid.toFixed(2)} of $${(parseFloat(j.quoted_price) || 0).toFixed(2)})`
-              : 'Unpaid'
-              }</div>
-            </div>
-            ${paidAt ? `<div><div class="job-detail-label">Paid At</div><div class="job-detail-val">${escapeHtml(formatDateTime(paidAt))}</div></div>` : ''}
-            ` : ''}
-          </div>
-
-          <div class="job-actions">
-            ${actionsHtml}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-/* ===== Completion Next-Step Modal ===== */
-let _completionJobId = null;
-
-function showCompletionModal(jobId) {
-  _completionJobId = jobId;
-  const modal = el('completion-modal');
-  if (modal) modal.classList.remove('hidden');
-}
-
-function closeCompletionModal() {
-  const modal = el('completion-modal');
-  if (modal) modal.classList.add('hidden');
-  _completionJobId = null;
-}
-
-function completionSendInvoice() {
-  const jobId = _completionJobId;
-  closeCompletionModal();
-  if (jobId) openInvoiceForJob(jobId);
-}
-
-function completionRecordPayment() {
-  const jobId = _completionJobId;
-  closeCompletionModal();
-  if (jobId) openPaymentModal(jobId);
-}
-
-function completionDoLater() {
-  closeCompletionModal();
-  showToast('Job completed! You can invoice or record payment later from the Done tab.');
-}
-
-/* ===== Payment Recording Modal ===== */
-let _paymentJobId = null;
-
-function openPaymentModal(jobId) {
-  _paymentJobId = jobId;
-  const j = proState.jobs.find(x => x.id === jobId);
-  if (!j) return;
-
-  /* Read payment state from job row columns */
-  const amountPaid = parseFloat(j.amount_paid) || 0;
-  const quoted     = parseFloat(j.quoted_price) || 0;
-  const due        = Math.max(0, quoted - amountPaid);
-
-  const amtEl    = el('pay-amount');
-  const methodEl = el('pay-method');
-  const notesEl  = el('pay-notes');
-  const dueEl    = el('pay-due-display');
-
-  if (amtEl)    amtEl.value    = due.toFixed(2);
-  if (methodEl) methodEl.value = 'cash';
-  if (notesEl)  notesEl.value  = '';
-  if (dueEl)    dueEl.textContent = `Amount due: $${due.toFixed(2)}`;
-
-  const modal = el('payment-modal');
-  if (modal) modal.classList.remove('hidden');
-}
-
-function closePaymentModal() {
-  const modal = el('payment-modal');
-  if (modal) modal.classList.add('hidden');
-  _paymentJobId = null;
-}
-
-async function recordPayment() {
-  const jobId = _paymentJobId;
-  if (!jobId) return;
-
-  const j = proState.jobs.find(x => x.id === jobId);
-  if (!j) return;
-
-  const amount = parseFloat((el('pay-amount') || {}).value) || 0;
-  const method = ((el('pay-method') || {}).value || '').trim();
-  const notes  = ((el('pay-notes') || {}).value || '').trim();
-
-  if (amount <= 0) {
-    return showToast('Enter a valid payment amount', 'error');
+    if (teamSetup) teamSetup.classList.remove('hidden');
   }
 
-  /* Accumulate payments from the job row */
-  const existingPaid = parseFloat(j.amount_paid) || 0;
-  const totalPaid    = existingPaid + amount;
-  const quoted       = parseFloat(j.quoted_price) || 0;
-  const fullyPaid    = totalPaid >= quoted;
+  /* Show/hide logo section based on owner + pro */
+  const logoSection = el('logo-upload-section');
+  if (logoSection) {
+    const isOwner = canAccessSettings();
+    logoSection.classList.toggle('hidden', !isOwner || !hasProAccess());
+  }
 
-  const paymentPatch = {
-    payment_status: fullyPaid ? 'paid' : 'partially_paid',
-    amount_paid:    totalPaid,
-    amount_due:     Math.max(0, quoted - totalPaid),
-    paid_at:        fullyPaid ? new Date().toISOString() : (j.paid_at || null),
-    payment_method: method,
-    payment_notes:  notes
-  };
+  renderLogoPreview();
+}
 
-  /* Disable the submit button while saving */
-  const submitBtn = el('payment-submit-btn');
-  if (submitBtn) submitBtn.disabled = true;
+async function handleSignOut() {
+  const sb = await getSb();
+
+  if (sb) {
+    if (realtimeChannel) {
+      realtimeChannel.unsubscribe();
+      realtimeChannel = null;
+    }
+
+    await sb.auth.signOut();
+  }
+
+  localStorage.removeItem('pending_invite');
+  pendingInviteCode = null;
+
+  proState.subscription = null;
+  proState.entitlementSource = null;
+  proState.logoDataUrl = null;
+
+  location.reload();
+}
+
+/* =====================================================================
+ * Logo Persistence — Supabase Storage + team_settings.logo_url
+ *
+ * Flow:
+ *   Upload:  file → Storage bucket 'logos/{teamId}/logo.{ext}'
+ *            → get public URL
+ *            → upsert team_settings.logo_url
+ *            → set proState.logoDataUrl = public URL
+ *
+ *   Load:    applyTeamSettings() reads logo_url from team_settings row
+ *            → sets proState.logoDataUrl
+ *
+ *   Remove:  delete from Storage
+ *            → upsert team_settings.logo_url = null
+ *            → clear proState.logoDataUrl
+ *
+ * Fallback: If Storage upload fails,
+ *           a hard failure if the Storage bucket hasn't been created yet.
+ * ===================================================================== */
+
+async function handleLogoUpload(inputEl) {
+  const file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select an image file', 'error');
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('Logo must be under 2MB', 'error');
+    return;
+  }
+
+  if (!proState.teamId) {
+    showToast('You must be part of a team to save a logo', 'error');
+    return;
+  }
+
+  const sb = await getSb();
+  if (!sb) return;
+
+  /* Disable upload button while saving */
+  const uploadBtn = el('logo-upload-btn');
+  if (uploadBtn) uploadBtn.disabled = true;
 
   try {
-    await setJobPayment(jobId, paymentPatch);
+    const ext = file.name.split('.').pop().toLowerCase() || 'png';
+    const storagePath = `${proState.teamId}/logo.${ext}`;
 
-    closePaymentModal();
-    renderJobsList();
-    updateKPIs();
+    /* Attempt Supabase Storage upload */
+    let logoUrl = null;
 
-    if (fullyPaid) {
-      showPaymentConfirmModal(jobId);
+    const { error: uploadError } = await sb.storage
+      .from('logos')
+      .upload(storagePath, file, {
+        upsert: true,
+        contentType: file.type
+      });
+
+    if (uploadError) {
+      console.warn('Storage upload failed, falling back to base64:', uploadError.message);
+
+      /* Fallback: read as base64 and store in team_settings directly */
+      logoUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     } else {
-      showToast(`Partial payment of $${amount.toFixed(2)} recorded. $${(quoted - totalPaid).toFixed(2)} remaining.`);
+      /* Get the permanent public URL */
+      const { data: urlData } = sb.storage
+        .from('logos')
+        .getPublicUrl(storagePath);
+
+      logoUrl = urlData?.publicUrl || null;
+
+      if (!logoUrl) {
+        throw new Error('Could not get public URL for uploaded logo');
+      }
+
+      /* Append cache-busting timestamp so browsers reload the new image */
+      logoUrl = `${logoUrl}?t=${Date.now()}`;
     }
+
+    /* Persist the URL to team_settings */
+    await _saveLogoUrlToTeamSettings(sb, logoUrl);
+
+    /* Update in-memory state and re-render preview */
+    proState.logoDataUrl = logoUrl;
+    renderLogoPreview();
+    showToast('Logo saved!', 'success');
   } catch (e) {
-    showToast('Failed to save payment. Please try again.', 'error');
-    console.error('recordPayment error:', e);
+    console.error('Logo upload failed:', e);
+    showToast('Failed to save logo. Please try again.', 'error');
   } finally {
-    if (submitBtn) submitBtn.disabled = false;
+    if (uploadBtn) uploadBtn.disabled = false;
+    /* Reset the file input so the same file can be re-selected */
+    if (inputEl) inputEl.value = '';
   }
 }
 
-/* Post-payment confirmation: offer receipt */
-let _receiptJobId = null;
+async function removeLogo() {
+  if (!proState.teamId) return;
 
-function showPaymentConfirmModal(jobId) {
-  _receiptJobId = jobId;
-  const modal = el('payment-confirm-modal');
-  if (modal) modal.classList.remove('hidden');
+  const sb = await getSb();
+  if (!sb) return;
+
+  const removeBtn = el('logo-remove-btn');
+  if (removeBtn) removeBtn.disabled = true;
+
+  try {
+    /* Attempt to delete from Storage (best-effort — may not exist if base64 fallback was used) */
+    const extensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
+    for (const ext of extensions) {
+      await sb.storage
+        .from('logos')
+        .remove([`${proState.teamId}/logo.${ext}`])
+        .catch(() => {}); /* Ignore errors — file may not exist for this ext */
+    }
+
+    /* Clear logo_url in team_settings */
+    await _saveLogoUrlToTeamSettings(sb, null);
+
+    proState.logoDataUrl = null;
+    renderLogoPreview();
+
+    const input = el('logo-file-input');
+    if (input) input.value = '';
+
+    showToast('Logo removed', 'success');
+  } catch (e) {
+    console.error('Logo removal failed:', e);
+    showToast('Failed to remove logo', 'error');
+  } finally {
+    if (removeBtn) removeBtn.disabled = false;
+  }
 }
 
-function closePaymentConfirmModal() {
-  const modal = el('payment-confirm-modal');
-  if (modal) modal.classList.add('hidden');
-  _receiptJobId = null;
+/**
+ * Upserts logo_url into the team_settings row.
+ * Called by both handleLogoUpload and removeLogo.
+ */
+async function _saveLogoUrlToTeamSettings(sb, logoUrl) {
+  const { error } = await sb
+    .from('team_settings')
+    .upsert({
+      team_id: proState.teamId,
+      logo_url: logoUrl
+    }, {
+      onConflict: 'team_id'
+    });
+
+  if (error) throw error;
 }
 
-function paymentConfirmSendReceipt() {
-  const jobId = _receiptJobId;
-  closePaymentConfirmModal();
-  if (jobId) openReceiptForJob(jobId);
-}
+function renderLogoPreview() {
+  const preview   = el('logo-preview');
+  const removeBtn = el('logo-remove-btn');
 
-function paymentConfirmSkip() {
-  closePaymentConfirmModal();
-  showToast('Payment recorded!', 'success');
+  if (!preview) return;
+
+  if (proState.logoDataUrl) {
+    preview.innerHTML = `<img src="${proState.logoDataUrl}" style="max-width:160px; max-height:80px; border-radius:8px; border:1px solid #e2e5ea;" />`;
+    if (removeBtn) removeBtn.classList.remove('hidden');
+  } else {
+    preview.innerHTML = '<span style="color:#9ca3af; font-size:0.85rem;">No logo uploaded</span>';
+    if (removeBtn) removeBtn.classList.add('hidden');
+  }
 }
