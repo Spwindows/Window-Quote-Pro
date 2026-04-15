@@ -1,3 +1,4 @@
+
 console.log("[WQP] config.js loaded");
 
 const SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
@@ -43,5 +44,6 @@ const DEFAULT_PRO_STATE = {
   inviteCode: '',
   jobs: [],
   subscription: null,
-  entitlementSource: null
+  entitlementSource: null,
+  logoDataUrl: null
 };
