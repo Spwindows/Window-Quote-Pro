@@ -182,6 +182,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  /* ===== New: Completion modal bindings ===== */
+  bindClick('completion-invoice-btn', completionSendInvoice);
+  bindClick('completion-payment-btn', completionRecordPayment);
+  bindClick('completion-later-btn', completionDoLater);
+
+  /* ===== New: Payment modal bindings ===== */
+  bindClick('payment-submit-btn', recordPayment);
+  bindClick('payment-cancel-btn', closePaymentModal);
+
+  /* ===== New: Payment confirm modal bindings ===== */
+  bindClick('payconfirm-receipt-btn', paymentConfirmSendReceipt);
+  bindClick('payconfirm-skip-btn', paymentConfirmSkip);
+
+  /* ===== New: Logo upload binding ===== */
+  const logoInput = el('logo-file-input');
+  if (logoInput) {
+    logoInput.onchange = () => handleLogoUpload(logoInput);
+  }
+  bindClick('logo-remove-btn', removeLogo);
+
   /*
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

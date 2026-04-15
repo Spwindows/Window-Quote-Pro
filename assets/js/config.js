@@ -4,6 +4,10 @@ const SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM';
 const STORAGE_KEY = 'window-quote-pro-v5-settings';
 
+/* NOTE: LOGO_STORAGE_KEY (localStorage) has been removed.
+ * Logo persistence is now cloud-backed via Supabase Storage
+ * and team_settings.logo_url. See pro.js and settings.js. */
+
 const DEFAULT_SETTINGS = {
   businessName: 'Business',
   contactName: 'Name',
@@ -43,5 +47,6 @@ const DEFAULT_PRO_STATE = {
   inviteCode: '',
   jobs: [],
   subscription: null,
-  entitlementSource: null
+  entitlementSource: null,
+  logoDataUrl: null   /* Set by applyTeamSettings() from team_settings.logo_url */
 };
