@@ -85,7 +85,8 @@ function buildQuoteSummaryText(data) {
   const addr = el('q-address') ? el('q-address').value.trim() : '';
   const extPct = safeNum(settings.externalOnlyPercent, 60);
 
-  let summary = `*QUOTE FROM ${String(settings.businessName).toUpperCase()}*\n\n`;
+  const businessLabel = settings.businessName || 'Window Quote Pro';
+  let summary = `*QUOTE FROM ${String(businessLabel).toUpperCase()}*\n\n`;
   summary += `Hi ${customerName},\n`;
 
   if (addr) summary += `Address: ${addr}\n`;
@@ -175,27 +176,54 @@ function updateQuoteDisplay() {
   }
 }
 
-function buildPdfHtml(data) {
+function buildPdfHtml(data, quoteNum) {
+  const isPro = hasProAccess();
   const customerName = escapeHtml((el('q-name') ? el('q-name').value : '') || 'Customer');
   const customerPhone = escapeHtml(el('q-phone') ? el('q-phone').value : '');
   const customerEmail = escapeHtml(el('q-email') ? el('q-email').value : '');
   const customerAddress = escapeHtml(el('q-address') ? el('q-address').value : '');
-  const businessName = escapeHtml(settings.businessName);
-  const customMessage = escapeHtml(settings.customMessage);
-  const contactName = escapeHtml(settings.contactName);
-  const businessPhone = escapeHtml(settings.businessPhone);
-  const businessEmail = escapeHtml(settings.businessEmail);
   const extPct = safeNum(settings.externalOnlyPercent, 60);
   const travelFee = safeNum(settings.travelFee, 0);
   const discount = safeNum(settings.discount, 0);
   const gstRate = safeNum(settings.gstRate, 10);
+
+  /* --- Tiered branding --- */
+  let headerBrandName, headerSubtitle, logoHtml, contactLine, footerHtml, customMessage;
+
+  if (isPro) {
+    /* PRO: white-label with user’s own branding */
+    headerBrandName = escapeHtml(settings.businessName || 'Professional Quote');
+    headerSubtitle  = 'Professional Quote';
+    logoHtml        = (typeof getLogoHtmlForPdf === 'function') ? getLogoHtmlForPdf() : '';
+    customMessage   = escapeHtml(settings.customMessage);
+    const contactName   = escapeHtml(settings.contactName);
+    const businessPhone = escapeHtml(settings.businessPhone);
+    const businessEmail = escapeHtml(settings.businessEmail);
+    const contactParts  = [contactName, businessPhone, businessEmail].filter(Boolean);
+    contactLine = contactParts.length ? `<p>Contact: ${contactParts.join(' \u2022 ')}</p>` : '';
+    footerHtml  = `
+      <div style="margin-top:40px; padding-top:20px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; text-align:center;">
+        ${customMessage ? `<p style="margin-bottom:10px;">${customMessage}</p>` : ''}
+        ${contactLine}
+      </div>`;
+  } else {
+    /* FREE: Window Quote Pro SaaS branding */
+    headerBrandName = 'Window Quote Pro';
+    headerSubtitle  = 'Professional Quote';
+    logoHtml        = '';
+    customMessage   = escapeHtml(settings.customMessage);
+    footerHtml      = `
+      <div style="margin-top:40px; padding-top:20px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; text-align:center;">
+        ${customMessage ? `<p style="margin-bottom:10px;">${customMessage}</p>` : ''}
+        <p style="margin-top:16px; font-size:11px; color:#9ca3af;">Powered by <strong style="color:#2563eb;">Window Quote Pro</strong></p>
+      </div>`;
+  }
 
   const serviceRows = services.filter(s => s.count > 0).map(s => {
     let line = s.count * s.rate;
     if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
       line *= (extPct / 100);
     }
-
     return `
       <tr style="border-bottom: 1px solid #f3f4f6;">
         <td style="padding: 12px; font-size: 14px;">${escapeHtml(s.name)} ${quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id) ? '(External Only)' : ''}</td>
@@ -205,66 +233,62 @@ function buildPdfHtml(data) {
     `;
   }).join('');
 
-  // BUG FIX 3: Replace CSS Grid/Flex with table-based layout for better html2canvas compatibility
+  const quoteRef = quoteNum ? escapeHtml(quoteNum) : '';
+
   return `
     <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
-      <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2563eb; padding-bottom: 20px;">
-        <h1 style="margin: 0; color: #2563eb; font-size: 32px;">${businessName}</h1>
-        <p style="margin: 5px 0; color: #6b7280;">Professional Quote</p>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:30px;">
+        <tr>
+          <td style="vertical-align:top;">
+            ${logoHtml}
+            <h2 style="margin:8px 0 2px; color:#111827;">${headerBrandName}</h2>
+            <p style="margin:0; font-size:13px; color:#6b7280;">${headerSubtitle}</p>
+          </td>
+          <td style="vertical-align:top; text-align:right;">
+            <h1 style="margin:0; color:#2563eb; font-size:28px;">QUOTE</h1>
+            ${quoteRef ? `<p style="margin:4px 0; font-size:14px; color:#374151;"><strong>${quoteRef}</strong></p>` : ''}
+            <p style="margin:2px 0; font-size:13px; color:#6b7280;">Date: ${new Date().toLocaleDateString()}</p>
+            <p style="margin:2px 0; font-size:13px; color:#6b7280;">Valid for: 30 Days</p>
+          </td>
+        </tr>
+      </table>
+
+      <div style="background:#f9fafb; border-radius:8px; padding:16px; margin-bottom:24px;">
+        <h3 style="margin:0 0 8px; font-size:13px; text-transform:uppercase; color:#6b7280; letter-spacing:0.05em;">Customer</h3>
+        <p style="margin:2px 0; font-weight:700;">${customerName}</p>
+        ${customerPhone ? `<p style="margin:2px 0; font-size:13px;">${customerPhone}</p>` : ''}
+        ${customerEmail ? `<p style="margin:2px 0; font-size:13px;">${customerEmail}</p>` : ''}
+        ${customerAddress ? `<p style="margin:2px 0; font-size:13px;">${customerAddress}</p>` : ''}
       </div>
 
-      <div style="margin-bottom: 30px; width: 100%;">
-        <table style="width: 100%; border-collapse: collapse;">
+      <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <thead>
+          <tr style="background:#f3f4f6; border-bottom:2px solid #e5e7eb;">
+            <th style="padding:10px 12px; text-align:left; font-size:12px; text-transform:uppercase;">Service</th>
+            <th style="padding:10px 12px; text-align:center; font-size:12px; text-transform:uppercase;">Qty</th>
+            <th style="padding:10px 12px; text-align:right; font-size:12px; text-transform:uppercase;">Total</th>
+          </tr>
+        </thead>
+        <tbody>${serviceRows}</tbody>
+      </table>
+
+      <div style="margin-left:auto; width:250px; background:#f9fafb; padding:16px; border-radius:8px;">
+        <table style="width:100%; border-collapse:collapse;">
           <tr>
-            <td style="width: 50%; vertical-align: top; padding-right: 10px;">
-              <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Customer</h3>
-              <p style="margin: 2px 0;"><strong>${customerName}</strong></p>
-              <p style="margin: 2px 0;">${customerPhone}</p>
-              <p style="margin: 2px 0;">${customerEmail}</p>
-              <p style="margin: 2px 0;">${customerAddress}</p>
-            </td>
-            <td style="width: 50%; vertical-align: top; padding-left: 10px; text-align: right;">
-              <h3 style="color: #374151; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Quote Details</h3>
-              <p style="margin: 2px 0;">Date: ${new Date().toLocaleDateString()}</p>
-              <p style="margin: 2px 0;">Valid for: 30 Days</p>
-            </td>
+            <td style="padding:4px 0; font-size:14px;">Subtotal:</td>
+            <td style="padding:4px 0; text-align:right; font-size:14px;">$${data.subtotal.toFixed(2)}</td>
+          </tr>
+          ${travelFee > 0 ? `<tr><td style="padding:4px 0; font-size:14px;">Travel Fee:</td><td style="padding:4px 0; text-align:right; font-size:14px;">+$${travelFee.toFixed(2)}</td></tr>` : ''}
+          ${discount > 0 ? `<tr><td style="padding:4px 0; font-size:14px;">Discount:</td><td style="padding:4px 0; text-align:right; font-size:14px;">-$${discount.toFixed(2)}</td></tr>` : ''}
+          ${settings.gstEnabled ? `<tr><td style="padding:4px 0; font-size:14px;">GST (${gstRate}%):</td><td style="padding:4px 0; text-align:right; font-size:14px;">+$${data.gstAmount.toFixed(2)}</td></tr>` : ''}
+          <tr style="border-top:2px solid #2563eb;">
+            <td style="padding:8px 0; font-weight:900; font-size:18px;">TOTAL:</td>
+            <td style="padding:8px 0; text-align:right; font-weight:900; font-size:18px;">$${data.total.toFixed(2)}</td>
           </tr>
         </table>
       </div>
 
-      <div style="margin-bottom: 30px;">
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
-              <th style="padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase;">Service</th>
-              <th style="padding: 12px; text-align: center; font-size: 12px; text-transform: uppercase;">Qty</th>
-              <th style="padding: 12px; text-align: right; font-size: 12px; text-transform: uppercase;">Total</th>
-            </tr>
-          </thead>
-          <tbody>${serviceRows}</tbody>
-        </table>
-      </div>
-
-      <div style="margin-left: auto; width: 250px; background: #f9fafb; padding: 20px; border-radius: 12px;">
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr style="margin-bottom: 8px;">
-            <td style="padding: 4px 0; font-size: 14px;">Subtotal:</td>
-            <td style="padding: 4px 0; font-size: 14px; text-align: right;">$${data.subtotal.toFixed(2)}</td>
-          </tr>
-          ${travelFee > 0 ? `<tr style="margin-bottom: 8px;"><td style="padding: 4px 0; font-size: 14px;">Travel Fee:</td><td style="padding: 4px 0; font-size: 14px; text-align: right;">+$${travelFee.toFixed(2)}</td></tr>` : ''}
-          ${discount > 0 ? `<tr style="margin-bottom: 8px;"><td style="padding: 4px 0; font-size: 14px;">Discount:</td><td style="padding: 4px 0; font-size: 14px; text-align: right;">-$${discount.toFixed(2)}</td></tr>` : ''}
-          ${settings.gstEnabled ? `<tr style="margin-bottom: 8px; border-top: 1px solid #e5e7eb; padding-top: 8px;"><td style="padding: 4px 0; font-size: 14px;">GST (${gstRate}%):</td><td style="padding: 4px 0; font-size: 14px; text-align: right;">+$${data.gstAmount.toFixed(2)}</td></tr>` : ''}
-          <tr style="border-top: 2px solid #2563eb; padding-top: 10px; margin-top: 10px;">
-            <td style="padding: 8px 0; font-weight: 900; font-size: 20px; color: #111827;">TOTAL:</td>
-            <td style="padding: 8px 0; font-weight: 900; font-size: 20px; text-align: right; color: #111827;">$${data.total.toFixed(2)}</td>
-          </tr>
-        </table>
-      </div>
-
-      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px; text-align: center;">
-        <p style="margin-bottom: 10px;">${customMessage}</p>
-        <p>Contact: ${contactName} • ${businessPhone} • ${businessEmail}</p>
-      </div>
+      ${footerHtml}
     </div>
   `;
 }
