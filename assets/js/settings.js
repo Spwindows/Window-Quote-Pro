@@ -113,15 +113,6 @@ function syncSettingsForm() {
   setChecked('settings-gst-enabled', settings.gstEnabled);
   setVal('settings-gst-rate',        settings.gstRate);
   setVal('team-invite-code',         proState.inviteCode || '');
-
-  /* Toggle Team Invite card visibility:
-   * - Hidden for users with no team who are NOT pro (buttons route to upsell anyway)
-   * - Visible for pro users (they can create a team) and users who already have a team */
-  const inviteCard = el('team-invite-card');
-  if (inviteCard) {
-    const showInviteCard = !!proState.teamId || hasProAccess();
-    inviteCard.classList.toggle('hidden', !showInviteCard);
-  }
 }
 
 function renderSettingsGrids() {
