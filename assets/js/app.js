@@ -140,8 +140,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindClick('reset-all-btn', resetAllData);
 
   bindClick('copy-invite-btn', async () => {
+    if (!proState.teamId) {
+      if (!hasProAccess()) return openUpsellModal();
+      return showToast('Create a team first to get an invite code', 'info');
+    }
     if (!proState.inviteCode) {
-      return showToast('No invite code available', 'error');
+      if (!hasProAccess()) return openUpsellModal();
+      return showToast('Create a team first to get an invite code', 'info');
     }
 
     try {
@@ -153,8 +158,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   bindClick('share-invite-btn', async () => {
+    if (!proState.teamId) {
+      if (!hasProAccess()) return openUpsellModal();
+      return showToast('Create a team first to get an invite code', 'info');
+    }
     if (!proState.inviteCode) {
-      return showToast('No invite code available', 'error');
+      if (!hasProAccess()) return openUpsellModal();
+      return showToast('Create a team first to get an invite code', 'info');
     }
 
     const joinUrl =
@@ -181,6 +191,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast('Share cancelled', 'error');
     }
   });
+
+  /* ===== New: Completion modal bindings ===== */
+  bindClick('completion-invoice-btn', completionSendInvoice);
+  bindClick('completion-payment-btn', completionRecordPayment);
+  bindClick('completion-later-btn', completionDoLater);
+
+  /* ===== New: Payment modal bindings ===== */
+  bindClick('payment-submit-btn', recordPayment);
+  bindClick('payment-cancel-btn', closePaymentModal);
+
+  /* ===== New: Payment confirm modal bindings ===== */
+  bindClick('payconfirm-receipt-btn', paymentConfirmSendReceipt);
+  bindClick('payconfirm-skip-btn', paymentConfirmSkip);
+
+  /* ===== New: Logo upload binding ===== */
+  const logoInput = el('logo-file-input');
+  if (logoInput) {
+    logoInput.onchange = () => handleLogoUpload(logoInput);
+  }
+  bindClick('logo-remove-btn', removeLogo);
 
   /*
   if ("serviceWorker" in navigator) {
