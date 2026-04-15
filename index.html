@@ -19,7 +19,7 @@
   <!-- ONBOARDING MODAL -->
   <div id="onboarding-modal" class="modal-overlay hidden">
     <div class="modal">
-      <button class="modal-close" onclick="skipOnboarding()" type="button">&#10005;</button>
+      <button class="modal-close" onclick="skipOnboarding()" type="button">✕</button>
       <div class="modal-header">Welcome to Window Quote Pro!</div>
       <div class="modal-subtitle">Let's get you set up in 2 minutes</div>
 
@@ -54,129 +54,32 @@
   <!-- SHARE MODAL -->
   <div id="share-modal" class="modal-overlay hidden">
     <div class="modal">
-      <button class="modal-close" onclick="closeShareModal()" type="button">&#10005;</button>
+      <button class="modal-close" onclick="closeShareModal()" type="button">✕</button>
       <div class="modal-header">Share Quote</div>
-      <div class="modal-subtitle">Send a branded PDF quote to your customer</div>
+      <div class="modal-subtitle">Choose how to send this quote</div>
 
-      <button class="btn btn-primary btn-full" id="export-pdf-btn" onclick="exportQuotePDF()" type="button" style="font-size:1rem; padding:0.85rem 1.25rem;">
-        &#128196; Send Quote PDF
-      </button>
+      <div class="share-options">
+        <div class="share-option" onclick="copyQuoteToClipboard()">
+          <div class="share-option-icon">📋</div>
+          <div class="share-option-label">Copy Text</div>
+        </div>
+        <div class="share-option" onclick="emailQuote()">
+          <div class="share-option-icon">✉️</div>
+          <div class="share-option-label">Email</div>
+        </div>
+        <div class="share-option" onclick="smsQuote()">
+          <div class="share-option-icon">💬</div>
+          <div class="share-option-label">SMS</div>
+        </div>
+        <div class="share-option" onclick="whatsappQuote()">
+          <div class="share-option-icon">💚</div>
+          <div class="share-option-label">WhatsApp</div>
+        </div>
+      </div>
 
       <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #e5e7eb;">
-        <button class="btn btn-secondary btn-full btn-sm" onclick="copyQuoteToClipboard()" type="button">
-          &#128203; Copy as Plain Text
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TEAM PRO UPSELL MODAL -->
-  <div id="upsell-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <button class="modal-close" onclick="closeUpsellModal()" type="button">&#10005;</button>
-      <div style="text-align:center; margin-bottom:0.5rem;">
-        <span style="display:inline-flex; align-items:center; justify-content:center; width:3rem; height:3rem; border-radius:0.75rem; background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%); margin-bottom:0.5rem;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        </span>
-      </div>
-      <div class="modal-header" style="text-align:center;">Upgrade to Team Pro</div>
-      <div class="modal-subtitle" style="text-align:center;">Unlock powerful team features to grow your business</div>
-
-      <div style="display:flex; flex-direction:column; gap:0.65rem; margin-bottom:1.5rem;">
-        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
-          <span style="font-size:1.2rem;">&#128101;</span>
-          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Team Accounts</div><div style="font-size:0.78rem; color:#6b7280;">Manage your whole crew in one place</div></div>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
-          <span style="font-size:1.2rem;">&#128233;</span>
-          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Staff Invites</div><div style="font-size:0.78rem; color:#6b7280;">Invite staff with a simple code or link</div></div>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
-          <span style="font-size:1.2rem;">&#128203;</span>
-          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Shared Pipeline</div><div style="font-size:0.78rem; color:#6b7280;">All quotes and jobs visible to the team</div></div>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
-          <span style="font-size:1.2rem;">&#128259;</span>
-          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Team Sync</div><div style="font-size:0.78rem; color:#6b7280;">Real-time updates across all devices</div></div>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; background:#eff6ff; border-radius:0.75rem; border:1px solid #dbeafe;">
-          <span style="font-size:1.2rem;">&#128200;</span>
-          <div><div style="font-weight:700; font-size:0.88rem; color:#111827;">Team Performance Tracking</div><div style="font-size:0.78rem; color:#6b7280;">Track revenue, completions, and productivity</div></div>
-        </div>
-      </div>
-
-      <button class="btn btn-primary btn-full" id="upsell-upgrade-btn" type="button" onclick="handleUpgradeClick(); closeUpsellModal();">
-        Upgrade to Pro &mdash; $49/month
-      </button>
-      <button class="btn btn-secondary btn-full" onclick="closeUpsellModal()" type="button" style="margin-top:0.5rem;">Maybe Later</button>
-    </div>
-  </div>
-
-  <!-- COMPLETION NEXT-STEP MODAL -->
-  <div id="completion-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <button class="modal-close" onclick="closeCompletionModal()" type="button">&#10005;</button>
-      <div class="modal-header">Job Completed!</div>
-      <div class="modal-subtitle">What would you like to do next?</div>
-
-      <div class="completion-options">
-        <button class="btn btn-primary btn-full" id="completion-invoice-btn" type="button">
-          <span class="btn-icon-text">&#128196; Send Invoice</span>
-        </button>
-        <button class="btn btn-success btn-full" id="completion-payment-btn" type="button">
-          <span class="btn-icon-text">&#128181; Record Payment</span>
-        </button>
-        <button class="btn btn-secondary btn-full" id="completion-later-btn" type="button">
-          Do This Later
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- PAYMENT RECORDING MODAL -->
-  <div id="payment-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <button class="modal-close" onclick="closePaymentModal()" type="button">&#10005;</button>
-      <div class="modal-header">Record Payment</div>
-      <div class="modal-subtitle" id="pay-due-display">Amount due: $0.00</div>
-
-      <div class="field-stack">
-        <div>
-          <label class="field-label">Amount Received ($)</label>
-          <input type="number" class="field-input" id="pay-amount" min="0" step="0.01" placeholder="0.00" />
-        </div>
-        <div>
-          <label class="field-label">Payment Method</label>
-          <select class="field-select" id="pay-method">
-            <option value="cash">Cash</option>
-            <option value="bank_transfer">Bank Transfer</option>
-            <option value="card">Card</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label class="field-label">Notes (optional)</label>
-          <input type="text" class="field-input" id="pay-notes" placeholder="e.g. Paid on site" />
-        </div>
-        <button class="btn btn-success btn-full" id="payment-submit-btn" type="button">Confirm Payment</button>
-        <button class="btn btn-secondary btn-full" id="payment-cancel-btn" type="button">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- PAYMENT CONFIRMATION MODAL -->
-  <div id="payment-confirm-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <button class="modal-close" onclick="closePaymentConfirmModal()" type="button">&#10005;</button>
-      <div class="modal-header">Payment Recorded!</div>
-      <div class="modal-subtitle">Would you like to send a receipt?</div>
-
-      <div class="completion-options">
-        <button class="btn btn-primary btn-full" id="payconfirm-receipt-btn" type="button">
-          <span class="btn-icon-text">&#128196; Send Receipt</span>
-        </button>
-        <button class="btn btn-secondary btn-full" id="payconfirm-skip-btn" type="button">
-          Skip
+        <button class="btn btn-primary btn-full" id="export-pdf-btn" onclick="exportQuotePDF()" type="button">
+          📄 Export as PDF (Pro)
         </button>
       </div>
     </div>
@@ -187,7 +90,13 @@
       <div class="header-inner">
         <div class="header-brand">
           <div class="header-logo">
-            <img src="logo.png" alt="Window Quote Pro" style="width:100%; height:100%; object-fit:cover; border-radius:var(--r-md);" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+              <path d="M3 9h18"></path>
+              <path d="M3 15h18"></path>
+              <path d="M9 3v18"></path>
+              <path d="M15 3v18"></path>
+            </svg>
           </div>
           <div>
             <div class="header-title">Window Quote Pro</div>
@@ -288,7 +197,7 @@
               </div>
               <div>
                 <label class="field-label">Password</label>
-                <input type="password" class="field-input" id="auth-password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" />
+                <input type="password" class="field-input" id="auth-password" placeholder="••••••••" />
               </div>
               <button class="btn btn-primary btn-full" id="auth-submit-btn" type="button">Sign In</button>
             </div>
@@ -372,13 +281,13 @@
             <div class="field-stack">
               <div>
                 <label class="field-label">Business Name</label>
-                <input type="text" class="field-input" id="s-bizname" placeholder="Your Business Name" />
+                <input type="text" class="field-input" id="s-bizname" placeholder="SP Window Cleaning Pty Ltd" />
               </div>
 
               <div class="field-grid-2">
                 <div>
                   <label class="field-label">Contact Name</label>
-                  <input type="text" class="field-input" id="s-contact" placeholder="Contact Name" />
+                  <input type="text" class="field-input" id="s-contact" placeholder="Sean" />
                 </div>
                 <div>
                   <label class="field-label">Phone</label>
@@ -398,26 +307,7 @@
             </div>
           </div>
 
-          <!-- LOGO UPLOAD (Pro only, owner only) -->
-          <div class="card hidden" id="logo-upload-section">
-            <div class="card-title">Business Logo (Pro)</div>
-            <div class="field-stack">
-              <div id="logo-preview" style="text-align:center; padding:0.5rem 0;">
-                <span style="color:#9ca3af; font-size:0.85rem;">No logo uploaded</span>
-              </div>
-              <div>
-                <label class="field-label">Upload Logo (max 2MB)</label>
-                <input type="file" class="field-input" id="logo-file-input" accept="image/*" />
-              </div>
-              <button class="btn btn-primary btn-sm" id="logo-upload-btn" type="button" style="display:none;">Saving...</button>
-              <button class="btn btn-danger-soft btn-sm hidden" id="logo-remove-btn" type="button">Remove Logo</button>
-              <div style="font-size:0.78rem; color:#6b7280;">
-                Your logo appears on PDF quotes, invoices, and receipts.
-              </div>
-            </div>
-          </div>
-
-          <div class="card" id="team-invite-card">
+          <div class="card">
             <div class="card-title">Team Invite</div>
             <div class="field-stack">
               <div>
@@ -513,26 +403,26 @@
     </div>
 
     <div class="quote-footer" id="quote-footer">
-      <div class="quote-footer-inner">
-        <div class="quote-footer-card">
-          <div>
-            <div class="quote-price" id="footer-total">$0.00</div>
-            <div class="quote-price-sub" id="footer-count">0 items selected</div>
-          </div>
+  <div class="quote-footer-inner">
+    <div class="quote-footer-card">
+      <div>
+        <div class="quote-price" id="footer-total">$0.00</div>
+        <div class="quote-price-sub" id="footer-count">0 items selected</div>
+      </div>
 
-          <div class="quote-footer-actions">
-            <button class="btn btn-secondary btn-sm" id="save-team-job-btn" type="button">
-              Add to Team
-            </button>
-            <button class="btn btn-primary btn-sm" id="share-quote-btn" type="button">
-              Share
-            </button>
-          </div>
-        </div>
+      <div class="quote-footer-actions">
+        <button class="btn btn-secondary btn-sm" id="save-team-job-btn" type="button">
+          Add to Team
+        </button>
+        <button class="btn btn-primary btn-sm" id="share-quote-btn" type="button">
+          Share
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
-    <div class="tab-bar">
+<div class="tab-bar">
       <div class="tab-bar-inner">
         <button class="tab-btn active" id="tab-quote-btn" type="button" onclick="switchTab('quote')">
           <div class="tab-btn-icon">
