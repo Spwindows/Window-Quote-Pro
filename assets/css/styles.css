@@ -1508,3 +1508,148 @@ input[type="checkbox"]:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- JOB OVERFLOW MENU (Cancel / Delete) ---------- */
+.job-overflow-wrap {
+  position: relative;
+  flex-shrink: 0;
+  z-index: 5;
+}
+
+.job-overflow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--c-text-4);
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  border-radius: var(--r-md);
+  transition: all var(--tr);
+  letter-spacing: 0.1em;
+  padding: 0;
+  line-height: 1;
+}
+
+.job-overflow-btn:hover {
+  background: var(--c-bg);
+  color: var(--c-text-2);
+}
+
+.job-overflow-btn:active {
+  transform: scale(0.92);
+}
+
+.job-overflow-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 50;
+  min-width: 150px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-lg);
+  padding: 0.3rem 0;
+  animation: fadeIn 0.12s ease;
+}
+
+.job-overflow-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--c-text-2);
+  cursor: pointer;
+  transition: background var(--tr);
+  min-height: 44px;
+  line-height: 1.3;
+}
+
+.job-overflow-menu button:hover {
+  background: var(--c-bg);
+}
+
+.job-overflow-menu button.danger {
+  color: var(--c-red);
+}
+
+.job-overflow-menu button.danger:hover {
+  background: var(--c-red-l);
+}
+
+/* ---------- JOB GROUP ACCORDION (Completed / Scheduled) ---------- */
+.job-group {
+  margin-bottom: var(--sp-md);
+}
+
+.job-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem var(--sp-lg);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-lt);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: all var(--tr);
+  min-height: 44px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.job-group-header:hover {
+  background: var(--c-bg);
+  box-shadow: var(--sh-xs);
+}
+
+.job-group-header:active {
+  transform: scale(0.99);
+}
+
+.job-group-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--c-text);
+  letter-spacing: -0.01em;
+}
+
+.job-group-count {
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--c-text-3);
+}
+
+.job-group-chevron {
+  color: var(--c-text-4);
+  flex-shrink: 0;
+  transition: transform var(--tr);
+}
+
+.job-group-content {
+  padding-top: var(--sp-sm);
+  transition: max-height 0.25s ease;
+}
+
+/* Collapsed state */
+.job-group.collapsed .job-group-content {
+  display: none;
+}
+
+.job-group.collapsed .job-group-chevron {
+  transform: rotate(-90deg);
+}
+
+.job-group.collapsed .job-group-header {
+  border-radius: var(--r-lg);
+}

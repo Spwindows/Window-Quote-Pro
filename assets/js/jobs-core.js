@@ -194,6 +194,26 @@ function updateKPIs() {
   if (kpiPending)   kpiPending.textContent   = `$${pendingTotal.toFixed(0)}`;
 }
 
+/* ---------- Cancel & Delete Job ---------- */
+async function cancelJob(jobId) {
+  if (!confirm('Cancel this job? It will be removed from active lists.')) return;
+  await updateJobStatus(jobId, 'cancelled');
+  showToast('Job cancelled', 'success');
+}
+
+async function _deleteJobInner(jobId) {
+  if (!confirm('Permanently delete this job? This cannot be undone.')) return;
+  const sb = await getSb();
+  if (!sb) return showToast('Not signed in', 'error');
+  const { error } = await sb.from('jobs').delete().eq('id', jobId);
+  if (error) return showToast('Delete failed', 'error');
+  proState.jobs = (proState.jobs || []).filter(j => j.id !== jobId);
+  renderJobsList();
+  updateKPIs();
+  showToast('Job deleted', 'success');
+}
+const deleteJob = asyncGuard(_deleteJobInner, 'deleteJob');
+
 function formatDateTime(value, emptyLabel = 'Not set') {
   if (!value) return emptyLabel;
   const d = new Date(value);
