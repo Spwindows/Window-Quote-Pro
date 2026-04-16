@@ -63,7 +63,7 @@ function syncSecondStoreyUI() {
 }
 
 function renderSteppers() {
-  const container = el('stepper-container');
+  const container = el('steppers-container');
   if (!container) return;
 
   container.innerHTML = services.map(s => `
