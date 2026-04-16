@@ -317,11 +317,11 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
   let mount = null;
 
   try {
-    mount = document.createElement('div');
+        mount = document.createElement('div');
     mount.id = 'pdf-doc-mount';
     Object.assign(mount.style, {
-      position: 'fixed',
-      left: '-10000px',
+      position: 'absolute',
+      left: '0',
       top: '0',
       width: '794px',
       minHeight: '1123px',
@@ -329,7 +329,7 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
       overflow: 'visible',
       padding: '0',
       margin: '0',
-      opacity: '1',
+      opacity: '0',
       pointerEvents: 'none',
       zIndex: '-1'
     });
@@ -338,16 +338,24 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
       <div id="pdf-doc-inner" style="
         width: 794px;
         min-height: 1123px;
-        margin: 0;
+        margin: 0 auto;
         padding: 0;
         background: #ffffff;
         box-sizing: border-box;
         overflow: visible;
       ">
-        ${htmlContent}
+        <div style="
+          width: 794px;
+          min-height: 1123px;
+          margin: 0 auto;
+          background: #ffffff;
+          box-sizing: border-box;
+          overflow: visible;
+        ">
+          ${htmlContent}
+        </div>
       </div>
     `;
-
     document.body.appendChild(mount);
 
     const target = document.getElementById('pdf-doc-inner');
@@ -380,9 +388,7 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
           backgroundColor: '#ffffff',
           logging: false,
           scrollX: 0,
-          scrollY: 0,
-          width: 794,
-          windowWidth: 794
+          scrollY: 0
         },
         jsPDF: {
           unit: 'mm',
