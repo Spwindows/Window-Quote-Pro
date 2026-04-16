@@ -67,7 +67,7 @@ function closePlansModal() {
 function openDesktopEmailModal(email, subject) {
   const modal = el('desktop-email-modal');
   if (!modal) return;
-  /* Store data for the button handler */
+
   modal.dataset.email = email || '';
   modal.dataset.subject = subject || '';
   modal.classList.remove('hidden');
@@ -78,18 +78,14 @@ function closeDesktopEmailModal() {
   if (modal) modal.classList.add('hidden');
 }
 
-/**
- * FIX 1: Desktop email open — uses ONLY mailto:EMAIL?subject=SUBJECT&body=BODY
- * NO attachment, attach, or blob URL parameters whatsoever.
- * Body tells recipient the PDF is attached (user attaches manually).
- */
 function desktopEmailOpen() {
   const modal = el('desktop-email-modal');
   const email = (modal && modal.dataset.email) || '';
   const subject = (modal && modal.dataset.subject) || '';
-  const body = 'Hi,\n\nPlease find the PDF document attached.\n\nThank you.';
+  const body = 'Hi,\n\nPlease find the invoice PDF attached.\n\nThe PDF has already been downloaded. Please attach it manually before sending.\n\nThank you.';
   const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(mailto, '_blank');
+
+  window.location.href = mailto;
   closeDesktopEmailModal();
 }
 
