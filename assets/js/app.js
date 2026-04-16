@@ -91,10 +91,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (e) e.value = v;
     };
 
-    setVal('q-name', '');
-    setVal('q-phone', '');
-    setVal('q-email', '');
-    setVal('q-address', '');
+    setVal('cust-name', '');
+    setVal('cust-phone', '');
+    setVal('cust-address', '');
 
     const extToggle = el('external-only-toggle');
     if (extToggle) extToggle.checked = false;
@@ -185,7 +184,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     settings.secondStoreyPercent = safeNum(getVal('settings-second-storey-percent'), settings.secondStoreyPercent);
     settings.secondStoreyFixedAmount = safeNum(getVal('settings-second-storey-fixed'), settings.secondStoreyFixedAmount);
 
-    /* FIX 3: Read payment detail fields from settings form */
     settings.paymentAccountName   = (el('s-payment-account-name')   || {}).value || '';
     settings.paymentBankName      = (el('s-payment-bank-name')      || {}).value || '';
     settings.paymentBSB           = (el('s-payment-bsb')            || {}).value || '';
@@ -200,7 +198,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   bindClick('reset-all-btn', resetAllData);
 
-  /* FIX 2 & 7: All team-gated actions now route to centralized plans modal */
   bindClick('copy-invite-btn', async () => {
     if (!proState.teamId) {
       if (!hasProAccess()) return openPlansModal('team', 'Team Features');
@@ -254,38 +251,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  /* ===== Completion modal bindings ===== */
   bindClick('completion-invoice-btn', completionSendInvoice);
   bindClick('completion-payment-btn', completionRecordPayment);
   bindClick('completion-later-btn', completionDoLater);
 
-  /* ===== Payment modal bindings ===== */
   bindClick('payment-submit-btn', recordPayment);
   bindClick('payment-cancel-btn', closePaymentModal);
 
-  /* ===== Payment confirm modal bindings ===== */
   bindClick('payconfirm-receipt-btn', paymentConfirmSendReceipt);
   bindClick('payconfirm-skip-btn', paymentConfirmSkip);
 
-  /* ===== Rebooking modal binding ===== */
   bindClick('rebooking-submit-btn', submitRebookingModal);
 
-  /* ===== Logo upload binding ===== */
   const logoInput = el('logo-file-input');
   if (logoInput) {
     logoInput.onchange = () => handleLogoUpload(logoInput);
   }
   bindClick('logo-remove-btn', removeLogo);
 
-  /* ===== Desktop email modal bindings (FIX 1) ===== */
   bindClick('desktop-email-open-btn', desktopEmailOpen);
   bindClick('desktop-email-close-btn', closeDesktopEmailModal);
 
-  /* ===== Invoice due date modal bindings (FIX 2) ===== */
   bindClick('invoice-duedate-confirm-btn', confirmInvoiceDueDate);
   bindClick('invoice-duedate-cancel-btn', closeInvoiceDueDateModal);
 
-  /* Toggle custom date field visibility in due date modal */
   const termsSelect = el('invoice-terms-select');
   if (termsSelect) {
     termsSelect.onchange = function() {
