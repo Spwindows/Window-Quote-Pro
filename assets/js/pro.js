@@ -165,12 +165,15 @@ const joinTeam = asyncGuard(_joinTeamInner, 'joinTeam');
 
 function renderProUI() {
   const authPanel = el('pro-auth-panel');
-  const accountPanel = el('pro-account-panel');
+  const dashboard = el('pro-dashboard');
+  const accountPanel = el('pro-account-card');
   const teamSetup = el('pro-team-setup');
   const teamDash = el('pro-team-dashboard');
-  const headerBadge = el('header-badge');
+  const headerBadge = el('pro-badge');
+
   if (!proState.user) {
     if (authPanel) authPanel.classList.remove('hidden');
+    if (dashboard) dashboard.classList.add('hidden');
     if (accountPanel) accountPanel.classList.add('hidden');
     if (teamSetup) teamSetup.classList.add('hidden');
     if (teamDash) teamDash.classList.add('hidden');
@@ -180,21 +183,31 @@ function renderProUI() {
     }
     return;
   }
+
   if (authPanel) authPanel.classList.add('hidden');
+  if (dashboard) dashboard.classList.remove('hidden');
   if (accountPanel) accountPanel.classList.remove('hidden');
-  const nameEl = el('pro-user-name');
-  const emailEl = el('pro-user-email');
+
+  const nameEl = el('team-name-display');
+  const emailEl = el('team-email-display');
+  const roleBadge = el('team-role-badge');
+
   if (nameEl) {
-    nameEl.textContent =
-      proState.user.user_metadata?.full_name || proState.user.email;
+    nameEl.textContent = proState.teamName || proState.user.user_metadata?.full_name || 'My Account';
   }
-  if (emailEl) emailEl.textContent = proState.user.email;
-  /* Update header badge from subscription info */
+  if (emailEl) emailEl.textContent = proState.user.email || '';
+  if (roleBadge) {
+    const role = (proState.teamRole || 'owner').toLowerCase();
+    roleBadge.textContent = role === 'owner' ? 'Owner' : 'Staff';
+    roleBadge.className = role === 'owner' ? 'role-badge role-owner' : 'role-badge role-staff';
+  }
+
   const planInfo = getPlanDisplayInfo();
   if (headerBadge) {
     headerBadge.textContent = planInfo.headerBadgeText;
     headerBadge.className = planInfo.headerBadgeClass;
   }
+
   if (proState.teamId) {
     if (teamSetup) teamSetup.classList.add('hidden');
     if (teamDash) teamDash.classList.remove('hidden');
@@ -202,13 +215,10 @@ function renderProUI() {
     if (teamSetup) teamSetup.classList.remove('hidden');
     if (teamDash) teamDash.classList.add('hidden');
   }
-  /* Logo section visibility — only for team owners */
-  const logoSection = el('logo-section');
+
+  const logoSection = el('logo-upload-section');
   if (logoSection) {
-    logoSection.classList.toggle(
-      'hidden',
-      !proState.teamId || !canAccessSettings()
-    );
+    logoSection.classList.toggle('hidden', !proState.teamId || !canAccessSettings());
   }
   if (proState.teamId && canAccessSettings()) {
     renderLogoPreview();
