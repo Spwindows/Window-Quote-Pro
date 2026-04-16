@@ -1,5 +1,5 @@
 
-const CACHE = "window-quote-pro-v14";
+const CACHE = "window-quote-pro-v15";
 
 const ASSETS = [
   "./",
@@ -57,7 +57,8 @@ self.addEventListener("fetch", (event) => {
   if (
     url.origin.includes("supabase.co") ||
     url.origin.includes("esm.sh") ||
-    url.protocol === "chrome-extension:"
+    url.protocol === "chrome-extension:" ||
+    url.pathname.includes("/.netlify/functions/")
   ) {
     event.respondWith(fetch(event.request));
     return;

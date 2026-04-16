@@ -124,7 +124,7 @@
             <div class="plan-feature-item">&#10003; Repeat Revenue Tracker</div>
             <div class="plan-feature-item">&#10003; Follow-ups &amp; analytics</div>
           </div>
-          <button class="btn btn-primary btn-full" type="button" onclick="startUpgradeFlow('pro')">Start 14-Day Free Trial</button>
+          <button class="btn btn-primary btn-full" type="button" onclick="startUpgradeFlow('pro')">Start 7-Day Free Trial</button>
         </div>
 
         <div class="plan-card" id="plan-card-team">
@@ -139,7 +139,7 @@
             <div class="plan-feature-item">&#10003; Team performance analytics</div>
             <div class="plan-feature-item">&#10003; +$9.99 per extra user</div>
           </div>
-          <button class="btn btn-secondary btn-full" type="button" onclick="startUpgradeFlow('team')">Start Pro Team Trial</button>
+          <button class="btn btn-secondary btn-full" type="button" onclick="startUpgradeFlow('team')">Start 7-Day Free Trial</button>
         </div>
       </div>
 
@@ -208,37 +208,13 @@
         </div>
         <div>
           <label class="field-label">Notes (optional)</label>
-          <input type="text" class="field-input" id="pay-notes" placeholder="e.g. Paid on site" />
+          <input type="text" class="field-input" id="pay-notes" placeholder="e.g. Paid in full on site" />
         </div>
-        <button class="btn btn-success btn-full" id="payment-submit-btn" type="button">Confirm Payment</button>
-        <button class="btn btn-secondary btn-full" id="payment-cancel-btn" type="button">Cancel</button>
       </div>
-    </div>
-  </div>
 
-  <!-- REBOOKING FREQUENCY MODAL -->
-  <div id="rebooking-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <button class="modal-close" onclick="closeRebookingModal()" type="button">&#10005;</button>
-      <div class="modal-header" id="rebooking-modal-title">Set Rebooking Reminder</div>
-      <div class="modal-subtitle">Choose how often this customer needs service</div>
-
-      <div class="field-stack">
-        <div>
-          <label class="field-label">Frequency</label>
-          <select class="field-select" id="rebooking-freq-select" onchange="var w=document.getElementById('rebooking-custom-wrap'); if(this.value==='custom'){w.classList.remove('hidden')}else{w.classList.add('hidden')}">
-            <option value="3_months">Every 3 Months</option>
-            <option value="6_months" selected>Every 6 Months</option>
-            <option value="12_months">Every 12 Months</option>
-            <option value="custom">Custom Date</option>
-          </select>
-        </div>
-        <div id="rebooking-custom-wrap" class="hidden">
-          <label class="field-label">Custom Due Date</label>
-          <input type="date" class="field-input" id="rebooking-custom-date" />
-        </div>
-        <button class="btn btn-primary btn-full" id="rebooking-submit-btn" type="button">Set Reminder</button>
-        <button class="btn btn-secondary btn-full" onclick="closeRebookingModal()" type="button">Cancel</button>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+        <button class="btn btn-secondary btn-full" id="payment-cancel-btn" type="button">Cancel</button>
+        <button class="btn btn-success btn-full" id="payment-submit-btn" type="button">Record Payment</button>
       </div>
     </div>
   </div>
@@ -248,51 +224,76 @@
     <div class="modal">
       <button class="modal-close" onclick="closePaymentConfirmModal()" type="button">&#10005;</button>
       <div class="modal-header">Payment Recorded!</div>
-      <div class="modal-subtitle">Would you like to send a receipt?</div>
+      <div class="modal-subtitle" id="payconfirm-summary">$0.00 received</div>
 
       <div class="completion-options">
         <button class="btn btn-primary btn-full" id="payconfirm-receipt-btn" type="button">
           <span class="btn-icon-text">&#128196; Send Receipt</span>
         </button>
         <button class="btn btn-secondary btn-full" id="payconfirm-skip-btn" type="button">
-          Skip
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- FIX 1: Desktop PDF Email Prompt Modal — updated text to tell user to attach PDF manually -->
-  <div id="desktop-email-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <button class="modal-close" onclick="closeDesktopEmailModal()" type="button">&#10005;</button>
-      <div class="modal-header">PDF Downloaded</div>
-      <div class="modal-subtitle">PDF downloaded — please attach it manually to your email.</div>
-      <div class="completion-options">
-        <button class="btn btn-primary btn-full" id="desktop-email-open-btn" type="button">
-          Open Email to Send
-        </button>
-        <button class="btn btn-secondary btn-full" id="desktop-email-close-btn" type="button">
           Done
         </button>
       </div>
     </div>
   </div>
 
-  <!-- FIX 2: Invoice Due Date Modal -->
+  <!-- REBOOKING MODAL -->
+  <div id="rebooking-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="closeRebookingModal()" type="button">&#10005;</button>
+      <div class="modal-header">Schedule Follow-Up</div>
+      <div class="modal-subtitle" id="rebooking-job-name">Set the next service date</div>
+
+      <div class="field-stack">
+        <div>
+          <label class="field-label">Frequency</label>
+          <select class="field-select" id="rebooking-frequency">
+            <option value="4">Every 4 weeks</option>
+            <option value="6">Every 6 weeks</option>
+            <option value="8" selected>Every 8 weeks</option>
+            <option value="12">Every 12 weeks</option>
+            <option value="custom">Custom date</option>
+          </select>
+        </div>
+        <div id="rebooking-custom-wrap" class="hidden">
+          <label class="field-label">Custom Date</label>
+          <input type="date" class="field-input" id="rebooking-custom-date" />
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="rebooking-submit-btn" type="button" style="margin-top:1rem;">
+        Save Follow-Up
+      </button>
+    </div>
+  </div>
+
+  <!-- DESKTOP EMAIL MODAL (FIX 1) -->
+  <div id="desktop-email-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" id="desktop-email-close-btn" type="button">&#10005;</button>
+      <div class="modal-header">Email Invoice</div>
+      <div class="modal-subtitle">The PDF has been downloaded. Click below to open your email client, then attach the PDF manually.</div>
+      <button class="btn btn-primary btn-full" id="desktop-email-open-btn" type="button" style="margin-top:1rem;">
+        Open Email Client
+      </button>
+    </div>
+  </div>
+
+  <!-- INVOICE DUE DATE MODAL (FIX 2) -->
   <div id="invoice-duedate-modal" class="modal-overlay hidden">
     <div class="modal">
-      <button class="modal-close" onclick="closeInvoiceDueDateModal()" type="button">&#10005;</button>
-      <div class="modal-header">Invoice Payment Terms</div>
-      <div class="modal-subtitle">Choose when payment is due</div>
+      <button class="modal-close" id="invoice-duedate-cancel-btn" type="button">&#10005;</button>
+      <div class="modal-header">Invoice Terms</div>
+      <div class="modal-subtitle">When is payment due?</div>
 
       <div class="field-stack">
         <div>
           <label class="field-label">Payment Terms</label>
           <select class="field-select" id="invoice-terms-select">
             <option value="on_receipt">Due on Receipt</option>
-            <option value="7_days">7 Days</option>
-            <option value="14_days" selected>14 Days</option>
-            <option value="30_days">30 Days</option>
+            <option value="7_days">Net 7 (7 days)</option>
+            <option value="14_days" selected>Net 14 (14 days)</option>
+            <option value="30_days">Net 30 (30 days)</option>
             <option value="custom">Custom Date</option>
           </select>
         </div>
@@ -300,118 +301,92 @@
           <label class="field-label">Custom Due Date</label>
           <input type="date" class="field-input" id="invoice-custom-date" />
         </div>
-        <button class="btn btn-primary btn-full" id="invoice-duedate-confirm-btn" type="button">Generate Invoice</button>
-        <button class="btn btn-secondary btn-full" id="invoice-duedate-cancel-btn" type="button">Cancel</button>
       </div>
+
+      <button class="btn btn-primary btn-full" id="invoice-duedate-confirm-btn" type="button" style="margin-top:1rem;">
+        Continue
+      </button>
     </div>
   </div>
 
-  <div id="app">
-    <header class="header">
-      <div class="header-inner">
-        <div class="header-brand">
-          <div class="header-logo">
-            <img src="logo.png" alt="Window Quote Pro" style="width:100%; height:100%; object-fit:cover; border-radius:var(--r-md);" />
-          </div>
-          <div>
-            <div class="header-title">Window Quote Pro</div>
-            <div class="header-sub" id="header-sub">Fast quoting for window cleaners</div>
-          </div>
+  <div class="app-shell">
+    <div class="app-header">
+      <div class="app-header-inner">
+        <div class="app-title">
+          <img src="./logo.png" alt="WQP" class="app-logo" />
+          <span>Window Quote Pro</span>
         </div>
-
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <button class="btn btn-secondary btn-sm" id="global-reset-btn" title="Reset Quote" type="button" style="display:flex; align-items:center; gap:0.4rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-              <path d="M3 3v5h5"></path>
-            </svg>
-            <span style="font-size:0.75rem; font-weight:600;">Reset</span>
-          </button>
-          <span class="badge-free" id="pro-badge">FREE</span>
-        </div>
+        <span class="badge-free" id="pro-badge">FREE</span>
       </div>
-    </header>
+    </div>
 
-    <div class="main-content">
+    <div class="app-content">
       <!-- QUOTE TAB -->
       <div id="tab-quote">
-        <div class="chip-strip" id="service-chips"></div>
-
         <div class="card">
           <div class="card-title">Customer Details</div>
-          <div class="field-grid-2">
-            <div class="field-full">
-              <label class="field-label">Name</label>
-              <input type="text" class="field-input" id="q-name" placeholder="John Smith" />
-            </div>
-            <div>
-              <label class="field-label">Phone</label>
-              <input type="tel" class="field-input" id="q-phone" placeholder="0400 000 000" />
+          <div class="field-stack">
+            <div class="field-grid-2">
+              <div>
+                <label class="field-label">Name</label>
+                <input type="text" class="field-input" id="q-name" placeholder="Customer name" />
+              </div>
+              <div>
+                <label class="field-label">Phone</label>
+                <input type="tel" class="field-input" id="q-phone" placeholder="0400 000 000" />
+              </div>
             </div>
             <div>
               <label class="field-label">Email</label>
-              <input type="email" class="field-input" id="q-email" placeholder="john@email.com" />
+              <input type="email" class="field-input" id="q-email" placeholder="customer@email.com" />
             </div>
-            <div class="field-full">
+            <div>
               <label class="field-label">Address</label>
-              <input type="text" class="field-input" id="q-address" placeholder="12 Smith St, Melbourne" />
+              <input type="text" class="field-input" id="q-address" placeholder="123 Main St" />
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
-            <span>Services & Counts</span>
-            <button class="btn btn-secondary btn-sm" id="clear-counts-btn" type="button">Clear All</button>
+          <div class="card-title" style="display:flex; align-items:center; justify-content:space-between;">
+            <span>Services</span>
+            <button class="btn btn-secondary btn-sm" id="clear-counts-btn" type="button">Clear</button>
           </div>
-          <div id="steppers-container"></div>
-        </div>
 
-        <div class="card">
-          <div class="card-title">Quote Type</div>
-          <div class="field-stack">
+          <div style="margin-bottom:0.75rem;">
             <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
               <span class="toggle-switch">
                 <input type="checkbox" id="external-only-toggle" />
                 <span class="toggle-slider"></span>
               </span>
-              External only
+              External Only
             </label>
-            <div id="external-only-note" style="font-size:0.78rem; color:#6b7280; padding-left:3.5rem;">
-              Uses the owner-set external only percentage from Settings.
-            </div>
           </div>
-        </div>
 
-        <div class="card">
-          <div class="card-title">Second Storey</div>
-          <div class="field-stack">
+          <div id="stepper-grid" class="stepper-grid"></div>
+
+          <!-- Second Storey Section -->
+          <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid #e5e7eb;">
             <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
               <span class="toggle-switch">
                 <input type="checkbox" id="second-storey-toggle" />
                 <span class="toggle-slider"></span>
               </span>
-              Add second storey pricing
+              Second Storey
             </label>
-            <div style="font-size:0.78rem; color:#6b7280; padding-left:3.5rem;">
-              Applies the owner-set uplift to upstairs standard windows, large windows, and sliding doors only.
-            </div>
-            <div id="second-storey-counts" class="hidden">
+            <div id="second-storey-inputs" class="hidden" style="margin-top:0.75rem;">
               <div class="field-grid-3">
                 <div>
-                  <label class="field-label">Upstairs Standard Windows</label>
-                  <input type="number" min="0" step="1" class="field-input" id="second-storey-sw" />
-                  <div id="second-storey-sw-max" style="font-size:0.74rem; color:#6b7280; margin-top:0.25rem;">of 0 selected</div>
+                  <label class="field-label">Std Windows</label>
+                  <input type="number" min="0" class="field-input" id="second-storey-sw" value="0" />
                 </div>
                 <div>
-                  <label class="field-label">Upstairs Large Windows</label>
-                  <input type="number" min="0" step="1" class="field-input" id="second-storey-lw" />
-                  <div id="second-storey-lw-max" style="font-size:0.74rem; color:#6b7280; margin-top:0.25rem;">of 0 selected</div>
+                  <label class="field-label">Large Windows</label>
+                  <input type="number" min="0" class="field-input" id="second-storey-lw" value="0" />
                 </div>
                 <div>
-                  <label class="field-label">Upstairs Sliding Doors</label>
-                  <input type="number" min="0" step="1" class="field-input" id="second-storey-sd" />
-                  <div id="second-storey-sd-max" style="font-size:0.74rem; color:#6b7280; margin-top:0.25rem;">of 0 selected</div>
+                  <label class="field-label">Sliding Doors</label>
+                  <input type="number" min="0" class="field-input" id="second-storey-sd" value="0" />
                 </div>
               </div>
             </div>
