@@ -1,4 +1,3 @@
-
 const CACHE = "window-quote-pro-v16-2026-04-17-1";
 const ASSETS = [
   "./",
@@ -29,23 +28,25 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE)
-      .then((cache) => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await Promise.allSettled(
+      ASSETS.map((asset) => cache.add(asset))
+    );
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE)
-          .map((key) => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys
+        .filter((key) => key !== CACHE)
+        .map((key) => caches.delete(key))
+    );
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener("fetch", (event) => {
