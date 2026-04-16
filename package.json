@@ -1,0 +1,12 @@
+{
+  "name": "window-quote-pro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Window Quote Pro — fast quoting for window cleaners",
+  "dependencies": {
+    "stripe": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

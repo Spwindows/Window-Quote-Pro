@@ -7,18 +7,26 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
 const PRICE_MAP = {
   pro_solo: process.env.STRIPE_PRICE_ID_PRO_SOLO,
   pro_team: process.env.STRIPE_PRICE_ID_PRO_TEAM
 };
 
 /* ------------------------------------------------------------------ */
-/* Minimal Supabase REST helper (avoids bundling @supabase/supabase-js */
-/* in the serverless function — keeps cold starts fast).               */
+/* CORS helper                                                         */
 /* ------------------------------------------------------------------ */
-const fetch = globalThis.fetch || require('node-fetch');
+function corsHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+}
 
+/* ------------------------------------------------------------------ */
+/* Minimal Supabase REST helper — uses Node 18 native fetch            */
+/* ------------------------------------------------------------------ */
 async function supabaseRequest(method, path, body) {
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
   const headers = {
@@ -41,10 +49,16 @@ async function supabaseRequest(method, path, body) {
   return text ? JSON.parse(text) : null;
 }
 
+/* ------------------------------------------------------------------ */
+/* Handler                                                             */
+/* ------------------------------------------------------------------ */
 exports.handler = async (event) => {
-  /* Only allow POST */
+  /* Handle CORS preflight */
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers: corsHeaders(), body: '' };
+  }
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return { statusCode: 405, headers: corsHeaders(), body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   try {
@@ -54,18 +68,19 @@ exports.handler = async (event) => {
     if (!plan || !PRICE_MAP[plan]) {
       return {
         statusCode: 400,
+        headers: corsHeaders(),
         body: JSON.stringify({ error: 'Invalid plan. Must be pro_solo or pro_team.' })
       };
     }
     if (!userId) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing userId.' }) };
+      return { statusCode: 400, headers: corsHeaders(), body: JSON.stringify({ error: 'Missing userId.' }) };
     }
     if (!email) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing email.' }) };
+      return { statusCode: 400, headers: corsHeaders(), body: JSON.stringify({ error: 'Missing email.' }) };
     }
 
     const priceId = PRICE_MAP[plan];
-    const appUrl = (process.env.APP_URL || 'https://windowquotepro.com').replace(/\/+$/, '');
+    const appUrl = (process.env.APP_URL || 'https://windowquotepro.netlify.app').replace(/\/+$/, '');
 
     /* ---- Find or create Stripe customer ---- */
     let stripeCustomerId = null;
@@ -75,7 +90,6 @@ exports.handler = async (event) => {
       'GET',
       `subscriptions?user_id=eq.${userId}&select=stripe_customer_id`
     );
-
     if (rows && rows.length > 0 && rows[0].stripe_customer_id) {
       stripeCustomerId = rows[0].stripe_customer_id;
       // Verify customer still exists in Stripe
@@ -99,7 +113,6 @@ exports.handler = async (event) => {
         });
         stripeCustomerId = customer.id;
       }
-
       // Upsert stripe_customer_id in Supabase subscriptions table
       await supabaseRequest(
         'POST',
@@ -139,13 +152,14 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: corsHeaders(),
       body: JSON.stringify({ url: session.url })
     };
   } catch (err) {
     console.error('create-checkout error:', err);
     return {
       statusCode: 500,
+      headers: corsHeaders(),
       body: JSON.stringify({ error: err.message || 'Internal server error' })
     };
   }

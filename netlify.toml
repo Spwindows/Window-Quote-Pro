@@ -2,6 +2,9 @@
   publish = "."
   functions = "netlify/functions"
 
+[functions]
+  node_bundler = "esbuild"
+
 # Redirect API calls to Netlify Functions
 [[redirects]]
   from = "/.netlify/functions/*"
@@ -14,11 +17,6 @@
   to = "/index.html"
   status = 200
 
-[functions]
-  # Use Node 18 runtime for all functions
-  node_bundler = "esbuild"
-
-# Headers for security
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
