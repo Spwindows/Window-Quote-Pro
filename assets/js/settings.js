@@ -53,6 +53,9 @@ function applyTeamSettings(s) {
     contactName:         (s.contact_name    != null) ? s.contact_name    : settings.contactName,
     businessPhone:       (s.contact_phone   != null) ? s.contact_phone   : settings.businessPhone,
     businessEmail:       (s.contact_email   != null) ? s.contact_email   : settings.businessEmail,
+    businessAbn:         (s.business_abn    != null) ? s.business_abn    : settings.businessAbn,
+    businessWebsite:     (s.business_website!= null) ? s.business_website: settings.businessWebsite,
+    businessAddress:     (s.business_address!= null) ? s.business_address: settings.businessAddress,
     customMessage:       (s.default_message != null) ? s.default_message : settings.customMessage,
     pricingMode:         s.pricing_mode          || settings.pricingMode,
     hourlyRate:          safeNum(s.hourly_rate,          settings.hourlyRate),
@@ -104,6 +107,9 @@ function syncSettingsForm() {
   setVal('s-contact',                settings.contactName);
   setVal('s-phone',                  settings.businessPhone);
   setVal('s-email',                  settings.businessEmail);
+  setVal('s-abn',        settings.businessAbn);
+  setVal('s-website',    settings.businessWebsite);
+  setVal('s-address',    settings.businessAddress);
   setVal('s-message',                settings.customMessage);
   setVal('settings-pricing-mode',    settings.pricingMode);
   setVal('settings-hourly-rate',     settings.hourlyRate);
@@ -167,26 +173,28 @@ async function _saveSettingsToServerInner() {
   });
 
   const payload = {
-    team_id:              proState.teamId,
-    business_name:        settings.businessName,
-    contact_name:         settings.contactName,
-    contact_phone:        settings.businessPhone,
-    contact_email:        settings.businessEmail,
-    default_message:      settings.customMessage,
-    pricing_mode:         settings.pricingMode,
-    hourly_rate:          Number(settings.hourlyRate),
-    travel_fee:           Number(settings.travelFee),
-    discount:             Number(settings.discount),
-    external_only_percent:Number(settings.externalOnlyPercent),
-    gst_enabled:          !!settings.gstEnabled,
-    gst_rate:             Number(settings.gstRate),
-    rates:                ratesMap,
-    minutes:              minsMap
-    /* NOTE: logo_url is NOT included here intentionally.
-     * It is managed exclusively by handleLogoUpload() / removeLogo()
-     * in pro-logo.js to avoid accidentally overwriting the logo on a
-     * regular settings save. */
-  };
+  team_id:               proState.teamId,
+  business_name:         settings.businessName,
+  contact_name:          settings.contactName,
+  contact_phone:         settings.businessPhone,
+  contact_email:         settings.businessEmail,
+
+  business_abn:          settings.businessAbn,
+  business_website:      settings.businessWebsite,
+  business_address:      settings.businessAddress,
+
+  default_message:       settings.customMessage,
+  pricing_mode:          settings.pricingMode,
+  hourly_rate:           Number(settings.hourlyRate),
+  travel_fee:            Number(settings.travelFee),
+  discount:              Number(settings.discount),
+  external_only_percent: Number(settings.externalOnlyPercent),
+  gst_enabled:           !!settings.gstEnabled,
+  gst_rate:              Number(settings.gstRate),
+
+  rates:                 ratesMap,
+  minutes:               minsMap
+};
 
   try {
     const { error } = await sb
