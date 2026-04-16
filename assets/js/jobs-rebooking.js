@@ -157,10 +157,10 @@ function requoteFromJob(jobId) {
   if (!j) return showToast('Job not found', 'error');
 
   /* Prefill customer details */
-  const nameEl = el('q-name');
-  const phoneEl = el('q-phone');
-  const emailEl = el('q-email');
-  const addrEl = el('q-address');
+  const nameEl = el('cust-name');
+const phoneEl = el('cust-phone');
+const emailEl = null;
+const addrEl = el('cust-address');
 
   if (nameEl) nameEl.value = j.customer_name || '';
   if (phoneEl) phoneEl.value = j.customer_phone || '';
