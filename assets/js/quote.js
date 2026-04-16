@@ -187,13 +187,16 @@ function buildPdfHtml(data, quoteNum) {
   const discount = safeNum(settings.discount, 0);
   const gstRate = safeNum(settings.gstRate, 10);
 
-  const customMessage = escapeHtml(settings.customMessage || '');
+   const customMessage = escapeHtml(settings.customMessage || '');
   const contactName = escapeHtml(settings.contactName || '');
   const businessPhone = escapeHtml(settings.businessPhone || '');
   const businessEmail = escapeHtml(settings.businessEmail || '');
   const businessName = escapeHtml(settings.businessName || 'Window Quote Pro');
+  const businessAbn = escapeHtml(settings.businessAbn || settings.abn || '');
+  const businessWebsite = escapeHtml(settings.businessWebsite || settings.website || '');
+  const businessAddress = escapeHtml(settings.businessAddress || settings.address || '');
   const contactParts = [contactName, businessPhone, businessEmail].filter(Boolean);
-
+  const acceptanceParts = [businessPhone, businessEmail, businessWebsite].filter(Boolean);
   let headerBrandName, headerSubtitle, logoHtml, businessDetailsHtml, footerHtml;
 
   if (isPro) {
@@ -201,12 +204,15 @@ function buildPdfHtml(data, quoteNum) {
     headerSubtitle = 'Professional Quote';
     logoHtml = (typeof getLogoHtmlForPdf === 'function') ? getLogoHtmlForPdf() : '';
 
-    businessDetailsHtml = contactParts.length
+        businessDetailsHtml = [contactName, businessPhone, businessEmail, businessAbn, businessWebsite, businessAddress].some(Boolean)
       ? `
         <div style="margin-top:10px; color:#4b5563; font-size:12px; line-height:1.55;">
           ${contactName ? `<div><strong>Contact:</strong> ${contactName}</div>` : ''}
           ${businessPhone ? `<div><strong>Phone:</strong> ${businessPhone}</div>` : ''}
           ${businessEmail ? `<div><strong>Email:</strong> ${businessEmail}</div>` : ''}
+          ${businessAbn ? `<div><strong>ABN:</strong> ${businessAbn}</div>` : ''}
+          ${businessWebsite ? `<div><strong>Web:</strong> ${businessWebsite}</div>` : ''}
+          ${businessAddress ? `<div><strong>Address:</strong> ${businessAddress}</div>` : ''}
         </div>`
       : '';
 
@@ -214,7 +220,8 @@ function buildPdfHtml(data, quoteNum) {
       <div style="margin-top:40px; padding-top:20px; border-top:1px solid #e5e7eb; color:#4b5563; font-size:12px; text-align:center; line-height:1.6;">
         ${customMessage ? `<p style="margin:0 0 10px; color:#6b7280;">${customMessage}</p>` : ''}
         <p style="margin:0; font-weight:700; color:#111827;">To accept this quote, contact us:</p>
-        <p style="margin:6px 0 0;">${contactParts.join(' • ')}</p>
+        <p style="margin:6px 0 0;">${acceptanceParts.join(' • ') || contactParts.join(' • ')}</p>
+        ${businessAddress ? `<p style="margin:6px 0 0; color:#6b7280;">${businessAddress}</p>` : ''}
       </div>`;
   } else {
     headerBrandName = 'Window Quote Pro';
