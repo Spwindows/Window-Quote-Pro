@@ -74,7 +74,7 @@ async function _saveRebookingFields(jobId, patch) {
  * @param {string} [customDate] — ISO date string when frequency === 'custom'
  */
 async function setRebookingReminder(jobId, frequency, customDate) {
-  if (!hasProAccess()) return openPlansModal('pro', 'Rebooking Reminders');
+  if (!hasProAccess()) return openPlansModal('pro_solo', 'Rebooking Reminders');
 
   const j = (proState.jobs || []).find(x => x.id === jobId);
   if (!j) return showToast('Job not found', 'error');
