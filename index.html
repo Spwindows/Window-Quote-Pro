@@ -124,7 +124,7 @@
             <div class="plan-feature-item">&#10003; Repeat Revenue Tracker</div>
             <div class="plan-feature-item">&#10003; Follow-ups &amp; analytics</div>
           </div>
-          <button class="btn btn-primary btn-full" type="button" onclick="startUpgradeFlow('pro')">Start 7-Day Free Trial</button>
+          <button class="btn btn-primary btn-full" type="button" onclick="startUpgradeFlow('pro_solo')">Start 7-Day Free Trial</button>
         </div>
 
         <div class="plan-card" id="plan-card-team">
@@ -139,7 +139,7 @@
             <div class="plan-feature-item">&#10003; Team performance analytics</div>
             <div class="plan-feature-item">&#10003; +$9.99 per extra user</div>
           </div>
-          <button class="btn btn-secondary btn-full" type="button" onclick="startUpgradeFlow('team')">Start 7-Day Free Trial</button>
+          <button class="btn btn-secondary btn-full" type="button" onclick="startUpgradeFlow('pro_team')">Start 7-Day Free Trial</button>
         </div>
       </div>
 
@@ -208,92 +208,85 @@
         </div>
         <div>
           <label class="field-label">Notes (optional)</label>
-          <input type="text" class="field-input" id="pay-notes" placeholder="e.g. Paid in full on site" />
+          <input type="text" class="field-input" id="pay-notes" placeholder="e.g. Paid in full" />
         </div>
       </div>
 
-      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-        <button class="btn btn-secondary btn-full" id="payment-cancel-btn" type="button">Cancel</button>
-        <button class="btn btn-success btn-full" id="payment-submit-btn" type="button">Record Payment</button>
-      </div>
+      <button class="btn btn-primary btn-full" id="payment-submit-btn" type="button">Save Payment</button>
+      <button class="btn btn-secondary btn-full" id="payment-cancel-btn" type="button" style="margin-top:0.5rem;">Cancel</button>
     </div>
   </div>
 
-  <!-- PAYMENT CONFIRMATION MODAL -->
+  <!-- PAYMENT CONFIRMATION / REBOOKING MODAL -->
   <div id="payment-confirm-modal" class="modal-overlay hidden">
     <div class="modal">
-      <button class="modal-close" onclick="closePaymentConfirmModal()" type="button">&#10005;</button>
       <div class="modal-header">Payment Recorded!</div>
-      <div class="modal-subtitle" id="payconfirm-summary">$0.00 received</div>
+      <div class="modal-subtitle">Would you like to send a receipt?</div>
 
       <div class="completion-options">
         <button class="btn btn-primary btn-full" id="payconfirm-receipt-btn" type="button">
-          <span class="btn-icon-text">&#128196; Send Receipt</span>
+          <span class="btn-icon-text">&#128196; Send Receipt PDF</span>
         </button>
         <button class="btn btn-secondary btn-full" id="payconfirm-skip-btn" type="button">
-          Done
+          No Thanks
         </button>
       </div>
     </div>
   </div>
 
-  <!-- REBOOKING MODAL -->
+  <!-- REBOOKING REMINDER MODAL -->
   <div id="rebooking-modal" class="modal-overlay hidden">
     <div class="modal">
       <button class="modal-close" onclick="closeRebookingModal()" type="button">&#10005;</button>
-      <div class="modal-header">Schedule Follow-Up</div>
-      <div class="modal-subtitle" id="rebooking-job-name">Set the next service date</div>
+      <div class="modal-header">Schedule Rebooking</div>
+      <div class="modal-subtitle">Remind this customer to book again later</div>
 
       <div class="field-stack">
         <div>
-          <label class="field-label">Frequency</label>
-          <select class="field-select" id="rebooking-frequency">
-            <option value="4">Every 4 weeks</option>
-            <option value="6">Every 6 weeks</option>
-            <option value="8" selected>Every 8 weeks</option>
-            <option value="12">Every 12 weeks</option>
-            <option value="custom">Custom date</option>
+          <label class="field-label">Rebooking Frequency</label>
+          <select class="field-select" id="rebooking-months">
+            <option value="3">Every 3 Months</option>
+            <option value="6" selected>Every 6 Months</option>
+            <option value="12">Every 12 Months</option>
           </select>
         </div>
-        <div id="rebooking-custom-wrap" class="hidden">
-          <label class="field-label">Custom Date</label>
-          <input type="date" class="field-input" id="rebooking-custom-date" />
+        <div style="font-size:0.85rem; color:#6b7280;">
+          The customer will appear in your Rebooking Dashboard when their next service is due.
         </div>
       </div>
 
-      <button class="btn btn-primary btn-full" id="rebooking-submit-btn" type="button" style="margin-top:1rem;">
-        Save Follow-Up
-      </button>
+      <button class="btn btn-primary btn-full" id="rebooking-submit-btn" type="button">Set Reminder</button>
     </div>
   </div>
 
-  <!-- DESKTOP EMAIL MODAL (FIX 1) -->
+  <!-- DESKTOP EMAIL HELPER MODAL (FIX 1) -->
   <div id="desktop-email-modal" class="modal-overlay hidden">
     <div class="modal">
-      <button class="modal-close" id="desktop-email-close-btn" type="button">&#10005;</button>
-      <div class="modal-header">Email Invoice</div>
-      <div class="modal-subtitle">The PDF has been downloaded. Click below to open your email client, then attach the PDF manually.</div>
-      <button class="btn btn-primary btn-full" id="desktop-email-open-btn" type="button" style="margin-top:1rem;">
-        Open Email Client
-      </button>
+      <div class="modal-header">Send PDF via Email</div>
+      <div class="modal-subtitle">The PDF has been downloaded. Open your email client to send it to the customer.</div>
+      <div style="margin: 1.5rem 0; padding: 1rem; background: #f9fafb; border-radius: 0.5rem; font-size: 0.9rem; color: #374151;">
+        <strong>Note:</strong> You will need to manually attach the downloaded PDF to the email.
+      </div>
+      <div class="field-grid-2">
+        <button class="btn btn-secondary btn-full" id="desktop-email-close-btn" type="button">Cancel</button>
+        <button class="btn btn-primary btn-full" id="desktop-email-open-btn" type="button">Open Email</button>
+      </div>
     </div>
   </div>
 
   <!-- INVOICE DUE DATE MODAL (FIX 2) -->
   <div id="invoice-duedate-modal" class="modal-overlay hidden">
     <div class="modal">
-      <button class="modal-close" id="invoice-duedate-cancel-btn" type="button">&#10005;</button>
       <div class="modal-header">Invoice Terms</div>
-      <div class="modal-subtitle">When is payment due?</div>
-
+      <div class="modal-subtitle">Select when this invoice is due</div>
       <div class="field-stack">
         <div>
           <label class="field-label">Payment Terms</label>
           <select class="field-select" id="invoice-terms-select">
             <option value="on_receipt">Due on Receipt</option>
-            <option value="7_days">Net 7 (7 days)</option>
-            <option value="14_days" selected>Net 14 (14 days)</option>
-            <option value="30_days">Net 30 (30 days)</option>
+            <option value="7_days">7 Days</option>
+            <option value="14_days" selected>14 Days</option>
+            <option value="30_days">30 Days</option>
             <option value="custom">Custom Date</option>
           </select>
         </div>
@@ -302,140 +295,93 @@
           <input type="date" class="field-input" id="invoice-custom-date" />
         </div>
       </div>
-
-      <button class="btn btn-primary btn-full" id="invoice-duedate-confirm-btn" type="button" style="margin-top:1rem;">
-        Continue
-      </button>
+      <div class="field-grid-2" style="margin-top:1.5rem;">
+        <button class="btn btn-secondary btn-full" id="invoice-duedate-cancel-btn" type="button">Cancel</button>
+        <button class="btn btn-primary btn-full" id="invoice-duedate-confirm-btn" type="button">Generate Invoice</button>
+      </div>
     </div>
   </div>
 
-  <div class="app-shell">
-    <div class="app-header">
-      <div class="app-header-inner">
-        <div class="app-title">
-          <img src="./logo.png" alt="WQP" class="app-logo" />
-          <span>Window Quote Pro</span>
-        </div>
-        <span class="badge-free" id="pro-badge">FREE</span>
-      </div>
-    </div>
-
+  <div class="app-container">
     <div class="app-content">
-      <!-- QUOTE TAB -->
       <div id="tab-quote">
+        <div class="header">
+          <div class="header-main">
+            <h1 class="header-title">Window Quote Pro</h1>
+            <div class="pro-badge-wrap">
+              <span id="pro-badge" class="badge-free">FREE</span>
+            </div>
+          </div>
+          <p class="header-subtitle">Professional window cleaning quotes in seconds</p>
+        </div>
+
         <div class="card">
           <div class="card-title">Customer Details</div>
           <div class="field-stack">
             <div class="field-grid-2">
+              <input type="text" class="field-input" id="cust-name" placeholder="Customer Name" />
+              <input type="tel" class="field-input" id="cust-phone" placeholder="Phone (optional)" />
+            </div>
+            <input type="text" class="field-input" id="cust-address" placeholder="Property Address" />
+          </div>
+        </div>
+
+        <div id="pricing-per-window">
+          <div class="card">
+            <div class="card-title">Windows &amp; Doors</div>
+            <div id="stepper-container"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Additional Options</div>
+            <div class="field-stack">
+              <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
+                <span class="toggle-switch">
+                  <input type="checkbox" id="second-storey-toggle" onchange="syncSecondStoreyUI()" />
+                  <span class="toggle-slider"></span>
+                </span>
+                Include Second Storey
+              </label>
+              <div id="second-storey-ui" class="hidden" style="margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #f3f4f6;">
+                <p style="font-size:0.8rem; color:#6b7280; margin-bottom:0.5rem;">Select which items are on the second storey:</p>
+                <div id="second-storey-steppers"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="pricing-hourly" class="hidden">
+          <div class="card">
+            <div class="card-title">Time Estimate</div>
+            <div class="field-stack">
               <div>
-                <label class="field-label">Name</label>
-                <input type="text" class="field-input" id="q-name" placeholder="Customer name" />
-              </div>
-              <div>
-                <label class="field-label">Phone</label>
-                <input type="tel" class="field-input" id="q-phone" placeholder="0400 000 000" />
-              </div>
-            </div>
-            <div>
-              <label class="field-label">Email</label>
-              <input type="email" class="field-input" id="q-email" placeholder="customer@email.com" />
-            </div>
-            <div>
-              <label class="field-label">Address</label>
-              <input type="text" class="field-input" id="q-address" placeholder="123 Main St" />
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="display:flex; align-items:center; justify-content:space-between;">
-            <span>Services</span>
-            <button class="btn btn-secondary btn-sm" id="clear-counts-btn" type="button">Clear</button>
-          </div>
-
-          <div style="margin-bottom:0.75rem;">
-            <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
-              <span class="toggle-switch">
-                <input type="checkbox" id="external-only-toggle" />
-                <span class="toggle-slider"></span>
-              </span>
-              External Only
-            </label>
-          </div>
-
-          <div id="stepper-grid" class="stepper-grid"></div>
-
-          <!-- Second Storey Section -->
-          <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid #e5e7eb;">
-            <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
-              <span class="toggle-switch">
-                <input type="checkbox" id="second-storey-toggle" />
-                <span class="toggle-slider"></span>
-              </span>
-              Second Storey
-            </label>
-            <div id="second-storey-inputs" class="hidden" style="margin-top:0.75rem;">
-              <div class="field-grid-3">
-                <div>
-                  <label class="field-label">Std Windows</label>
-                  <input type="number" min="0" class="field-input" id="second-storey-sw" value="0" />
-                </div>
-                <div>
-                  <label class="field-label">Large Windows</label>
-                  <input type="number" min="0" class="field-input" id="second-storey-lw" value="0" />
-                </div>
-                <div>
-                  <label class="field-label">Sliding Doors</label>
-                  <input type="number" min="0" class="field-input" id="second-storey-sd" value="0" />
-                </div>
+                <label class="field-label">Estimated Hours</label>
+                <input type="number" class="field-input" id="hours-input" min="0" step="0.5" placeholder="0.0" />
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="card" id="quotePreview">
-          <div class="card-title">Quote Summary</div>
-          <div class="summary-stats" id="quote-summary-stats"></div>
-          <pre class="quote-preview-pre" id="quote-preview-text">Start adding windows...</pre>
-        </div>
-
-        <div class="card" id="invoice-upsell-card">
-          <div class="card-title" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
-            <span>Invoicing</span>
-            <span class="paywall-chip">PRO</span>
-          </div>
-          <div style="font-size:0.88rem; color:#4b5563; line-height:1.5; margin-bottom:0.9rem;">
-            Turn completed jobs into professional invoices with payment details and cleaner branding.
-          </div>
-          <button class="btn btn-secondary btn-full" id="invoice-upsell-btn" type="button">
-            Unlock Invoices &#128274;
-          </button>
         </div>
       </div>
 
-      <!-- PRO TAB -->
       <div id="tab-pro" class="hidden">
-        <div id="pro-auth-panel">
+        <div id="pro-auth-panel" class="hidden">
           <div class="card">
-            <div class="card-title">Access Pro Features</div>
-
             <div class="auth-tabs">
-              <button class="auth-tab active" id="auth-signin-tab" type="button">Sign In</button>
-              <button class="auth-tab" id="auth-signup-tab" type="button">Create Account</button>
+              <div class="auth-tab active" id="auth-signin-tab">Sign In</div>
+              <div class="auth-tab" id="auth-signup-tab">Sign Up</div>
             </div>
-
-            <div class="field-stack">
+            <div class="field-stack" style="margin-top:1.5rem;">
               <div id="auth-name-field" class="hidden">
                 <label class="field-label">Full Name</label>
-                <input type="text" class="field-input" id="auth-name" placeholder="Your Name" />
+                <input type="text" class="field-input" id="auth-name" placeholder="John Smith" />
               </div>
               <div>
                 <label class="field-label">Email Address</label>
-                <input type="email" class="field-input" id="auth-email" placeholder="email@example.com" />
+                <input type="email" class="field-input" id="auth-email" placeholder="you@example.com" />
               </div>
               <div>
                 <label class="field-label">Password</label>
-                <input type="password" class="field-input" id="auth-password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" />
+                <input type="password" class="field-input" id="auth-password" placeholder="••••••••" />
               </div>
               <button class="btn btn-primary btn-full" id="auth-submit-btn" type="button">Sign In</button>
             </div>
@@ -443,62 +389,47 @@
         </div>
 
         <div id="pro-dashboard" class="hidden">
-          <div class="card" id="pro-account-card">
-            <div class="team-header">
-              <div>
-                <div class="team-name" id="team-name-display">My Account</div>
-                <div class="team-meta" id="team-email-display">user@example.com</div>
-              </div>
-              <span class="role-badge role-owner" id="team-role-badge">Owner</span>
+          <div class="pro-header">
+            <div class="pro-user-info">
+              <div class="pro-user-name" id="team-name-display">My Account</div>
+              <div class="pro-user-email" id="team-email-display">user@example.com</div>
             </div>
-            <button class="btn btn-danger-soft btn-full btn-sm" id="pro-signout-btn" type="button">Sign Out</button>
+            <button class="btn btn-secondary btn-sm" id="pro-signout-btn" type="button">Sign Out</button>
           </div>
 
           <div id="subscription-status-container"></div>
 
           <div id="pro-team-setup" class="hidden">
             <div class="card">
-              <div class="card-title">Join or Create Team</div>
+              <div class="card-title">Team Setup</div>
+              <p style="font-size:0.85rem; color:#6b7280; margin-bottom:1rem;">Create a team to sync jobs and collaborate with others.</p>
               <div class="field-stack">
                 <div>
                   <label class="field-label">Business Name</label>
-                  <input type="text" class="field-input" id="team-name-input" placeholder="My Cleaning Biz" />
+                  <input type="text" class="field-input" id="team-name-input" placeholder="Acme Cleaning Co" />
                 </div>
-
                 <button class="btn btn-primary btn-full" id="create-team-btn" type="button">Create Team</button>
-
-                <div style="text-align:center; font-size:0.76rem; color:#9ca3af; margin:0.4rem 0;">OR</div>
-
+              </div>
+              <div style="text-align:center; margin:1rem 0; color:#9ca3af; font-size:0.8rem;">— OR —</div>
+              <div class="field-stack">
                 <div>
                   <label class="field-label">Invite Code</label>
                   <input type="text" class="field-input" id="invite-code-input" placeholder="ABCD-1234" />
                 </div>
-
-                <button class="btn btn-secondary btn-full" id="join-team-btn" type="button">Join with Code</button>
+                <button class="btn btn-secondary btn-full" id="join-team-btn" type="button">Join Existing Team</button>
               </div>
             </div>
           </div>
 
           <div id="pro-team-dashboard" class="hidden">
-            <div class="card">
-              <div class="kpi-grid">
-                <div class="kpi-card">
-                  <div class="kpi-label">Active Jobs</div>
-                  <div class="kpi-val" id="kpi-active">0</div>
-                </div>
-                <div class="kpi-card">
-                  <div class="kpi-label">Weekly Completion</div>
-                  <div class="kpi-val" id="kpi-weekly">0</div>
-                </div>
+            <div class="card" id="pro-account-card">
+              <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Business Account</span>
+                <span id="team-role-badge" class="role-badge role-owner">Owner</span>
               </div>
-
               <div class="revenue-grid">
                 <div class="revenue-card">
-                  <div class="revenue-label">Paid Total</div>
-                  <div class="revenue-val" id="kpi-collected">$0</div>
-                </div>
-                <div class="revenue-card">
-                  <div class="revenue-label">Quoted Total</div>
+                  <div class="revenue-label">Quoted (30d)</div>
                   <div class="revenue-val" id="kpi-quoted">$0</div>
                 </div>
                 <div class="revenue-card">
@@ -754,7 +685,7 @@
               Applied to upstairs standard windows, large windows, and sliding doors only.
             </div>
 
-            <div class="card-title" style="margin-top:1rem;">Minutes per Item</div>
+            <div class="card-title" style="margin-top:1rem;">Service Times (mins)</div>
             <div class="rate-grid" id="settings-minutes-grid"></div>
           </div>
 

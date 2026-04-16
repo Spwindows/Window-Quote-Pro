@@ -126,7 +126,7 @@ function getEntitlementStatus() {
 
   // Trialing
   if (status === 'trialing') {
-    if (subscriptionState.trial_end && new Date(subscriptionState.trial_end) > new Date()) {
+    if (!subscriptionState.trial_end || new Date(subscriptionState.trial_end) > new Date()) {
       return 'trial';
     }
     return 'expired';
@@ -420,7 +420,7 @@ function handleUpgradeClick(plan) {
 
 function startUpgradeFlow(plan) {
   closePlansModal();
-  if (plan === 'team') {
+  if (plan === 'pro_team' || plan === 'team') {
     startCheckout('pro_team');
   } else {
     startCheckout('pro_solo');
