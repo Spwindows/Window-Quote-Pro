@@ -200,11 +200,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   bindClick('copy-invite-btn', async () => {
     if (!proState.teamId) {
-      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
+      if (!hasProAccess()) return openPlansModal('pro_team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
     if (!proState.inviteCode) {
-      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
+      if (!hasProAccess()) return openPlansModal('pro_team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
 
@@ -218,11 +218,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   bindClick('share-invite-btn', async () => {
     if (!proState.teamId) {
-      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
+      if (!hasProAccess()) return openPlansModal('pro_team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
     if (!proState.inviteCode) {
-      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
+      if (!hasProAccess()) return openPlansModal('pro_team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
 
