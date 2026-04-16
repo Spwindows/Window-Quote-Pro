@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast('Invoices are managed from completed jobs in the Pro tab.', 'info');
       return;
     }
-    openPlansModal('pro', 'Invoicing');
+    openPlansModal('pro_solo', 'Invoicing');
   });
 
   bindClick('clear-counts-btn', () => {
