@@ -42,3 +42,34 @@ function closeUpsellModal() {
   const modal = el('upsell-modal');
   if (modal) modal.classList.add('hidden');
 }
+
+
+function openPlansModal(targetPlan = 'pro', feature = '') {
+  const modal = el('plans-modal');
+  const title = el('plans-title');
+  const subtitle = el('plans-subtitle');
+  const kicker = el('plans-kicker');
+  const proCard = el('plan-card-pro');
+  const teamCard = el('plan-card-team');
+
+  if (kicker) kicker.textContent = feature ? `${feature} is a premium feature` : 'Upgrade Your Business Tools';
+  if (title) title.textContent = feature ? `Unlock ${feature}` : 'Unlock Pro Features';
+  if (subtitle) subtitle.textContent = feature
+    ? `Upgrade to access ${feature.toLowerCase()} and the rest of the business tools built for serious operators.`
+    : 'Quotes get you work. Pro tools help you run the business and get paid.';
+
+  if (proCard) proCard.classList.remove('plan-card-dim');
+  if (teamCard) teamCard.classList.remove('plan-card-dim');
+  if (targetPlan === 'team') {
+    if (proCard) proCard.classList.add('plan-card-dim');
+  } else {
+    if (teamCard) teamCard.classList.add('plan-card-dim');
+  }
+
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closePlansModal() {
+  const modal = el('plans-modal');
+  if (modal) modal.classList.add('hidden');
+}

@@ -165,6 +165,7 @@ function renderJobsList() {
             ${paidAt ? `<div><div class="job-detail-label">Paid At</div><div class="job-detail-val">${escapeHtml(formatDateTime(paidAt))}</div></div>` : ''}
             ` : ''}
           </div>
+          ${status === 'completed' && typeof rebookingJobCardHtml === 'function' ? rebookingJobCardHtml(j) : ''}
           <div class="job-actions">
             ${actionsHtml}
           </div>

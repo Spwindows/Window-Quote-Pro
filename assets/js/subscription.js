@@ -246,13 +246,20 @@ function renderSubscriptionUI() {
   const showUpgrade = status !== 'active' && !isTeamStaff && !isTeamEntitled;
 
   if (showUpgrade) {
-    html += `<button class="btn btn-primary btn-full btn-sm" id="upgrade-cta-btn" type="button" onclick="handleUpgradeClick()">Upgrade to Pro - $49/month</button>`;
+    html += `<button class="btn btn-primary btn-full btn-sm" id="upgrade-cta-btn" type="button" onclick="handleUpgradeClick('pro')">View Pro Plans</button>`;
   }
 
   html += '</div>';
   container.innerHTML = html;
 }
 
-function handleUpgradeClick() {
-  showToast('Billing integration coming soon! You are on a free trial.', 'success');
+function handleUpgradeClick(plan = 'pro') {
+  openPlansModal(plan, plan === 'team' ? 'Team features' : 'Pro features');
 }
+
+function startUpgradeFlow(plan = 'pro') {
+  closePlansModal();
+  const planLabel = plan === 'team' ? 'Pro Team' : 'Pro Solo';
+  showToast(`${planLabel} billing integration coming soon. Hook this button to your checkout next.`, 'success');
+}
+

@@ -1,5 +1,5 @@
 
-const CACHE = "window-quote-pro-v9";
+const CACHE = "window-quote-pro-v10";
 
 const ASSETS = [
   "./",
@@ -23,6 +23,7 @@ const ASSETS = [
   "./assets/js/jobs-core.js",
   "./assets/js/jobs-render.js",
   "./assets/js/jobs-payments.js",
+  "./assets/js/jobs-rebooking.js",
   "./assets/js/pro.js",
   "./assets/js/pro-logo.js",
   "./assets/js/app.js"

@@ -146,4 +146,12 @@ function paymentConfirmSendReceipt() {
 function paymentConfirmSkip() {
   closePaymentConfirmModal();
   showToast('Payment recorded!', 'success');
+
+  /* After full payment, prompt to set a rebooking reminder (Pro only) */
+  if (_receiptJobId && typeof openRebookingModal === 'function' && hasProAccess()) {
+    const j = (proState.jobs || []).find(x => x.id === _receiptJobId);
+    if (j && !j.next_service_due) {
+      setTimeout(() => openRebookingModal(_receiptJobId), 400);
+    }
+  }
 }
