@@ -306,21 +306,27 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
     mount.id = 'pdf-doc-mount';
     Object.assign(mount.style, {
       position: 'fixed',
-      inset: '0',
+      left: '-10000px',
+      top: '0',
+      width: '794px',
+      minHeight: '1123px',
       background: '#ffffff',
-      zIndex: '99999',
-      overflow: 'auto',
+      overflow: 'visible',
       padding: '0',
       margin: '0',
-      opacity: '0.01',
-      pointerEvents: 'none'
+      opacity: '1',
+      pointerEvents: 'none',
+      zIndex: '-1'
     });
     mount.innerHTML = `
       <div id="pdf-doc-inner" style="
         width: 794px;
         min-height: 1123px;
-        margin: 0 auto;
+        margin: 0;
+        padding: 0;
         background: #ffffff;
+        box-sizing: border-box;
+        overflow: visible;
       ">
         ${htmlContent}
       </div>
@@ -329,13 +335,27 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
     const target = document.getElementById('pdf-doc-inner');
     if (!target) throw new Error('PDF target not created');
 
+    const waitForImages = async (root) => {
+      const images = Array.from(root.querySelectorAll('img'));
+      await Promise.all(images.map(img => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise(resolve => {
+          const done = () => resolve();
+          img.addEventListener('load', done, { once: true });
+          img.addEventListener('error', done, { once: true });
+        });
+      }));
+    };
+
+    await waitForImages(target);
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     const pdfBlob = await html2pdf()
       .set({
-        margin: 0,
+        margin: [0, 0, 0, 0],
         filename: `${filename}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
+        image: { type: 'jpeg', quality: 0.98 },
+        pagebreak: { mode: ['css', 'legacy'] },
         html2canvas: {
           scale: 2,
           useCORS: true,
@@ -343,13 +363,14 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
           logging: false,
           scrollX: 0,
           scrollY: 0,
-          windowWidth: 794,
-          windowHeight: target.scrollHeight || 1123
+          width: 794,
+          windowWidth: 794
         },
         jsPDF: {
-          unit: 'px',
-          format: [794, Math.max(1123, target.scrollHeight || 1123)],
-          orientation: 'portrait'
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait',
+          compress: true
         }
       })
       .from(target)
@@ -370,9 +391,7 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
         showToast('PDF downloaded!', 'success');
       }
     } else {
-      /* FIX 1: Desktop fallback — download PDF then open clean mailto prompt.
-       * NO attachment parameters are passed. The modal tells the user to
-       * attach the downloaded PDF manually. */
+      /* Desktop/browser fallback: download the PDF and let the user attach it manually. */
       downloadBlob(pdfBlob, `${filename}.pdf`);
       if (typeof openDesktopEmailModal === 'function') {
         openDesktopEmailModal(email || '', subject || '');
