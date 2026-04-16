@@ -308,7 +308,7 @@ function renderRebookingSection() {
         <div style="font-size:0.88rem; color:#4b5563; line-height:1.5; margin-bottom:0.9rem;">
           Track when customers are due for their next clean and quickly create a new quote. Never lose repeat business.
         </div>
-        <button class="btn btn-secondary btn-full" onclick="openPlansModal('pro', 'Rebooking Reminders')" type="button">
+        <button class="btn btn-secondary btn-full" onclick="openPlansModal('pro_solo', 'Rebooking Reminders')" type="button">
           Unlock Rebooking Reminders &#128274;
         </button>
       </div>
