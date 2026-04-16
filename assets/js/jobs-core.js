@@ -124,35 +124,34 @@ async function _saveTeamJobInner() {
   if (!services.some(s => s.count > 0)) {
     return showToast('Add at least one service before saving a job', 'error');
   }
-  const payload = {
-    team_id: proState.teamId,
-    customer_name: ((el('q-name') || {}).value || '').trim() || 'Customer',
-    customer_phone: ((el('q-phone') || {}).value || '').trim(),
-    customer_email: ((el('q-email') || {}).value || '').trim(),
-    service_address: ((el('q-address') || {}).value || '').trim(),
-    quoted_price: data.total,
-    items_summary: getCustomerQuoteFormat() === 'summary'
-      ? buildCustomerServiceSummary()
-      : services
-          .filter(s => s.count > 0)
-          .map(s => `${s.count} ${s.name}`)
-          .join(', '),
-    status: 'quoted',
-    scheduled_at: null,
-    created_by: proState.user.id,
-    /* Payment columns default — explicit for clarity */
-    payment_status: 'unpaid',
-    amount_paid: 0,
-    amount_due: data.total
-  };
-  try {
-    const { error } = await sb.from('jobs').insert(payload);
-    if (error) throw error;
-    showToast('Quote saved to pipeline!');
-    await bootPro();
-  } catch (e) {
-    showToast(e.message, 'error');
-  }
+ const payload = {
+  team_id: proState.teamId,
+  customer_name: ((el('cust-name') || {}).value || '').trim() || 'Customer',
+  customer_phone: ((el('cust-phone') || {}).value || '').trim(),
+  customer_email: '',
+  service_address: ((el('cust-address') || {}).value || '').trim(),
+  quoted_price: data.total,
+  items_summary: getCustomerQuoteFormat() === 'summary'
+    ? buildCustomerServiceSummary()
+    : services
+        .filter(s => s.count > 0)
+        .map(s => `${s.count} ${s.name}`)
+        .join(', '),
+  status: 'quoted',
+  scheduled_at: null,
+  created_by: proState.user?.id || null,
+  payment_status: 'unpaid',
+  amount_paid: 0,
+  amount_due: data.total
+};
+
+try {
+  const { error } = await sb.from('jobs').insert(payload);
+  if (error) throw error;
+  showToast('Quote saved to pipeline!');
+  await bootPro();
+} catch (e) {
+  showToast(e.message, 'error');
 }
 const saveTeamJob = asyncGuard(_saveTeamJobInner, 'saveTeamJob');
 
