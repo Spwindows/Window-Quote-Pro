@@ -9,8 +9,8 @@ async function _exportQuotePDFInner() {
   try {
     const data = getQuoteData();
     const quoteNum = getNextQuoteNumber();
-    const customerEmail = (el('q-email')?.value || '').trim();
-    const rawName = (el('q-name')?.value || 'customer').trim();
+    const customerEmail = '';
+const rawName = (el('cust-name')?.value || 'customer').trim();
     const safeName = rawName.replace(/[^a-zA-Z0-9 _-]/g, '') || 'customer';
     const businessLabel = settings.businessName || 'Window Quote Pro';
     const htmlContent = buildPdfHtml(data, quoteNum);
@@ -55,7 +55,7 @@ async function copyQuoteToClipboard() {
 
 function openInvoiceForJob(jobId) {
   if (!hasProAccess()) {
-    openPlansModal('pro', 'Invoicing');
+    openPlansModal('pro_solo', 'Invoicing');
     return;
   }
   const j = proState.jobs.find(x => x.id === jobId);
