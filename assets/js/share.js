@@ -281,7 +281,7 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
       .from(target)
       .outputPdf('blob');
 
-    /* Try native share, fallback to download + email link */
+    /* Try native share, fallback to download + email prompt (FIX 5 & 6) */
     const file = new File([pdfBlob], `${filename}.pdf`, { type: 'application/pdf' });
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
@@ -296,8 +296,13 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
         showToast('PDF downloaded!', 'success');
       }
     } else {
+      /* Desktop fallback: download PDF then offer mailto prompt */
       downloadBlob(pdfBlob, `${filename}.pdf`);
-      showToast('PDF downloaded! Please attach it manually from your downloads when sending.', 'success');
+      if (typeof openDesktopEmailModal === 'function') {
+        openDesktopEmailModal(email || '', subject || '');
+      } else {
+        showToast('PDF downloaded!', 'success');
+      }
     }
   } catch (e) {
     console.error('PDF generation failed:', e);
@@ -323,15 +328,16 @@ function downloadBlob(blob, filename) {
 
 /* ===== Logo helper for PDFs ===== */
 /**
- * Returns an <img> tag for the team logo for use in PDF templates.
- * proState.logoDataUrl is set by applyTeamSettings() from the
- * cloud-backed team_settings.logo_url column (Supabase Storage URL
- * or base64 fallback). No localStorage involved.
+ * Returns an <img> tag for the logo to use in PDF templates.
+ *
+ * Pro users: custom uploaded logo (proState.logoDataUrl) if available.
+ * Free users: app logo (logo.png) for consistent branding.
  */
 function getLogoHtmlForPdf() {
-  const logoUrl = proState.logoDataUrl;
-  if (logoUrl && hasProAccess()) {
-    return `<img src="${logoUrl}" style="max-width:120px; max-height:60px; margin-bottom:4px;" crossorigin="anonymous" />`;
+  /* Pro users: show custom uploaded logo if available */
+  if (hasProAccess() && proState.logoDataUrl) {
+    return `<img src="${proState.logoDataUrl}" style="max-width:120px; max-height:60px; margin-bottom:4px;" crossorigin="anonymous" />`;
   }
-  return '';
+  /* Free users (and Pro without custom logo): show app logo */
+  return `<img src="./logo.png" style="max-width:120px; max-height:60px; margin-bottom:4px;" crossorigin="anonymous" />`;
 }

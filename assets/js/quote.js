@@ -427,7 +427,7 @@ function buildPdfHtml(data, quoteNum) {
   } else {
     headerBrandName = businessName || 'Window Quote Pro';
     headerSubtitle = 'Professional Quote';
-    logoHtml = '';
+    logoHtml = (typeof getLogoHtmlForPdf === 'function') ? getLogoHtmlForPdf() : '<img src="./logo.png" style="max-width:120px; max-height:60px; margin-bottom:4px;" crossorigin="anonymous" />';
 
     footerHtml = `
       <div style="margin-top:40px; padding-top:20px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; text-align:center; line-height:1.6;">

@@ -151,8 +151,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     settings.businessPhone = getVal('s-phone');
     settings.businessEmail = getVal('s-email');
     settings.businessAbn = el('s-abn')?.value?.trim() || '';
-settings.businessWebsite = el('s-website')?.value?.trim() || '';
-settings.businessAddress = el('s-address')?.value?.trim() || '';
+    settings.businessWebsite = el('s-website')?.value?.trim() || '';
+    settings.businessAddress = el('s-address')?.value?.trim() || '';
     settings.customMessage = getVal('s-message');
     settings.pricingMode = getVal('settings-pricing-mode');
     settings.hourlyRate = safeNum(
@@ -189,13 +189,14 @@ settings.businessAddress = el('s-address')?.value?.trim() || '';
 
   bindClick('reset-all-btn', resetAllData);
 
+  /* FIX 2 & 7: All team-gated actions now route to centralized plans modal */
   bindClick('copy-invite-btn', async () => {
     if (!proState.teamId) {
-      if (!hasProAccess()) return openUpsellModal();
+      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
     if (!proState.inviteCode) {
-      if (!hasProAccess()) return openUpsellModal();
+      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
 
@@ -209,11 +210,11 @@ settings.businessAddress = el('s-address')?.value?.trim() || '';
 
   bindClick('share-invite-btn', async () => {
     if (!proState.teamId) {
-      if (!hasProAccess()) return openUpsellModal();
+      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
     if (!proState.inviteCode) {
-      if (!hasProAccess()) return openUpsellModal();
+      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
 
@@ -242,28 +243,32 @@ settings.businessAddress = el('s-address')?.value?.trim() || '';
     }
   });
 
-  /* ===== New: Completion modal bindings ===== */
+  /* ===== Completion modal bindings ===== */
   bindClick('completion-invoice-btn', completionSendInvoice);
   bindClick('completion-payment-btn', completionRecordPayment);
   bindClick('completion-later-btn', completionDoLater);
 
-  /* ===== New: Payment modal bindings ===== */
+  /* ===== Payment modal bindings ===== */
   bindClick('payment-submit-btn', recordPayment);
   bindClick('payment-cancel-btn', closePaymentModal);
 
-  /* ===== New: Payment confirm modal bindings ===== */
+  /* ===== Payment confirm modal bindings ===== */
   bindClick('payconfirm-receipt-btn', paymentConfirmSendReceipt);
   bindClick('payconfirm-skip-btn', paymentConfirmSkip);
 
-  /* ===== New: Rebooking modal binding ===== */
+  /* ===== Rebooking modal binding ===== */
   bindClick('rebooking-submit-btn', submitRebookingModal);
 
-  /* ===== New: Logo upload binding ===== */
+  /* ===== Logo upload binding ===== */
   const logoInput = el('logo-file-input');
   if (logoInput) {
     logoInput.onchange = () => handleLogoUpload(logoInput);
   }
   bindClick('logo-remove-btn', removeLogo);
+
+  /* ===== Desktop email modal bindings ===== */
+  bindClick('desktop-email-open-btn', desktopEmailOpen);
+  bindClick('desktop-email-close-btn', closeDesktopEmailModal);
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

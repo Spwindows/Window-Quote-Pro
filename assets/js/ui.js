@@ -32,18 +32,7 @@ function switchTab(t) {
   if (footer) footer.classList.toggle('hidden', t !== 'quote');
 }
 
-/* ===== Upsell Modal Helpers ===== */
-function openUpsellModal() {
-  const modal = el('upsell-modal');
-  if (modal) modal.classList.remove('hidden');
-}
-
-function closeUpsellModal() {
-  const modal = el('upsell-modal');
-  if (modal) modal.classList.add('hidden');
-}
-
-
+/* ===== Centralized Plans / Paywall Modal ===== */
 function openPlansModal(targetPlan = 'pro', feature = '') {
   const modal = el('plans-modal');
   const title = el('plans-title');
@@ -72,4 +61,29 @@ function openPlansModal(targetPlan = 'pro', feature = '') {
 function closePlansModal() {
   const modal = el('plans-modal');
   if (modal) modal.classList.add('hidden');
+}
+
+/* ===== Desktop PDF Email Modal ===== */
+function openDesktopEmailModal(email, subject) {
+  const modal = el('desktop-email-modal');
+  if (!modal) return;
+  /* Store data for the button handler */
+  modal.dataset.email = email || '';
+  modal.dataset.subject = subject || '';
+  modal.classList.remove('hidden');
+}
+
+function closeDesktopEmailModal() {
+  const modal = el('desktop-email-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function desktopEmailOpen() {
+  const modal = el('desktop-email-modal');
+  const email = (modal && modal.dataset.email) || '';
+  const subject = (modal && modal.dataset.subject) || '';
+  const body = 'Hi,\n\nPlease find the attached document.\n\nThank you.';
+  const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(mailto, '_blank');
+  closeDesktopEmailModal();
 }
