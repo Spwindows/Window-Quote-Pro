@@ -50,6 +50,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindClick('save-team-job-btn', saveTeamJob);
   bindClick('share-quote-btn', openShareModal);
 
+  bindClick('invoice-upsell-btn', () => {
+    if (hasProAccess()) {
+      switchTab('pro');
+      showToast('Invoices are managed from completed jobs in the Pro tab.', 'info');
+      return;
+    }
+    openPlansModal('pro', 'Invoicing');
+  });
+
   bindClick('clear-counts-btn', () => {
     services.forEach(s => {
       s.count = 0;

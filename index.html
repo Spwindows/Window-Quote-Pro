@@ -105,10 +105,81 @@
         </div>
       </div>
 
-      <button class="btn btn-primary btn-full" id="upsell-upgrade-btn" type="button" onclick="handleUpgradeClick(); closeUpsellModal();">
+      <button class="btn btn-primary btn-full" id="upsell-upgrade-btn" type="button" onclick="handleUpgradeClick('team'); closeUpsellModal();">
         Upgrade to Pro &mdash; $49/month
       </button>
       <button class="btn btn-secondary btn-full" onclick="closeUpsellModal()" type="button" style="margin-top:0.5rem;">Maybe Later</button>
+    </div>
+  </div>
+
+  <!-- PLANS / PAYWALL MODAL -->
+  <div id="plans-modal" class="modal-overlay hidden">
+    <div class="modal plans-modal">
+      <button class="modal-close" onclick="closePlansModal()" type="button">&#10005;</button>
+      <div class="plans-hero">
+        <div class="plans-kicker" id="plans-kicker">Upgrade Your Business Tools</div>
+        <div class="modal-header" id="plans-title" style="text-align:center; margin-bottom:0.35rem;">Unlock Pro Features</div>
+        <div class="modal-subtitle" id="plans-subtitle" style="text-align:center; margin-bottom:0;">Quotes get you work. Pro tools help you run the business and get paid.</div>
+      </div>
+
+      <div class="plans-grid">
+        <div class="plan-card">
+          <div class="plan-tier">Free</div>
+          <div class="plan-price">$0</div>
+          <div class="plan-price-sub">Good for testing and basic quoting</div>
+          <div class="plan-feature-list">
+            <div class="plan-feature-item">✓ Quote calculator</div>
+            <div class="plan-feature-item">✓ Branded quote PDFs</div>
+            <div class="plan-feature-item">✓ Your business contact details</div>
+          </div>
+        </div>
+
+        <div class="plan-card plan-card-featured" id="plan-card-pro">
+          <div class="plan-badge">Most Popular</div>
+          <div class="plan-tier">Pro Solo</div>
+          <div class="plan-price">$19.99<span>/mo</span></div>
+          <div class="plan-price-sub">Built for owner-operators</div>
+          <div class="plan-feature-list">
+            <div class="plan-feature-item">✓ Professional invoices</div>
+            <div class="plan-feature-item">✓ Custom logo & branding</div>
+            <div class="plan-feature-item">✓ Payment details on invoices</div>
+            <div class="plan-feature-item">✓ Quote & job tracking</div>
+            <div class="plan-feature-item">✓ Follow ups & analytics</div>
+          </div>
+          <button class="btn btn-primary btn-full" type="button" onclick="startUpgradeFlow('pro')">Start Pro Solo Trial</button>
+        </div>
+
+        <div class="plan-card" id="plan-card-team">
+          <div class="plan-tier">Pro Team</div>
+          <div class="plan-price">$39.99<span>/mo</span></div>
+          <div class="plan-price-sub">Up to 3 team members included</div>
+          <div class="plan-feature-list">
+            <div class="plan-feature-item">✓ Everything in Pro Solo</div>
+            <div class="plan-feature-item">✓ Shared team dashboard</div>
+            <div class="plan-feature-item">✓ Staff invites & permissions</div>
+            <div class="plan-feature-item">✓ Team job tracking</div>
+            <div class="plan-feature-item">✓ +$9.99 per extra user</div>
+          </div>
+          <button class="btn btn-secondary btn-full" type="button" onclick="startUpgradeFlow('team')">Start Pro Team Trial</button>
+        </div>
+      </div>
+
+      <div class="plans-table-wrap">
+        <table class="plans-table">
+          <thead>
+            <tr><th>Feature</th><th>Free</th><th>Pro</th><th>Team</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Quotes</td><td>✓</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Quote PDFs</td><td>App branded</td><td>White label</td><td>White label</td></tr>
+            <tr><td>Invoices</td><td>—</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Payment details</td><td>—</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Custom logo</td><td>—</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Analytics / follow ups</td><td>—</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Team members</td><td>—</td><td>—</td><td>✓</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -298,6 +369,19 @@
           <div class="card-title">Quote Summary</div>
           <div class="summary-stats" id="quote-summary-stats"></div>
           <pre class="quote-preview-pre" id="quote-preview-text">Start adding windows...</pre>
+        </div>
+
+        <div class="card" id="invoice-upsell-card">
+          <div class="card-title" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+            <span>Invoicing</span>
+            <span class="paywall-chip">PRO</span>
+          </div>
+          <div style="font-size:0.88rem; color:#4b5563; line-height:1.5; margin-bottom:0.9rem;">
+            Turn completed jobs into professional invoices with payment details and cleaner branding.
+          </div>
+          <button class="btn btn-secondary btn-full" id="invoice-upsell-btn" type="button">
+            Unlock Invoices 🔒
+          </button>
         </div>
       </div>
 

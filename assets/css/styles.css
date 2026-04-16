@@ -1307,3 +1307,27 @@ input[type="checkbox"]:focus {
   display: block;
   margin: 0 auto;
 }
+
+
+/* ---------- PAYWALL / PLANS ---------- */
+.plans-modal { max-width: 760px; }
+.plans-hero { margin-bottom: 1rem; }
+.plans-kicker { text-align:center; font-size:0.72rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#2563eb; margin-bottom:0.4rem; }
+.plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.85rem; margin-bottom:1rem; }
+.plan-card { position:relative; border:1px solid var(--c-border); border-radius:1rem; padding:1rem; background:#fff; box-shadow:var(--shadow-sm); }
+.plan-card-featured { border:2px solid #2563eb; box-shadow:0 12px 24px rgba(37,99,235,0.12); }
+.plan-badge { position:absolute; top:-0.65rem; left:1rem; background:#2563eb; color:#fff; border-radius:999px; padding:0.22rem 0.55rem; font-size:0.68rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase; }
+.plan-tier { font-size:1rem; font-weight:800; color:#111827; margin-bottom:0.25rem; }
+.plan-price { font-size:1.75rem; font-weight:900; color:#111827; line-height:1; margin-bottom:0.35rem; }
+.plan-price span { font-size:0.82rem; font-weight:700; color:#6b7280; margin-left:0.2rem; }
+.plan-price-sub { font-size:0.8rem; color:#6b7280; margin-bottom:0.8rem; min-height:2.2em; }
+.plan-feature-list { display:flex; flex-direction:column; gap:0.42rem; margin-bottom:0.9rem; }
+.plan-feature-item { font-size:0.82rem; color:#374151; }
+.plans-table-wrap { overflow:auto; border:1px solid var(--c-border); border-radius:1rem; }
+.plans-table { width:100%; border-collapse:collapse; font-size:0.82rem; background:#fff; }
+.plans-table th, .plans-table td { padding:0.72rem 0.8rem; border-bottom:1px solid #e5e7eb; text-align:center; }
+.plans-table th:first-child, .plans-table td:first-child { text-align:left; font-weight:700; color:#111827; }
+.plans-table thead th { background:#f8fafc; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; }
+.paywall-chip { display:inline-flex; align-items:center; justify-content:center; padding:0.2rem 0.48rem; border-radius:999px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.7rem; font-weight:800; letter-spacing:0.03em; }
+.plan-card-dim { opacity:0.7; transform:scale(0.985); }
+@media (max-width: 700px) { .plans-grid { grid-template-columns:1fr; } .plans-modal { max-width: 94vw; } }
