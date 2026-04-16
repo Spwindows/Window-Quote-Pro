@@ -14,12 +14,14 @@ async function _exportQuotePDFInner() {
     const safeName = rawName.replace(/[^a-zA-Z0-9 _-]/g, '') || 'customer';
     const businessLabel = settings.businessName || 'Window Quote Pro';
     const htmlContent = buildPdfHtml(data, quoteNum);
+
     await generateAndSharePdf(
       htmlContent,
       `quote-${safeName}`,
       customerEmail,
       `Quote ${quoteNum} from ${businessLabel}`
     );
+
     closeShareModal();
   } catch (e) {
     console.error('PDF export failed:', e);
@@ -49,12 +51,8 @@ async function copyQuoteToClipboard() {
   }
 }
 
-/* ===== Part 3: Invoice Generation (FIX 2 & 3) ===== */
+/* ===== Part 3: Invoice Generation ===== */
 
-/**
- * FIX 2: openInvoiceForJob now shows a due-date picker modal before
- * generating the invoice. The actual PDF generation is in _generateInvoicePdf.
- */
 function openInvoiceForJob(jobId) {
   if (!hasProAccess()) {
     openPlansModal('pro', 'Invoicing');
@@ -67,43 +65,33 @@ function openInvoiceForJob(jobId) {
     return;
   }
 
-  /* Show due date picker, then generate invoice */
   openInvoiceDueDateModal(function(terms, dueDate) {
     _generateInvoicePdf(j, dueDate, terms);
   });
 }
 
-/**
- * Internal: generates the invoice PDF with the chosen due date.
- * FIX 2: Due date displayed on invoice header.
- * FIX 3: Payment details section rendered at bottom (from settings).
- */
 function _generateInvoicePdf(j, dueDate, terms) {
   const invoiceNum = getNextInvoiceNumber();
-  /* Read payment fields directly from the job row (cloud-backed) */
-  const quoted     = parseFloat(j.quoted_price) || 0;
-  const amountPaid = parseFloat(j.amount_paid)  || 0;
-  const amountDue  = Math.max(0, quoted - amountPaid);
+  const quoted = parseFloat(j.quoted_price) || 0;
+  const amountPaid = parseFloat(j.amount_paid) || 0;
+  const amountDue = Math.max(0, quoted - amountPaid);
 
   const logoHtml = getLogoHtmlForPdf();
   const issueDate = new Date();
 
-  /* Format due date label */
   let dueDateLabel = dueDate.toLocaleDateString();
   if (terms === 'on_receipt') {
     dueDateLabel = 'Due on receipt';
   }
 
-  /* Store due date on job if possible */
   if (j) {
     j.invoice_due_date = dueDate.toISOString();
   }
 
-  /* FIX 3: Build payment details section from settings */
   const paymentDetailsHtml = _buildPaymentDetailsHtml();
 
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
+    <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827; background:#ffffff;">
       <table style="width:100%; border-collapse:collapse; margin-bottom:30px;">
         <tr>
           <td style="vertical-align:top;">
@@ -121,6 +109,7 @@ function _generateInvoicePdf(j, dueDate, terms) {
           </td>
         </tr>
       </table>
+
       <div style="background:#f9fafb; border-radius:8px; padding:16px; margin-bottom:24px;">
         <h3 style="margin:0 0 8px; font-size:13px; text-transform:uppercase; color:#6b7280; letter-spacing:0.05em;">Bill To</h3>
         <p style="margin:2px 0; font-weight:700;">${escapeHtml(j.customer_name)}</p>
@@ -128,6 +117,7 @@ function _generateInvoicePdf(j, dueDate, terms) {
         <p style="margin:2px 0; font-size:13px;">${escapeHtml(j.customer_email || '')}</p>
         <p style="margin:2px 0; font-size:13px;">${escapeHtml(j.service_address || '')}</p>
       </div>
+
       <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
         <thead>
           <tr style="background:#f3f4f6; border-bottom:2px solid #e5e7eb;">
@@ -148,6 +138,7 @@ function _generateInvoicePdf(j, dueDate, terms) {
           ` : ''}
         </tbody>
       </table>
+
       <div style="margin-left:auto; width:250px; background:#f9fafb; padding:16px; border-radius:8px;">
         <table style="width:100%; border-collapse:collapse;">
           <tr>
@@ -166,39 +157,41 @@ function _generateInvoicePdf(j, dueDate, terms) {
           </tr>
         </table>
       </div>
+
       ${paymentDetailsHtml}
+
       <div style="margin-top:30px; padding-top:16px; border-top:1px solid #e5e7eb; font-size:12px; color:#6b7280; text-align:center;">
         <p style="margin-bottom:6px;">Payment due ${terms === 'on_receipt' ? 'on receipt of this invoice' : 'by ' + dueDate.toLocaleDateString()}.</p>
         <p>${escapeHtml(settings.customMessage)}</p>
       </div>
     </div>
   `;
-  generateAndSharePdf(html, `invoice-${escapeHtml(j.customer_name).replace(/\s/g, '_')}`, j.customer_email, `Invoice ${invoiceNum} from ${settings.businessName}`);
+
+  generateAndSharePdf(
+    html,
+    `invoice-${escapeHtml(j.customer_name).replace(/\s/g, '_')}`,
+    j.customer_email,
+    `Invoice ${invoiceNum} from ${settings.businessName}`
+  );
 }
 
-/**
- * FIX 3: Builds the payment details HTML section for invoices.
- * Only renders if at least one payment detail field is populated in settings.
- * This section appears ONLY on invoices, never on quotes.
- */
 function _buildPaymentDetailsHtml() {
-  const acctName   = (settings.paymentAccountName || '').trim();
-  const bankName   = (settings.paymentBankName || '').trim();
-  const bsb        = (settings.paymentBSB || '').trim();
-  const acctNum    = (settings.paymentAccountNumber || '').trim();
-  const payRef     = (settings.paymentReference || '').trim();
-  const payLink    = (settings.paymentLink || '').trim();
+  const acctName = (settings.paymentAccountName || '').trim();
+  const bankName = (settings.paymentBankName || '').trim();
+  const bsb = (settings.paymentBSB || '').trim();
+  const acctNum = (settings.paymentAccountNumber || '').trim();
+  const payRef = (settings.paymentReference || '').trim();
+  const payLink = (settings.paymentLink || '').trim();
 
-  /* Only show section if at least one field is filled */
   const hasAny = acctName || bankName || bsb || acctNum || payRef || payLink;
   if (!hasAny) return '';
 
   let rows = '';
   if (acctName) rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280; width:130px;">Account Name</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(acctName)}</td></tr>`;
   if (bankName) rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">Bank</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(bankName)}</td></tr>`;
-  if (bsb)      rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">BSB</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(bsb)}</td></tr>`;
-  if (acctNum)  rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">Account Number</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(acctNum)}</td></tr>`;
-  if (payRef)   rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">Reference</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(payRef)}</td></tr>`;
+  if (bsb) rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">BSB</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(bsb)}</td></tr>`;
+  if (acctNum) rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">Account Number</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(acctNum)}</td></tr>`;
+  if (payRef) rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">Reference</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(payRef)}</td></tr>`;
 
   let linkHtml = '';
   if (payLink) {
@@ -226,17 +219,16 @@ function openReceiptForJob(jobId) {
     return;
   }
   const receiptNum = getNextReceiptNumber();
-  /* Read payment fields from job row (cloud-backed) */
-  const quoted        = parseFloat(j.quoted_price) || 0;
-  const amountPaid    = parseFloat(j.amount_paid)  || 0;
+  const quoted = parseFloat(j.quoted_price) || 0;
+  const amountPaid = parseFloat(j.amount_paid) || 0;
   const paymentMethod = j.payment_method || 'Not specified';
-  const paymentNotes  = j.payment_notes  || '';
-  const paidAt        = j.paid_at ? new Date(j.paid_at).toLocaleDateString() : new Date().toLocaleDateString();
+  const paymentNotes = j.payment_notes || '';
+  const paidAt = j.paid_at ? new Date(j.paid_at).toLocaleDateString() : new Date().toLocaleDateString();
 
   const logoHtml = getLogoHtmlForPdf();
 
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
+    <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827; background:#ffffff;">
       <table style="width:100%; border-collapse:collapse; margin-bottom:30px;">
         <tr>
           <td style="vertical-align:top;">
@@ -252,12 +244,14 @@ function openReceiptForJob(jobId) {
           </td>
         </tr>
       </table>
+
       <div style="background:#f0fdf4; border-radius:8px; padding:16px; margin-bottom:24px; border:1px solid #bbf7d0;">
         <div style="text-align:center;">
           <div style="font-size:14px; color:#059669; font-weight:700; margin-bottom:4px;">Payment Received</div>
           <div style="font-size:28px; font-weight:900; color:#059669;">$${amountPaid.toFixed(2)}</div>
         </div>
       </div>
+
       <div style="background:#f9fafb; border-radius:8px; padding:16px; margin-bottom:24px;">
         <h3 style="margin:0 0 8px; font-size:13px; text-transform:uppercase; color:#6b7280;">Received From</h3>
         <p style="margin:2px 0; font-weight:700;">${escapeHtml(j.customer_name)}</p>
@@ -265,6 +259,7 @@ function openReceiptForJob(jobId) {
         <p style="margin:2px 0; font-size:13px;">${escapeHtml(j.customer_email || '')}</p>
         <p style="margin:2px 0; font-size:13px;">${escapeHtml(j.service_address || '')}</p>
       </div>
+
       <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
         <tr style="border-bottom:1px solid #e5e7eb;">
           <td style="padding:10px 0; font-size:14px; color:#6b7280;">Services</td>
@@ -289,18 +284,38 @@ function openReceiptForJob(jobId) {
         </tr>
         ` : ''}
       </table>
+
       <div style="margin-top:30px; padding-top:16px; border-top:1px solid #e5e7eb; font-size:12px; color:#6b7280; text-align:center;">
         <p>${escapeHtml(settings.customMessage)}</p>
         <p>Contact: ${escapeHtml(settings.contactName)} • ${escapeHtml(settings.businessPhone)} • ${escapeHtml(settings.businessEmail)}</p>
       </div>
     </div>
   `;
-  generateAndSharePdf(html, `receipt-${escapeHtml(j.customer_name).replace(/\s/g, '_')}`, j.customer_email, `Receipt ${receiptNum} from ${settings.businessName}`);
+
+  generateAndSharePdf(
+    html,
+    `receipt-${escapeHtml(j.customer_name).replace(/\s/g, '_')}`,
+    j.customer_email,
+    `Receipt ${receiptNum} from ${settings.businessName}`
+  );
 }
 
 /* ===== Shared PDF generator for invoice/receipt/quote ===== */
+
+function shouldUseNativeShareForPdf(email) {
+  const ua = navigator.userAgent || '';
+  const isMobile =
+    /Android|iPhone|iPad|iPod|Mobile/i.test(ua) ||
+    (navigator.maxTouchPoints || 0) > 1;
+
+  /* Only use native share on mobile-ish devices.
+     Desktop should go to download + email modal so recipient prefills cleanly. */
+  return isMobile && !!navigator.share && !!navigator.canShare;
+}
+
 async function _generateAndSharePdfInner(htmlContent, filename, email, subject) {
   let mount = null;
+
   try {
     mount = document.createElement('div');
     mount.id = 'pdf-doc-mount';
@@ -318,6 +333,7 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
       pointerEvents: 'none',
       zIndex: '-1'
     });
+
     mount.innerHTML = `
       <div id="pdf-doc-inner" style="
         width: 794px;
@@ -331,7 +347,9 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
         ${htmlContent}
       </div>
     `;
+
     document.body.appendChild(mount);
+
     const target = document.getElementById('pdf-doc-inner');
     if (!target) throw new Error('PDF target not created');
 
@@ -376,28 +394,29 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
       .from(target)
       .outputPdf('blob');
 
-    /* Try native share, fallback to download + email prompt */
-    const file = new File([pdfBlob], `${filename}.pdf`, { type: 'application/pdf' });
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    const pdfFile = new File([pdfBlob], `${filename}.pdf`, { type: 'application/pdf' });
+
+    if (shouldUseNativeShareForPdf(email) && navigator.canShare({ files: [pdfFile] })) {
       try {
         await navigator.share({
           title: subject,
-          files: [file]
+          files: [pdfFile]
         });
         showToast('Shared!', 'success');
+        return;
       } catch (shareErr) {
-        /* User cancelled share — fallback to download */
-        downloadBlob(pdfBlob, `${filename}.pdf`);
-        showToast('PDF downloaded!', 'success');
+        /* User cancelled mobile share or share failed; continue to fallback */
+        console.warn('Native share cancelled/failed:', shareErr);
       }
+    }
+
+    /* Desktop/browser fallback */
+    downloadBlob(pdfBlob, `${filename}.pdf`);
+
+    if (typeof openDesktopEmailModal === 'function') {
+      openDesktopEmailModal(email || '', subject || '');
     } else {
-      /* Desktop/browser fallback: download the PDF and let the user attach it manually. */
-      downloadBlob(pdfBlob, `${filename}.pdf`);
-      if (typeof openDesktopEmailModal === 'function') {
-        openDesktopEmailModal(email || '', subject || '');
-      } else {
-        showToast('PDF downloaded!', 'success');
-      }
+      showToast('PDF downloaded! Attach it manually to your email.', 'success');
     }
   } catch (e) {
     console.error('PDF generation failed:', e);
@@ -422,17 +441,9 @@ function downloadBlob(blob, filename) {
 }
 
 /* ===== Logo helper for PDFs ===== */
-/**
- * Returns an <img> tag for the logo to use in PDF templates.
- *
- * Pro users: custom uploaded logo (proState.logoDataUrl) if available.
- * Free users: app logo (logo.png) for consistent branding.
- */
 function getLogoHtmlForPdf() {
-  /* Pro users: show custom uploaded logo if available */
   if (hasProAccess() && proState.logoDataUrl) {
     return `<img src="${proState.logoDataUrl}" style="max-width:120px; max-height:60px; margin-bottom:4px;" crossorigin="anonymous" />`;
   }
-  /* Free users (and Pro without custom logo): show app logo */
   return `<img src="./logo.png" style="max-width:120px; max-height:60px; margin-bottom:4px;" crossorigin="anonymous" />`;
 }
