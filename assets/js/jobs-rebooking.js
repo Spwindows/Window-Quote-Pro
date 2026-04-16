@@ -283,8 +283,8 @@ function submitRebookingModal() {
 
 /**
  * Render the rebooking dashboard section inside the Pro tab.
- * Shows a list of jobs with active rebooking reminders,
- * sorted by urgency (overdue first, then due, then upcoming).
+ * Shows rebooking jobs grouped into collapsible time-based sections
+ * (Overdue / This Week / This Month / This Year / Later).
  * Free users see a locked upsell card.
  */
 function renderRebookingSection() {
@@ -345,7 +345,10 @@ function renderRebookingSection() {
       </div>
     `;
   } else {
-    cardsHtml = rebookingJobs.map(j => {
+    /* ---- Grouped collapsible sections ---- */
+
+    /* Helper: render a single rebook card */
+    function _rebookCardHtml(j) {
       const status = getRebookingStatus(j);
       const dueDate = j.next_service_due ? new Date(j.next_service_due).toLocaleDateString() : 'N/A';
       const lastService = j.completed_at ? new Date(j.completed_at).toLocaleDateString() : 'N/A';
@@ -389,6 +392,77 @@ function renderRebookingSection() {
           </div>
           <div class="rebook-card-actions">
             ${actionsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    /* Define time buckets */
+    function getRebookingGroups() {
+      var now = new Date();
+      now.setHours(0, 0, 0, 0);
+      var sevenDaysLater = new Date(now); sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+      var thirtyDaysLater = new Date(now); thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+      var yearEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+
+      return [
+        { label: 'Overdue',    test: function(d) { return d && d < now; } },
+        { label: 'This Week',  test: function(d) { return d && d >= now && d < sevenDaysLater; } },
+        { label: 'This Month', test: function(d) { return d && d >= sevenDaysLater && d < thirtyDaysLater; } },
+        { label: 'This Year',  test: function(d) { return d && d >= thirtyDaysLater && d <= yearEnd; } },
+        { label: 'Later',      test: function()  { return true; } }
+      ];
+    }
+
+    /* Assign each job to its bucket */
+    var _groups = getRebookingGroups();
+    var _grouped = _groups.map(function(g) { return { label: g.label, jobs: [] }; });
+    var _fallback = _grouped[_grouped.length - 1];
+
+    rebookingJobs.forEach(function(j) {
+      var d = j.next_service_due ? new Date(j.next_service_due) : null;
+      if (d) d.setHours(0, 0, 0, 0);
+      var placed = false;
+      for (var i = 0; i < _groups.length; i++) {
+        if (_groups[i].test(d)) {
+          _grouped[i].jobs.push(j);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) _fallback.jobs.push(j);
+    });
+
+    /* Sort each bucket by next_service_due ascending */
+    _grouped.forEach(function(g) {
+      g.jobs.sort(function(a, b) {
+        return new Date(a.next_service_due) - new Date(b.next_service_due);
+      });
+    });
+
+    /* Remove empty buckets */
+    _grouped = _grouped.filter(function(g) { return g.jobs.length > 0; });
+
+    /* Default open: Overdue if present, otherwise first group */
+    var _defaultOpen = 0;
+    for (var _gi = 0; _gi < _grouped.length; _gi++) {
+      if (_grouped[_gi].label === 'Overdue') { _defaultOpen = _gi; break; }
+    }
+
+    /* Render accordion sections */
+    cardsHtml = _grouped.map(function(g, idx) {
+      var isCollapsed = (idx !== _defaultOpen);
+      var collapsedClass = isCollapsed ? ' collapsed' : '';
+      var contentStyle = isCollapsed ? ' style="display:none;"' : '';
+      return `
+        <div class="job-group">
+          <div class="job-group-header" onclick="this.closest('.job-group').querySelector('.job-group-content').style.display = this.closest('.job-group').querySelector('.job-group-content').style.display === 'none' ? '' : 'none'; this.querySelector('.job-group-chevron').classList.toggle('collapsed');">
+            <span>${g.label}</span>
+            <span class="job-group-count">${g.jobs.length}</span>
+            <span class="job-group-chevron${collapsedClass}">&#8964;</span>
+          </div>
+          <div class="job-group-content"${contentStyle}>
+            ${g.jobs.map(_rebookCardHtml).join('')}
           </div>
         </div>
       `;
