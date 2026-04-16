@@ -259,6 +259,41 @@
           </div>
         </div>
 
+        <div class="card">
+          <div class="card-title">Second Storey</div>
+          <div class="field-stack">
+            <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
+              <span class="toggle-switch">
+                <input type="checkbox" id="second-storey-toggle" />
+                <span class="toggle-slider"></span>
+              </span>
+              Add second storey pricing
+            </label>
+            <div style="font-size:0.78rem; color:#6b7280; padding-left:3.5rem;">
+              Applies the owner-set uplift to upstairs standard windows, large windows, and sliding doors only.
+            </div>
+            <div id="second-storey-counts" class="hidden">
+              <div class="field-grid-3">
+                <div>
+                  <label class="field-label">Upstairs Standard Windows</label>
+                  <input type="number" min="0" step="1" class="field-input" id="second-storey-sw" />
+                  <div id="second-storey-sw-max" style="font-size:0.74rem; color:#6b7280; margin-top:0.25rem;">of 0 selected</div>
+                </div>
+                <div>
+                  <label class="field-label">Upstairs Large Windows</label>
+                  <input type="number" min="0" step="1" class="field-input" id="second-storey-lw" />
+                  <div id="second-storey-lw-max" style="font-size:0.74rem; color:#6b7280; margin-top:0.25rem;">of 0 selected</div>
+                </div>
+                <div>
+                  <label class="field-label">Upstairs Sliding Doors</label>
+                  <input type="number" min="0" step="1" class="field-input" id="second-storey-sd" />
+                  <div id="second-storey-sd-max" style="font-size:0.74rem; color:#6b7280; margin-top:0.25rem;">of 0 selected</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="card" id="quotePreview">
           <div class="card-title">Quote Summary</div>
           <div class="summary-stats" id="quote-summary-stats"></div>
@@ -461,6 +496,13 @@
                   <option value="hourly">Hourly Estimate</option>
                 </select>
               </div>
+              <div>
+                <label class="field-label">Customer Quote Format</label>
+                <select class="field-select" id="settings-quote-format">
+                  <option value="itemised">Itemised</option>
+                  <option value="summary">Summary</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -507,6 +549,38 @@
             <div style="margin-top:0.8rem;">
               <label class="field-label">GST Rate (%)</label>
               <input type="number" min="0" max="100" step="1" class="field-input" id="settings-gst-rate" />
+            </div>
+
+            <div class="card-title" style="margin-top:1rem;">Second Storey Pricing</div>
+            <div style="margin-top:0.8rem;">
+              <label style="display:flex; align-items:center; gap:0.75rem; font-weight:700; color:#374151; cursor:pointer;">
+                <span class="toggle-switch">
+                  <input type="checkbox" id="settings-second-storey-pricing-enabled" />
+                  <span class="toggle-slider"></span>
+                </span>
+                Enable second storey uplift
+              </label>
+            </div>
+
+            <div class="field-grid-3" style="margin-top:0.8rem;">
+              <div>
+                <label class="field-label">Uplift Mode</label>
+                <select class="field-select" id="settings-second-storey-mode">
+                  <option value="percent">Percentage</option>
+                  <option value="fixed">Fixed $ per upstairs item</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Percent Uplift</label>
+                <input type="number" min="0" step="1" class="field-input" id="settings-second-storey-percent" />
+              </div>
+              <div>
+                <label class="field-label">Fixed $ Uplift</label>
+                <input type="number" min="0" step="0.01" class="field-input" id="settings-second-storey-fixed" />
+              </div>
+            </div>
+            <div style="margin-top:0.45rem; font-size:0.78rem; color:#6b7280;">
+              Applied to upstairs standard windows, large windows, and sliding doors only.
             </div>
 
             <div class="card-title" style="margin-top:1rem;">Minutes per Item</div>

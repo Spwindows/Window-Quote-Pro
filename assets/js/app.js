@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   loadLocalSettings();
   renderSteppers();
+  syncSecondStoreyUI();
   syncSettingsForm();
   renderSettingsGrids();
   updateQuoteDisplay();
@@ -54,7 +55,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       s.count = 0;
     });
 
+    quoteState.secondStoreyEnabled = false;
+    quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
+
     renderSteppers();
+    syncSecondStoreyUI();
     updateQuoteDisplay();
   });
 
@@ -66,6 +71,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     quoteState.externalOnly = false;
+    quoteState.secondStoreyEnabled = false;
+    quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
 
     const setVal = (id, v) => {
       const e = el(id);
@@ -80,6 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const extToggle = el('external-only-toggle');
     if (extToggle) extToggle.checked = false;
 
+    syncSecondStoreyUI();
     renderSteppers();
     updateQuoteDisplay();
   });
@@ -92,6 +100,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateQuoteDisplay();
     };
   }
+
+  const secondStoreyToggle = el('second-storey-toggle');
+  if (secondStoreyToggle) {
+    secondStoreyToggle.checked = !!quoteState.secondStoreyEnabled;
+    secondStoreyToggle.onchange = e => {
+      quoteState.secondStoreyEnabled = !!e.target.checked;
+      if (!quoteState.secondStoreyEnabled) {
+        quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
+      }
+      syncSecondStoreyUI();
+      updateQuoteDisplay();
+    };
+  }
+
+  ['sw', 'lw', 'sd'].forEach(id => {
+    const input = el(`second-storey-${id}`);
+    if (input) {
+      input.oninput = e => {
+        updateUpstairsCount(id, e.target.value);
+      };
+      input.onchange = e => {
+        updateUpstairsCount(id, e.target.value);
+      };
+    }
+  });
 
   bindClick('save-settings-btn', async () => {
     const getVal = id => {
@@ -134,6 +167,11 @@ settings.businessAddress = el('s-address')?.value?.trim() || '';
       getVal('settings-gst-rate'),
       settings.gstRate
     );
+    settings.quoteFormat = getVal('settings-quote-format') || settings.quoteFormat || 'itemised';
+    settings.secondStoreyPricingEnabled = getChecked('settings-second-storey-pricing-enabled');
+    settings.secondStoreyMode = getVal('settings-second-storey-mode') || settings.secondStoreyMode || 'percent';
+    settings.secondStoreyPercent = safeNum(getVal('settings-second-storey-percent'), settings.secondStoreyPercent);
+    settings.secondStoreyFixedAmount = safeNum(getVal('settings-second-storey-fixed'), settings.secondStoreyFixedAmount);
 
     saveLocalSettings();
     await saveSettingsToServer();

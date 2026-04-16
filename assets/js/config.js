@@ -17,11 +17,18 @@ const DEFAULT_SETTINGS = {
   discount: 0,
   externalOnlyPercent: 60,
   gstEnabled: true,
-  gstRate: 10
+  gstRate: 10,
+  quoteFormat: 'itemised',
+  secondStoreyPricingEnabled: false,
+  secondStoreyMode: 'percent',
+  secondStoreyPercent: 20,
+  secondStoreyFixedAmount: 5
 };
 
 const DEFAULT_QUOTE_STATE = {
-  externalOnly: false
+  externalOnly: false,
+  secondStoreyEnabled: false,
+  upstairsCounts: { sw: 0, lw: 0, sd: 0 }
 };
 
 const DEFAULT_SERVICES = [
