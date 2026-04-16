@@ -40,27 +40,30 @@ function updateUpstairsCount(id, value) {
 
 function syncSecondStoreyUI() {
   clampUpstairsCounts();
+
   const toggle = el('second-storey-toggle');
   if (toggle) toggle.checked = !!quoteState.secondStoreyEnabled;
 
-  const panel = el('second-storey-counts');
+  const panel = el('second-storey-ui');
   if (panel) panel.classList.toggle('hidden', !quoteState.secondStoreyEnabled);
 
   getEligibleSecondStoreyServiceIds().forEach(id => {
     const input = el(`second-storey-${id}`);
     const totalEl = el(`second-storey-${id}-max`);
     const total = (services.find(x => x.id === id) || {}).count || 0;
+
     if (input) {
       input.max = String(total);
       input.value = String(getUpstairsCount(id));
       input.disabled = !quoteState.secondStoreyEnabled || total === 0;
     }
+
     if (totalEl) totalEl.textContent = `of ${total} selected`;
   });
 }
 
 function renderSteppers() {
-  const container = el('steppers-container');
+  const container = el('stepper-container');
   if (!container) return;
 
   container.innerHTML = services.map(s => `
@@ -123,10 +126,15 @@ function getQuoteData() {
     secondStoreyEligibleIds.forEach(id => {
       const service = services.find(x => x.id === id);
       if (!service) return;
+
       const upstairsCount = getUpstairsCount(id);
       if (upstairsCount <= 0) return;
+
       secondStoreyItemCount += upstairsCount;
-      const baseUnitRate = quoteState.externalOnly ? service.rate * (safeNum(settings.externalOnlyPercent, 60) / 100) : service.rate;
+      const baseUnitRate = quoteState.externalOnly
+        ? service.rate * (safeNum(settings.externalOnlyPercent, 60) / 100)
+        : service.rate;
+
       if ((settings.secondStoreyMode || 'percent') === 'fixed') {
         secondStoreySurcharge += upstairsCount * safeNum(settings.secondStoreyFixedAmount, 0);
       } else {
@@ -228,7 +236,6 @@ function buildCustomerServiceSummary() {
   return `${summary}.`.replace(/\.\./g, '.');
 }
 
-
 function getItemisedServiceRows(extPct, data) {
   const rows = services.filter(s => s.count > 0).map(s => {
     let line = s.count * s.rate;
@@ -248,6 +255,7 @@ function getItemisedServiceRows(extPct, data) {
     const modeLabel = (settings.secondStoreyMode || 'percent') === 'fixed'
       ? `Fixed uplift`
       : `${safeNum(settings.secondStoreyPercent, 20)}% uplift`;
+
     rows.push(`
       <tr style="border-bottom: 1px solid #f3f4f6;">
         <td style="padding: 12px; font-size: 14px;">Second Storey Access (${escapeHtml(modeLabel)})</td>
@@ -274,8 +282,8 @@ function getSummaryServiceRows(data) {
 }
 
 function buildQuoteSummaryText(data) {
-  const customerName = (el('q-name') ? el('q-name').value.trim() : '') || 'Customer';
-  const addr = el('q-address') ? el('q-address').value.trim() : '';
+  const customerName = (el('cust-name') ? el('cust-name').value.trim() : '') || 'Customer';
+  const addr = el('cust-address') ? el('cust-address').value.trim() : '';
   const extPct = safeNum(settings.externalOnlyPercent, 60);
 
   const businessLabel = settings.businessName || 'Window Quote Pro';
@@ -375,16 +383,16 @@ function updateQuoteDisplay() {
 
 function buildPdfHtml(data, quoteNum) {
   const isPro = hasProAccess();
-  const customerName = escapeHtml((el('q-name') ? el('q-name').value : '') || 'Customer');
-  const customerPhone = escapeHtml(el('q-phone') ? el('q-phone').value : '');
-  const customerEmail = escapeHtml(el('q-email') ? el('q-email').value : '');
-  const customerAddress = escapeHtml(el('q-address') ? el('q-address').value : '');
+  const customerName = escapeHtml((el('cust-name') ? el('cust-name').value : '') || 'Customer');
+  const customerPhone = escapeHtml(el('cust-phone') ? el('cust-phone').value : '');
+  const customerEmail = '';
+  const customerAddress = escapeHtml(el('cust-address') ? el('cust-address').value : '');
   const extPct = safeNum(settings.externalOnlyPercent, 60);
   const travelFee = safeNum(settings.travelFee, 0);
   const discount = safeNum(settings.discount, 0);
   const gstRate = safeNum(settings.gstRate, 10);
 
-   const customMessage = escapeHtml(settings.customMessage || '');
+  const customMessage = escapeHtml(settings.customMessage || '');
   const contactName = escapeHtml(settings.contactName || '');
   const businessPhone = escapeHtml(settings.businessPhone || '');
   const businessEmail = escapeHtml(settings.businessEmail || '');
@@ -394,9 +402,9 @@ function buildPdfHtml(data, quoteNum) {
   const businessAddress = escapeHtml(settings.businessAddress || settings.address || '');
   const contactParts = [contactName, businessPhone, businessEmail].filter(Boolean);
   const acceptanceParts = [businessPhone, businessEmail, businessWebsite].filter(Boolean);
-    let headerBrandName, headerSubtitle, logoHtml, businessDetailsHtml, footerHtml;
 
-  // Business details should show for ALL users if entered.
+  let headerBrandName, headerSubtitle, logoHtml, businessDetailsHtml, footerHtml;
+
   businessDetailsHtml = [contactName, businessPhone, businessEmail, businessAbn, businessWebsite, businessAddress].some(Boolean)
     ? `
       <div style="margin-top:10px; color:#4b5563; font-size:12px; line-height:1.55;">
@@ -427,7 +435,9 @@ function buildPdfHtml(data, quoteNum) {
   } else {
     headerBrandName = businessName || 'Window Quote Pro';
     headerSubtitle = 'Professional Quote';
-    logoHtml = (typeof getLogoHtmlForPdf === 'function') ? getLogoHtmlForPdf() : '<img src="./logo.png" style="max-width:120px; max-height:60px; margin-bottom:4px;" crossorigin="anonymous" />';
+    logoHtml = (typeof getLogoHtmlForPdf === 'function')
+      ? getLogoHtmlForPdf()
+      : '<img src="./logo.png" style="max-width:120px; max-height:60px; margin-bottom:4px;" crossorigin="anonymous" />';
 
     footerHtml = `
       <div style="margin-top:40px; padding-top:20px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; text-align:center; line-height:1.6;">
