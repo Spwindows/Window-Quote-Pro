@@ -118,7 +118,7 @@ async function setRebookingReminder(jobId, frequency, customDate) {
  * Mark a customer as contacted for their rebooking.
  */
 async function markContacted(jobId) {
-  if (!hasProAccess()) return openPlansModal('pro', 'Rebooking Reminders');
+  if (!hasProAccess()) return openPlansModal('pro_solo', 'Rebooking Reminders');
 
   const patch = {
     rebooking_status: 'contacted',
@@ -135,7 +135,7 @@ async function markContacted(jobId) {
  * Dismiss/archive a rebooking reminder.
  */
 async function dismissReminder(jobId) {
-  if (!hasProAccess()) return openPlansModal('pro', 'Rebooking Reminders');
+  if (!hasProAccess()) return openPlansModal('pro_solo', 'Rebooking Reminders');
 
   const patch = {
     rebooking_status: 'dismissed'
@@ -151,7 +151,7 @@ async function dismissReminder(jobId) {
  * Prefill a new quote from an existing job and switch to Quote tab.
  */
 function requoteFromJob(jobId) {
-  if (!hasProAccess()) return openPlansModal('pro', 'Rebooking Reminders');
+  if (!hasProAccess()) return openPlansModal('pro_solo', 'Rebooking Reminders');
 
   const j = (proState.jobs || []).find(x => x.id === jobId);
   if (!j) return showToast('Job not found', 'error');
@@ -228,7 +228,7 @@ const addrEl = el('cust-address');
 /* ===== Rebooking Modal ===== */
 
 function openRebookingModal(jobId) {
-  if (!hasProAccess()) return openPlansModal('pro', 'Rebooking Reminders');
+  if (!hasProAccess()) return openPlansModal('pro_solo', 'Rebooking Reminders');
 
   _rebookingJobId = jobId;
   const j = (proState.jobs || []).find(x => x.id === jobId);
