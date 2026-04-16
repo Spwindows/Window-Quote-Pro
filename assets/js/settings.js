@@ -67,7 +67,14 @@ function applyTeamSettings(s) {
     secondStoreyPricingEnabled: !!(s.rates && s.rates.__second_storey_pricing_enabled),
     secondStoreyMode: ((s.rates && s.rates.__second_storey_mode) || settings.secondStoreyMode || 'percent'),
     secondStoreyPercent: safeNum(s.rates && s.rates.__second_storey_percent, settings.secondStoreyPercent),
-    secondStoreyFixedAmount: safeNum(s.rates && s.rates.__second_storey_fixed_amount, settings.secondStoreyFixedAmount)
+    secondStoreyFixedAmount: safeNum(s.rates && s.rates.__second_storey_fixed_amount, settings.secondStoreyFixedAmount),
+    /* FIX 3: Payment details from cloud settings (stored in rates JSON) */
+    paymentAccountName:   (s.rates && s.rates.__payment_account_name)   || settings.paymentAccountName   || '',
+    paymentBankName:      (s.rates && s.rates.__payment_bank_name)      || settings.paymentBankName      || '',
+    paymentBSB:           (s.rates && s.rates.__payment_bsb)            || settings.paymentBSB           || '',
+    paymentAccountNumber: (s.rates && s.rates.__payment_account_number) || settings.paymentAccountNumber || '',
+    paymentReference:     (s.rates && s.rates.__payment_reference)      || settings.paymentReference     || '',
+    paymentLink:          (s.rates && s.rates.__payment_link)           || settings.paymentLink          || ''
   };
 
   if (s.rates) {
@@ -128,6 +135,23 @@ function syncSettingsForm() {
   setVal('settings-second-storey-percent', settings.secondStoreyPercent ?? 20);
   setVal('settings-second-storey-fixed', settings.secondStoreyFixedAmount ?? 5);
   setVal('team-invite-code',         proState.inviteCode || '');
+
+  /* FIX 3: Sync payment detail fields */
+  setVal('s-payment-account-name',   settings.paymentAccountName || '');
+  setVal('s-payment-bank-name',      settings.paymentBankName || '');
+  setVal('s-payment-bsb',            settings.paymentBSB || '');
+  setVal('s-payment-account-number', settings.paymentAccountNumber || '');
+  setVal('s-payment-reference',      settings.paymentReference || '');
+  setVal('s-payment-link',           settings.paymentLink || '');
+
+  /* FIX 4: Toggle payment details section visibility based on Pro access */
+  const paymentSection = el('payment-details-section');
+  const paymentLock    = el('payment-details-lock');
+  if (paymentSection && paymentLock) {
+    const isPro = hasProAccess();
+    paymentSection.classList.toggle('hidden', !isPro);
+    paymentLock.classList.toggle('hidden', isPro);
+  }
 }
 
 function renderSettingsGrids() {
@@ -185,6 +209,14 @@ async function _saveSettingsToServerInner() {
   ratesMap.__second_storey_mode = settings.secondStoreyMode || 'percent';
   ratesMap.__second_storey_percent = Number(settings.secondStoreyPercent || 0);
   ratesMap.__second_storey_fixed_amount = Number(settings.secondStoreyFixedAmount || 0);
+
+  /* FIX 3: Persist payment detail fields in the rates JSON object */
+  ratesMap.__payment_account_name   = settings.paymentAccountName   || '';
+  ratesMap.__payment_bank_name      = settings.paymentBankName      || '';
+  ratesMap.__payment_bsb            = settings.paymentBSB           || '';
+  ratesMap.__payment_account_number = settings.paymentAccountNumber || '';
+  ratesMap.__payment_reference      = settings.paymentReference     || '';
+  ratesMap.__payment_link           = settings.paymentLink          || '';
 
   const payload = {
   team_id:               proState.teamId,

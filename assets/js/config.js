@@ -25,7 +25,14 @@ const DEFAULT_SETTINGS = {
   secondStoreyPricingEnabled: false,
   secondStoreyMode: 'percent',
   secondStoreyPercent: 20,
-  secondStoreyFixedAmount: 5
+  secondStoreyFixedAmount: 5,
+  /* FIX 3: Payment detail fields for invoices (Pro only) */
+  paymentAccountName: '',
+  paymentBankName: '',
+  paymentBSB: '',
+  paymentAccountNumber: '',
+  paymentReference: '',
+  paymentLink: ''
 };
 
 const DEFAULT_QUOTE_STATE = {

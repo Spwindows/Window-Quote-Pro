@@ -261,12 +261,12 @@
     </div>
   </div>
 
-  <!-- FIX 5: Desktop PDF Email Prompt Modal -->
+  <!-- FIX 1: Desktop PDF Email Prompt Modal — updated text to tell user to attach PDF manually -->
   <div id="desktop-email-modal" class="modal-overlay hidden">
     <div class="modal">
       <button class="modal-close" onclick="closeDesktopEmailModal()" type="button">&#10005;</button>
       <div class="modal-header">PDF Downloaded</div>
-      <div class="modal-subtitle">Your PDF has been saved. Would you like to open your email client to send it?</div>
+      <div class="modal-subtitle">PDF downloaded — please attach it manually to your email.</div>
       <div class="completion-options">
         <button class="btn btn-primary btn-full" id="desktop-email-open-btn" type="button">
           Open Email to Send
@@ -274,6 +274,34 @@
         <button class="btn btn-secondary btn-full" id="desktop-email-close-btn" type="button">
           Done
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIX 2: Invoice Due Date Modal -->
+  <div id="invoice-duedate-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" onclick="closeInvoiceDueDateModal()" type="button">&#10005;</button>
+      <div class="modal-header">Invoice Payment Terms</div>
+      <div class="modal-subtitle">Choose when payment is due</div>
+
+      <div class="field-stack">
+        <div>
+          <label class="field-label">Payment Terms</label>
+          <select class="field-select" id="invoice-terms-select">
+            <option value="on_receipt">Due on Receipt</option>
+            <option value="7_days">7 Days</option>
+            <option value="14_days" selected>14 Days</option>
+            <option value="30_days">30 Days</option>
+            <option value="custom">Custom Date</option>
+          </select>
+        </div>
+        <div id="invoice-custom-date-wrap" class="hidden">
+          <label class="field-label">Custom Due Date</label>
+          <input type="date" class="field-input" id="invoice-custom-date" />
+        </div>
+        <button class="btn btn-primary btn-full" id="invoice-duedate-confirm-btn" type="button">Generate Invoice</button>
+        <button class="btn btn-secondary btn-full" id="invoice-duedate-cancel-btn" type="button">Cancel</button>
       </div>
     </div>
   </div>
@@ -580,6 +608,58 @@
               <div style="font-size:0.78rem; color:#6b7280;">
                 Your logo appears on PDF quotes, invoices, and receipts.
               </div>
+            </div>
+          </div>
+
+          <!-- FIX 3 & 4: PAYMENT DETAILS (Pro only, owner only) -->
+          <div class="card" id="payment-details-section" style="display:block;">
+            <div class="card-title" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+              <span>Invoice Payment Details</span>
+              <span class="paywall-chip">PRO</span>
+            </div>
+            <div style="font-size:0.78rem; color:#6b7280; margin-bottom:0.75rem;">
+              These details appear on invoices only, not on quotes.
+            </div>
+            <div class="field-stack">
+              <div class="field-grid-2">
+                <div>
+                  <label class="field-label">Account Name</label>
+                  <input type="text" class="field-input" id="s-payment-account-name" placeholder="J Smith Trading" />
+                </div>
+                <div>
+                  <label class="field-label">Bank Name</label>
+                  <input type="text" class="field-input" id="s-payment-bank-name" placeholder="Commonwealth Bank" />
+                </div>
+              </div>
+              <div class="field-grid-2">
+                <div>
+                  <label class="field-label">BSB</label>
+                  <input type="text" class="field-input" id="s-payment-bsb" placeholder="062-000" />
+                </div>
+                <div>
+                  <label class="field-label">Account Number</label>
+                  <input type="text" class="field-input" id="s-payment-account-number" placeholder="1234 5678" />
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Payment Reference / Note</label>
+                <input type="text" class="field-input" id="s-payment-reference" placeholder="Use invoice number as reference" />
+              </div>
+              <div>
+                <label class="field-label">Payment Link (optional)</label>
+                <input type="url" class="field-input" id="s-payment-link" placeholder="https://pay.stripe.com/your-link" />
+              </div>
+            </div>
+          </div>
+
+          <!-- FIX 4: Payment Details Lock for free users -->
+          <div class="card hidden" id="payment-details-lock">
+            <div class="card-title" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+              <span>Invoice Payment Details</span>
+              <span class="paywall-chip">PRO</span>
+            </div>
+            <div class="settings-lock" style="cursor:pointer;" onclick="openPlansModal('pro', 'Invoice Payment Details')">
+              &#128274; Upgrade to Pro to add your bank details and payment link to invoices.
             </div>
           </div>
 

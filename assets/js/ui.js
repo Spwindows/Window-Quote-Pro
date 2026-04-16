@@ -63,7 +63,7 @@ function closePlansModal() {
   if (modal) modal.classList.add('hidden');
 }
 
-/* ===== Desktop PDF Email Modal ===== */
+/* ===== Desktop PDF Email Modal (FIX 1) ===== */
 function openDesktopEmailModal(email, subject) {
   const modal = el('desktop-email-modal');
   if (!modal) return;
@@ -78,12 +78,88 @@ function closeDesktopEmailModal() {
   if (modal) modal.classList.add('hidden');
 }
 
+/**
+ * FIX 1: Desktop email open — uses ONLY mailto:EMAIL?subject=SUBJECT&body=BODY
+ * NO attachment, attach, or blob URL parameters whatsoever.
+ * Body tells recipient the PDF is attached (user attaches manually).
+ */
 function desktopEmailOpen() {
   const modal = el('desktop-email-modal');
   const email = (modal && modal.dataset.email) || '';
   const subject = (modal && modal.dataset.subject) || '';
-  const body = 'Hi,\n\nPlease find the attached document.\n\nThank you.';
+  const body = 'Hi,\n\nPlease find the PDF document attached.\n\nThank you.';
   const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.open(mailto, '_blank');
   closeDesktopEmailModal();
+}
+
+/* ===== Invoice Due Date Modal (FIX 2) ===== */
+let _invoiceDueDateCallback = null;
+
+function openInvoiceDueDateModal(callback) {
+  _invoiceDueDateCallback = callback;
+  const modal = el('invoice-duedate-modal');
+  if (!modal) {
+    /* Fallback: if modal not in DOM, just call with 14-day default */
+    if (callback) callback('14_days');
+    return;
+  }
+  /* Reset form */
+  const sel = el('invoice-terms-select');
+  if (sel) sel.value = '14_days';
+  const customWrap = el('invoice-custom-date-wrap');
+  if (customWrap) customWrap.classList.add('hidden');
+  const customInput = el('invoice-custom-date');
+  if (customInput) customInput.value = '';
+  modal.classList.remove('hidden');
+}
+
+function closeInvoiceDueDateModal() {
+  const modal = el('invoice-duedate-modal');
+  if (modal) modal.classList.add('hidden');
+  _invoiceDueDateCallback = null;
+}
+
+function confirmInvoiceDueDate() {
+  const sel = el('invoice-terms-select');
+  const terms = sel ? sel.value : '14_days';
+  const customInput = el('invoice-custom-date');
+
+  let dueDate;
+  const today = new Date();
+
+  switch (terms) {
+    case 'on_receipt':
+      dueDate = today;
+      break;
+    case '7_days':
+      dueDate = new Date(today);
+      dueDate.setDate(dueDate.getDate() + 7);
+      break;
+    case '14_days':
+      dueDate = new Date(today);
+      dueDate.setDate(dueDate.getDate() + 14);
+      break;
+    case '30_days':
+      dueDate = new Date(today);
+      dueDate.setDate(dueDate.getDate() + 30);
+      break;
+    case 'custom':
+      if (customInput && customInput.value) {
+        dueDate = new Date(customInput.value + 'T00:00:00');
+      } else {
+        showToast('Please select a custom date', 'error');
+        return;
+      }
+      break;
+    default:
+      dueDate = new Date(today);
+      dueDate.setDate(dueDate.getDate() + 14);
+  }
+
+  closeInvoiceDueDateModal();
+  if (_invoiceDueDateCallback) {
+    _invoiceDueDateCallback(terms, dueDate);
+    _invoiceDueDateCallback = null;
+  }
 }

@@ -49,7 +49,12 @@ async function copyQuoteToClipboard() {
   }
 }
 
-/* ===== Part 3: Invoice Generation ===== */
+/* ===== Part 3: Invoice Generation (FIX 2 & 3) ===== */
+
+/**
+ * FIX 2: openInvoiceForJob now shows a due-date picker modal before
+ * generating the invoice. The actual PDF generation is in _generateInvoicePdf.
+ */
 function openInvoiceForJob(jobId) {
   if (!hasProAccess()) {
     openPlansModal('pro', 'Invoicing');
@@ -61,6 +66,19 @@ function openInvoiceForJob(jobId) {
     showToast('PDF library not loaded.', 'error');
     return;
   }
+
+  /* Show due date picker, then generate invoice */
+  openInvoiceDueDateModal(function(terms, dueDate) {
+    _generateInvoicePdf(j, dueDate, terms);
+  });
+}
+
+/**
+ * Internal: generates the invoice PDF with the chosen due date.
+ * FIX 2: Due date displayed on invoice header.
+ * FIX 3: Payment details section rendered at bottom (from settings).
+ */
+function _generateInvoicePdf(j, dueDate, terms) {
   const invoiceNum = getNextInvoiceNumber();
   /* Read payment fields directly from the job row (cloud-backed) */
   const quoted     = parseFloat(j.quoted_price) || 0;
@@ -68,8 +86,21 @@ function openInvoiceForJob(jobId) {
   const amountDue  = Math.max(0, quoted - amountPaid);
 
   const logoHtml = getLogoHtmlForPdf();
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 14);
+  const issueDate = new Date();
+
+  /* Format due date label */
+  let dueDateLabel = dueDate.toLocaleDateString();
+  if (terms === 'on_receipt') {
+    dueDateLabel = 'Due on receipt';
+  }
+
+  /* Store due date on job if possible */
+  if (j) {
+    j.invoice_due_date = dueDate.toISOString();
+  }
+
+  /* FIX 3: Build payment details section from settings */
+  const paymentDetailsHtml = _buildPaymentDetailsHtml();
 
   const html = `
     <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 600px; color: #111827;">
@@ -80,12 +111,13 @@ function openInvoiceForJob(jobId) {
             <h2 style="margin:8px 0 2px; color:#111827;">${escapeHtml(settings.businessName)}</h2>
             <p style="margin:0; font-size:13px; color:#6b7280;">${escapeHtml(settings.contactName)} • ${escapeHtml(settings.businessPhone)}</p>
             <p style="margin:0; font-size:13px; color:#6b7280;">${escapeHtml(settings.businessEmail)}</p>
+            ${settings.businessAbn ? `<p style="margin:0; font-size:13px; color:#6b7280;">ABN: ${escapeHtml(settings.businessAbn)}</p>` : ''}
           </td>
           <td style="vertical-align:top; text-align:right;">
             <h1 style="margin:0; color:#2563eb; font-size:28px;">INVOICE</h1>
             <p style="margin:4px 0; font-size:14px; color:#374151;"><strong>${escapeHtml(invoiceNum)}</strong></p>
-            <p style="margin:2px 0; font-size:13px; color:#6b7280;">Date: ${new Date().toLocaleDateString()}</p>
-            <p style="margin:2px 0; font-size:13px; color:#6b7280;">Due: ${dueDate.toLocaleDateString()}</p>
+            <p style="margin:2px 0; font-size:13px; color:#6b7280;">Date: ${issueDate.toLocaleDateString()}</p>
+            <p style="margin:2px 0; font-size:13px; color:#6b7280;">Due: ${escapeHtml(dueDateLabel)}</p>
           </td>
         </tr>
       </table>
@@ -134,13 +166,55 @@ function openInvoiceForJob(jobId) {
           </tr>
         </table>
       </div>
+      ${paymentDetailsHtml}
       <div style="margin-top:30px; padding-top:16px; border-top:1px solid #e5e7eb; font-size:12px; color:#6b7280; text-align:center;">
-        <p style="margin-bottom:6px;">Payment due within 14 days of invoice date.</p>
+        <p style="margin-bottom:6px;">Payment due ${terms === 'on_receipt' ? 'on receipt of this invoice' : 'by ' + dueDate.toLocaleDateString()}.</p>
         <p>${escapeHtml(settings.customMessage)}</p>
       </div>
     </div>
   `;
   generateAndSharePdf(html, `invoice-${escapeHtml(j.customer_name).replace(/\s/g, '_')}`, j.customer_email, `Invoice ${invoiceNum} from ${settings.businessName}`);
+}
+
+/**
+ * FIX 3: Builds the payment details HTML section for invoices.
+ * Only renders if at least one payment detail field is populated in settings.
+ * This section appears ONLY on invoices, never on quotes.
+ */
+function _buildPaymentDetailsHtml() {
+  const acctName   = (settings.paymentAccountName || '').trim();
+  const bankName   = (settings.paymentBankName || '').trim();
+  const bsb        = (settings.paymentBSB || '').trim();
+  const acctNum    = (settings.paymentAccountNumber || '').trim();
+  const payRef     = (settings.paymentReference || '').trim();
+  const payLink    = (settings.paymentLink || '').trim();
+
+  /* Only show section if at least one field is filled */
+  const hasAny = acctName || bankName || bsb || acctNum || payRef || payLink;
+  if (!hasAny) return '';
+
+  let rows = '';
+  if (acctName) rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280; width:130px;">Account Name</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(acctName)}</td></tr>`;
+  if (bankName) rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">Bank</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(bankName)}</td></tr>`;
+  if (bsb)      rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">BSB</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(bsb)}</td></tr>`;
+  if (acctNum)  rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">Account Number</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(acctNum)}</td></tr>`;
+  if (payRef)   rows += `<tr><td style="padding:3px 0; font-size:13px; color:#6b7280;">Reference</td><td style="padding:3px 0; font-size:13px; font-weight:600;">${escapeHtml(payRef)}</td></tr>`;
+
+  let linkHtml = '';
+  if (payLink) {
+    const safeLink = escapeHtml(payLink);
+    linkHtml = `<div style="margin-top:8px; text-align:center;"><a href="${safeLink}" style="color:#2563eb; font-size:13px; text-decoration:underline;">Pay Online</a></div>`;
+  }
+
+  return `
+    <div style="margin-top:24px; background:#f0f9ff; border:1px solid #bfdbfe; border-radius:8px; padding:16px;">
+      <h3 style="margin:0 0 10px; font-size:13px; text-transform:uppercase; color:#2563eb; letter-spacing:0.05em;">Payment Details</h3>
+      <table style="width:100%; border-collapse:collapse;">
+        ${rows}
+      </table>
+      ${linkHtml}
+    </div>
+  `;
 }
 
 /* ===== Part 4: Receipt Generation ===== */
@@ -281,7 +355,7 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
       .from(target)
       .outputPdf('blob');
 
-    /* Try native share, fallback to download + email prompt (FIX 5 & 6) */
+    /* Try native share, fallback to download + email prompt */
     const file = new File([pdfBlob], `${filename}.pdf`, { type: 'application/pdf' });
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
@@ -296,7 +370,9 @@ async function _generateAndSharePdfInner(htmlContent, filename, email, subject) 
         showToast('PDF downloaded!', 'success');
       }
     } else {
-      /* Desktop fallback: download PDF then offer mailto prompt */
+      /* FIX 1: Desktop fallback — download PDF then open clean mailto prompt.
+       * NO attachment parameters are passed. The modal tells the user to
+       * attach the downloaded PDF manually. */
       downloadBlob(pdfBlob, `${filename}.pdf`);
       if (typeof openDesktopEmailModal === 'function') {
         openDesktopEmailModal(email || '', subject || '');

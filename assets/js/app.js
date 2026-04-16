@@ -182,6 +182,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     settings.secondStoreyPercent = safeNum(getVal('settings-second-storey-percent'), settings.secondStoreyPercent);
     settings.secondStoreyFixedAmount = safeNum(getVal('settings-second-storey-fixed'), settings.secondStoreyFixedAmount);
 
+    /* FIX 3: Read payment detail fields from settings form */
+    settings.paymentAccountName   = (el('s-payment-account-name')   || {}).value || '';
+    settings.paymentBankName      = (el('s-payment-bank-name')      || {}).value || '';
+    settings.paymentBSB           = (el('s-payment-bsb')            || {}).value || '';
+    settings.paymentAccountNumber = (el('s-payment-account-number') || {}).value || '';
+    settings.paymentReference     = (el('s-payment-reference')      || {}).value || '';
+    settings.paymentLink          = (el('s-payment-link')           || {}).value || '';
+
     saveLocalSettings();
     await saveSettingsToServer();
     updateQuoteDisplay();
@@ -266,9 +274,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   bindClick('logo-remove-btn', removeLogo);
 
-  /* ===== Desktop email modal bindings ===== */
+  /* ===== Desktop email modal bindings (FIX 1) ===== */
   bindClick('desktop-email-open-btn', desktopEmailOpen);
   bindClick('desktop-email-close-btn', closeDesktopEmailModal);
+
+  /* ===== Invoice due date modal bindings (FIX 2) ===== */
+  bindClick('invoice-duedate-confirm-btn', confirmInvoiceDueDate);
+  bindClick('invoice-duedate-cancel-btn', closeInvoiceDueDateModal);
+
+  /* Toggle custom date field visibility in due date modal */
+  const termsSelect = el('invoice-terms-select');
+  if (termsSelect) {
+    termsSelect.onchange = function() {
+      const customWrap = el('invoice-custom-date-wrap');
+      if (customWrap) {
+        customWrap.classList.toggle('hidden', this.value !== 'custom');
+      }
+    };
+  }
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
