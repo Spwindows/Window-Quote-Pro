@@ -1,6 +1,5 @@
 
-const CACHE = "window-quote-pro-v15";
-
+const CACHE = "window-quote-pro-v16-2026-04-17-1";
 const ASSETS = [
   "./",
   "./index.html",
