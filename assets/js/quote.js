@@ -197,24 +197,28 @@ function buildPdfHtml(data, quoteNum) {
   const businessAddress = escapeHtml(settings.businessAddress || settings.address || '');
   const contactParts = [contactName, businessPhone, businessEmail].filter(Boolean);
   const acceptanceParts = [businessPhone, businessEmail, businessWebsite].filter(Boolean);
-  let headerBrandName, headerSubtitle, logoHtml, businessDetailsHtml, footerHtml;
+    let headerBrandName, headerSubtitle, logoHtml, businessDetailsHtml, footerHtml;
+
+  // Business details should show for ALL users if entered.
+  businessDetailsHtml = [contactName, businessPhone, businessEmail, businessAbn, businessWebsite, businessAddress].some(Boolean)
+    ? `
+      <div style="margin-top:10px; color:#4b5563; font-size:12px; line-height:1.55;">
+        ${contactName ? `<div><strong>Contact:</strong> ${contactName}</div>` : ''}
+        ${businessPhone ? `<div><strong>Phone:</strong> ${businessPhone}</div>` : ''}
+        ${businessEmail ? `<div><strong>Email:</strong> ${businessEmail}</div>` : ''}
+        ${businessAbn ? `<div><strong>ABN:</strong> ${businessAbn}</div>` : ''}
+        ${businessWebsite ? `<div><strong>Web:</strong> ${businessWebsite}</div>` : ''}
+        ${businessAddress ? `<div><strong>Address:</strong> ${businessAddress}</div>` : ''}
+      </div>`
+    : `
+      <div style="margin-top:10px; color:#4b5563; font-size:12px; line-height:1.55;">
+        <div><strong>Built for trade quoting</strong></div>
+      </div>`;
 
   if (isPro) {
     headerBrandName = businessName || 'Professional Quote';
     headerSubtitle = 'Professional Quote';
     logoHtml = (typeof getLogoHtmlForPdf === 'function') ? getLogoHtmlForPdf() : '';
-
-        businessDetailsHtml = [contactName, businessPhone, businessEmail, businessAbn, businessWebsite, businessAddress].some(Boolean)
-      ? `
-        <div style="margin-top:10px; color:#4b5563; font-size:12px; line-height:1.55;">
-          ${contactName ? `<div><strong>Contact:</strong> ${contactName}</div>` : ''}
-          ${businessPhone ? `<div><strong>Phone:</strong> ${businessPhone}</div>` : ''}
-          ${businessEmail ? `<div><strong>Email:</strong> ${businessEmail}</div>` : ''}
-          ${businessAbn ? `<div><strong>ABN:</strong> ${businessAbn}</div>` : ''}
-          ${businessWebsite ? `<div><strong>Web:</strong> ${businessWebsite}</div>` : ''}
-          ${businessAddress ? `<div><strong>Address:</strong> ${businessAddress}</div>` : ''}
-        </div>`
-      : '';
 
     footerHtml = `
       <div style="margin-top:40px; padding-top:20px; border-top:1px solid #e5e7eb; color:#4b5563; font-size:12px; text-align:center; line-height:1.6;">
@@ -224,17 +228,16 @@ function buildPdfHtml(data, quoteNum) {
         ${businessAddress ? `<p style="margin:6px 0 0; color:#6b7280;">${businessAddress}</p>` : ''}
       </div>`;
   } else {
-    headerBrandName = 'Window Quote Pro';
+    headerBrandName = businessName || 'Window Quote Pro';
     headerSubtitle = 'Professional Quote';
     logoHtml = '';
-    businessDetailsHtml = `
-      <div style="margin-top:10px; color:#4b5563; font-size:12px; line-height:1.55;">
-        <div><strong>Built for trade quoting</strong></div>
-      </div>`;
+
     footerHtml = `
       <div style="margin-top:40px; padding-top:20px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; text-align:center; line-height:1.6;">
         ${customMessage ? `<p style="margin:0 0 10px;">${customMessage}</p>` : ''}
-        <p style="margin:0;">Upgrade to Pro to add your business logo and contact details to every quote.</p>
+        <p style="margin:0; font-weight:700; color:#111827;">To accept this quote, contact us:</p>
+        <p style="margin:6px 0 0;">${acceptanceParts.join(' • ') || contactParts.join(' • ')}</p>
+        ${businessAddress ? `<p style="margin:6px 0 0; color:#6b7280;">${businessAddress}</p>` : ''}
         <p style="margin-top:12px; font-size:11px; color:#9ca3af;">Powered by <strong style="color:#2563eb;">Window Quote Pro</strong></p>
       </div>`;
   }
