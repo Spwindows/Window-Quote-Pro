@@ -157,9 +157,9 @@ function confirmInvoiceDueDate() {
       dueDate.setDate(dueDate.getDate() + 14);
   }
 
+  const callback = _invoiceDueDateCallback;
   closeInvoiceDueDateModal();
-  if (_invoiceDueDateCallback) {
-    _invoiceDueDateCallback(terms, dueDate);
-    _invoiceDueDateCallback = null;
+  if (callback) {
+    callback(terms, dueDate);
   }
 }
