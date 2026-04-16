@@ -2,61 +2,9 @@ function updateCount(id, delta) {
   const s = services.find(x => x.id === id);
   if (s) {
     s.count = Math.max(0, s.count + delta);
-    clampUpstairsCounts();
-    syncSecondStoreyUI();
     renderSteppers();
     updateQuoteDisplay();
   }
-}
-
-function getEligibleSecondStoreyServiceIds() {
-  return ['sw', 'lw', 'sd'];
-}
-
-function getUpstairsCount(id) {
-  const upstairs = (quoteState && quoteState.upstairsCounts) || {};
-  const total = (services.find(x => x.id === id) || {}).count || 0;
-  return Math.max(0, Math.min(safeNum(upstairs[id], 0), total));
-}
-
-function clampUpstairsCounts() {
-  if (!quoteState.upstairsCounts || typeof quoteState.upstairsCounts !== 'object') {
-    quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
-  }
-  getEligibleSecondStoreyServiceIds().forEach(id => {
-    quoteState.upstairsCounts[id] = getUpstairsCount(id);
-  });
-}
-
-function updateUpstairsCount(id, value) {
-  if (!quoteState.upstairsCounts || typeof quoteState.upstairsCounts !== 'object') {
-    quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
-  }
-  const total = (services.find(x => x.id === id) || {}).count || 0;
-  quoteState.upstairsCounts[id] = Math.max(0, Math.min(safeNum(value, 0), total));
-  syncSecondStoreyUI();
-  updateQuoteDisplay();
-}
-
-function syncSecondStoreyUI() {
-  clampUpstairsCounts();
-  const toggle = el('second-storey-toggle');
-  if (toggle) toggle.checked = !!quoteState.secondStoreyEnabled;
-
-  const panel = el('second-storey-counts');
-  if (panel) panel.classList.toggle('hidden', !quoteState.secondStoreyEnabled);
-
-  getEligibleSecondStoreyServiceIds().forEach(id => {
-    const input = el(`second-storey-${id}`);
-    const totalEl = el(`second-storey-${id}-max`);
-    const total = (services.find(x => x.id === id) || {}).count || 0;
-    if (input) {
-      input.max = String(total);
-      input.value = String(getUpstairsCount(id));
-      input.disabled = !quoteState.secondStoreyEnabled || total === 0;
-    }
-    if (totalEl) totalEl.textContent = `of ${total} selected`;
-  });
 }
 
 function renderSteppers() {
@@ -80,7 +28,6 @@ function renderSteppers() {
 
 function getQuoteData() {
   const windowServiceIds = ['sw', 'lw', 'sd'];
-  const secondStoreyEligibleIds = getEligibleSecondStoreyServiceIds();
   const selected = services.filter(s => s.count > 0);
   const itemCount = selected.reduce((sum, s) => sum + s.count, 0);
   const totalMinutes = selected.reduce((sum, s) => sum + (s.count * s.minutes), 0);
@@ -116,27 +63,6 @@ function getQuoteData() {
     subtotal = hourlyBase;
   }
 
-  let secondStoreySurcharge = 0;
-  let secondStoreyItemCount = 0;
-
-  if (quoteState.secondStoreyEnabled && settings.secondStoreyPricingEnabled) {
-    secondStoreyEligibleIds.forEach(id => {
-      const service = services.find(x => x.id === id);
-      if (!service) return;
-      const upstairsCount = getUpstairsCount(id);
-      if (upstairsCount <= 0) return;
-      secondStoreyItemCount += upstairsCount;
-      const baseUnitRate = quoteState.externalOnly ? service.rate * (safeNum(settings.externalOnlyPercent, 60) / 100) : service.rate;
-      if ((settings.secondStoreyMode || 'percent') === 'fixed') {
-        secondStoreySurcharge += upstairsCount * safeNum(settings.secondStoreyFixedAmount, 0);
-      } else {
-        secondStoreySurcharge += upstairsCount * baseUnitRate * (safeNum(settings.secondStoreyPercent, 20) / 100);
-      }
-    });
-  }
-
-  subtotal += secondStoreySurcharge;
-
   const baseTotal = Math.max(0, subtotal + safeNum(settings.travelFee, 0) - safeNum(settings.discount, 0));
   const gstAmount = settings.gstEnabled ? baseTotal * (safeNum(settings.gstRate, 10) / 100) : 0;
 
@@ -147,130 +73,11 @@ function getQuoteData() {
     windowSub,
     adjWindowSub,
     nonWindowSub,
-    secondStoreySurcharge,
-    secondStoreyItemCount,
     subtotal,
     baseTotal,
     gstAmount,
     total: baseTotal + gstAmount
   };
-}
-
-function pluralizeLabel(count, singular, plural) {
-  return Number(count) === 1 ? singular : plural;
-}
-
-function joinNaturalList(items) {
-  const filtered = (items || []).filter(Boolean);
-  if (!filtered.length) return '';
-  if (filtered.length === 1) return filtered[0];
-  if (filtered.length === 2) return `${filtered[0]} and ${filtered[1]}`;
-  return `${filtered.slice(0, -1).join(', ')}, and ${filtered[filtered.length - 1]}`;
-}
-
-function getCustomerQuoteFormat() {
-  return String(settings.quoteFormat || 'itemised').toLowerCase() === 'summary' ? 'summary' : 'itemised';
-}
-
-function buildCustomerServiceSummary() {
-  const selected = services.filter(s => s.count > 0);
-  if (!selected.length) return 'Window cleaning service as quoted.';
-
-  const labelMap = {
-    sw: ['standard window', 'standard windows'],
-    lw: ['large window', 'large windows'],
-    sd: ['sliding door', 'sliding doors'],
-    fs: ['flyscreen', 'flyscreens'],
-    tr: ['track/sill set', 'track/sill sets'],
-    bal: ['balustrade glass panel', 'balustrade glass panels'],
-    gut: ['gutter length', 'gutter lengths'],
-    sol: ['solar panel', 'solar panels'],
-    pw: ['pressure washing unit', 'pressure washing units']
-  };
-
-  const primaryItems = [];
-  const extraItems = [];
-
-  selected.forEach(s => {
-    const labels = labelMap[s.id] || [s.name, s.name];
-    const label = `${s.count} ${pluralizeLabel(s.count, labels[0], labels[1])}`;
-    if (['sw', 'lw', 'sd'].includes(s.id)) {
-      primaryItems.push(label);
-    } else {
-      extraItems.push(label);
-    }
-  });
-
-  const serviceScope = quoteState.externalOnly ? 'External window cleaning' : 'Internal and external window cleaning';
-  let summary = serviceScope;
-
-  if (primaryItems.length) {
-    summary += ` including ${joinNaturalList(primaryItems)}`;
-  }
-
-  if (quoteState.secondStoreyEnabled) {
-    const upstairsItems = [];
-    getEligibleSecondStoreyServiceIds().forEach(id => {
-      const upstairsCount = getUpstairsCount(id);
-      if (upstairsCount <= 0) return;
-      const labels = labelMap[id] || ['item', 'items'];
-      upstairsItems.push(`${upstairsCount} second-storey ${pluralizeLabel(upstairsCount, labels[0], labels[1])}`);
-    });
-    if (upstairsItems.length) {
-      summary += `${primaryItems.length || extraItems.length ? '.' : ''} Includes second-storey access for ${joinNaturalList(upstairsItems)}`;
-    }
-  }
-
-  if (extraItems.length) {
-    summary += `. Also includes ${joinNaturalList(extraItems)}`;
-  }
-
-  return `${summary}.`.replace(/\.\./g, '.');
-}
-
-
-function getItemisedServiceRows(extPct, data) {
-  const rows = services.filter(s => s.count > 0).map(s => {
-    let line = s.count * s.rate;
-    if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
-      line *= (extPct / 100);
-    }
-    return `
-      <tr style="border-bottom: 1px solid #f3f4f6;">
-        <td style="padding: 12px; font-size: 14px;">${escapeHtml(s.name)} ${quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id) ? '(External Only)' : ''}</td>
-        <td style="padding: 12px; text-align: center; font-size: 14px;">${s.count}</td>
-        <td style="padding: 12px; text-align: right; font-size: 14px;">$${line.toFixed(2)}</td>
-      </tr>
-    `;
-  });
-
-  if (data.secondStoreySurcharge > 0) {
-    const modeLabel = (settings.secondStoreyMode || 'percent') === 'fixed'
-      ? `Fixed uplift`
-      : `${safeNum(settings.secondStoreyPercent, 20)}% uplift`;
-    rows.push(`
-      <tr style="border-bottom: 1px solid #f3f4f6;">
-        <td style="padding: 12px; font-size: 14px;">Second Storey Access (${escapeHtml(modeLabel)})</td>
-        <td style="padding: 12px; text-align: center; font-size: 14px;">${data.secondStoreyItemCount}</td>
-        <td style="padding: 12px; text-align: right; font-size: 14px;">$${data.secondStoreySurcharge.toFixed(2)}</td>
-      </tr>
-    `);
-  }
-
-  return rows.join('');
-}
-
-function getSummaryServiceRows(data) {
-  return `
-    <tr style="border-bottom: 1px solid #f3f4f6;">
-      <td style="padding: 12px; font-size: 14px;">
-        <div style="font-weight:700; color:#111827;">Window Cleaning Service</div>
-        <div style="margin-top:6px; font-size:12px; color:#4b5563; line-height:1.5;">${escapeHtml(buildCustomerServiceSummary())}</div>
-      </td>
-      <td style="padding: 12px; text-align: center; font-size: 14px;">1</td>
-      <td style="padding: 12px; text-align: right; font-size: 14px;">$${data.subtotal.toFixed(2)}</td>
-    </tr>
-  `;
 }
 
 function buildQuoteSummaryText(data) {
@@ -297,9 +104,6 @@ function buildQuoteSummaryText(data) {
 
   if (!selected.length) {
     summary += `• No items added yet\n`;
-  } else if (getCustomerQuoteFormat() === 'summary') {
-    summary += `• ${buildCustomerServiceSummary()}\n`;
-    summary += `• One total price for the full quoted scope\n`;
   } else {
     selected.forEach(s => {
       let line = s.count * s.rate;
@@ -335,7 +139,6 @@ function buildQuoteSummaryText(data) {
 }
 
 function updateQuoteDisplay() {
-  syncSecondStoreyUI();
   const data = getQuoteData();
 
   const footerTotal = el('footer-total');
@@ -439,10 +242,19 @@ function buildPdfHtml(data, quoteNum) {
       </div>`;
   }
 
-  const quoteFormat = getCustomerQuoteFormat();
-  const serviceRows = quoteFormat === 'summary'
-    ? getSummaryServiceRows(data)
-    : getItemisedServiceRows(extPct, data);
+  const serviceRows = services.filter(s => s.count > 0).map(s => {
+    let line = s.count * s.rate;
+    if (quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id)) {
+      line *= (extPct / 100);
+    }
+    return `
+      <tr style="border-bottom: 1px solid #f3f4f6;">
+        <td style="padding: 12px; font-size: 14px;">${escapeHtml(s.name)} ${quoteState.externalOnly && ['sw', 'lw', 'sd'].includes(s.id) ? '(External Only)' : ''}</td>
+        <td style="padding: 12px; text-align: center; font-size: 14px;">${s.count}</td>
+        <td style="padding: 12px; text-align: right; font-size: 14px;">$${line.toFixed(2)}</td>
+      </tr>
+    `;
+  }).join('');
 
   const quoteRef = quoteNum ? escapeHtml(quoteNum) : '';
 

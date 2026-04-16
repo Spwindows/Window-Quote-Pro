@@ -51,10 +51,6 @@ async function copyQuoteToClipboard() {
 
 /* ===== Part 3: Invoice Generation ===== */
 function openInvoiceForJob(jobId) {
-  if (!hasProAccess()) {
-    openPlansModal('pro', 'Invoicing');
-    return;
-  }
   const j = proState.jobs.find(x => x.id === jobId);
   if (!j) return showToast('Job not found', 'error');
   if (typeof html2pdf === 'undefined') {

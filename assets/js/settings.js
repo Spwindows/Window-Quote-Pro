@@ -63,11 +63,7 @@ function applyTeamSettings(s) {
     discount:            safeNum(s.discount,             settings.discount),
     externalOnlyPercent: safeNum(s.external_only_percent, settings.externalOnlyPercent),
     gstEnabled:          !!s.gst_enabled,
-    gstRate:             safeNum(s.gst_rate,             settings.gstRate),
-    secondStoreyPricingEnabled: !!(s.rates && s.rates.__second_storey_pricing_enabled),
-    secondStoreyMode: ((s.rates && s.rates.__second_storey_mode) || settings.secondStoreyMode || 'percent'),
-    secondStoreyPercent: safeNum(s.rates && s.rates.__second_storey_percent, settings.secondStoreyPercent),
-    secondStoreyFixedAmount: safeNum(s.rates && s.rates.__second_storey_fixed_amount, settings.secondStoreyFixedAmount)
+    gstRate:             safeNum(s.gst_rate,             settings.gstRate)
   };
 
   if (s.rates) {
@@ -122,11 +118,6 @@ function syncSettingsForm() {
   setVal('settings-discount',        settings.discount);
   setChecked('settings-gst-enabled', settings.gstEnabled);
   setVal('settings-gst-rate',        settings.gstRate);
-  setVal('settings-quote-format',    settings.quoteFormat || 'itemised');
-  setChecked('settings-second-storey-pricing-enabled', !!settings.secondStoreyPricingEnabled);
-  setVal('settings-second-storey-mode', settings.secondStoreyMode || 'percent');
-  setVal('settings-second-storey-percent', settings.secondStoreyPercent ?? 20);
-  setVal('settings-second-storey-fixed', settings.secondStoreyFixedAmount ?? 5);
   setVal('team-invite-code',         proState.inviteCode || '');
 }
 
@@ -180,11 +171,6 @@ async function _saveSettingsToServerInner() {
     ratesMap[s.id] = s.rate;
     minsMap[s.id]  = s.minutes;
   });
-
-  ratesMap.__second_storey_pricing_enabled = !!settings.secondStoreyPricingEnabled;
-  ratesMap.__second_storey_mode = settings.secondStoreyMode || 'percent';
-  ratesMap.__second_storey_percent = Number(settings.secondStoreyPercent || 0);
-  ratesMap.__second_storey_fixed_amount = Number(settings.secondStoreyFixedAmount || 0);
 
   const payload = {
   team_id:               proState.teamId,

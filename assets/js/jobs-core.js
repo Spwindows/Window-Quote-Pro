@@ -131,12 +131,10 @@ async function _saveTeamJobInner() {
     customer_email: ((el('q-email') || {}).value || '').trim(),
     service_address: ((el('q-address') || {}).value || '').trim(),
     quoted_price: data.total,
-    items_summary: getCustomerQuoteFormat() === 'summary'
-      ? buildCustomerServiceSummary()
-      : services
-          .filter(s => s.count > 0)
-          .map(s => `${s.count} ${s.name}`)
-          .join(', '),
+    items_summary: services
+      .filter(s => s.count > 0)
+      .map(s => `${s.count} ${s.name}`)
+      .join(', '),
     status: 'quoted',
     scheduled_at: null,
     created_by: proState.user.id,

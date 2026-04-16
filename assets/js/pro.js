@@ -216,15 +216,6 @@ function renderProUI() {
     if (teamDash) teamDash.classList.add('hidden');
   }
 
-  const invoiceUpsellCard = el('invoice-upsell-card');
-  const invoiceUpsellBtn = el('invoice-upsell-btn');
-  if (invoiceUpsellCard) invoiceUpsellCard.classList.remove('hidden');
-  if (invoiceUpsellBtn) {
-    invoiceUpsellBtn.textContent = hasProAccess() ? 'Go to Invoices' : 'Unlock Invoices 🔒';
-    invoiceUpsellBtn.classList.toggle('btn-primary', !hasProAccess());
-    invoiceUpsellBtn.classList.toggle('btn-secondary', hasProAccess());
-  }
-
   const logoSection = el('logo-upload-section');
   if (logoSection) {
     logoSection.classList.toggle('hidden', !proState.teamId || !canAccessSettings());
