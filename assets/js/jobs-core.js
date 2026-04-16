@@ -153,6 +153,7 @@ try {
 } catch (e) {
   showToast(e.message, 'error');
 }
+}
 const saveTeamJob = asyncGuard(_saveTeamJobInner, 'saveTeamJob');
 
 function updateKPIs() {
