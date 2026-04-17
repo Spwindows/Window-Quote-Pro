@@ -347,7 +347,23 @@
               </label>
               <div id="second-storey-ui" class="hidden" style="margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #f3f4f6;">
                 <p style="font-size:0.8rem; color:#6b7280; margin-bottom:0.5rem;">Select which items are on the second storey:</p>
-                <div id="second-storey-steppers"></div>
+                <div id="second-storey-steppers">
+                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                    <label class="field-label" style="min-width:120px; margin:0;">Std Windows</label>
+                    <input type="number" class="field-input" id="second-storey-sw" min="0" value="0" style="width:60px; text-align:center;" />
+                    <span id="second-storey-sw-max" style="font-size:0.8rem; color:#6b7280;">of 0 selected</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                    <label class="field-label" style="min-width:120px; margin:0;">Large Windows</label>
+                    <input type="number" class="field-input" id="second-storey-lw" min="0" value="0" style="width:60px; text-align:center;" />
+                    <span id="second-storey-lw-max" style="font-size:0.8rem; color:#6b7280;">of 0 selected</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <label class="field-label" style="min-width:120px; margin:0;">Sliding Doors</label>
+                    <input type="number" class="field-input" id="second-storey-sd" min="0" value="0" style="width:60px; text-align:center;" />
+                    <span id="second-storey-sd-max" style="font-size:0.8rem; color:#6b7280;">of 0 selected</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
