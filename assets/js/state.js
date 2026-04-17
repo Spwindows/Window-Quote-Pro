@@ -1,5 +1,18 @@
 console.log("[WQP] state.js loaded");
 
+let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+let quoteState = JSON.parse(JSON.stringify(DEFAULT_QUOTE_STATE));
+let services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
+let proState = JSON.parse(JSON.stringify(DEFAULT_PRO_STATE));
+
+let authMode = 'signin';
+let pendingInviteCode = localStorage.getItem('pending_invite') || null;
+let realtimeChannel = null;
+let currentJobId = null;
+let currentInvoiceJobId = null;
+let currentPaymentJobId = null;
+let currentCompletionJobId = null;
+let currentRebookingJobId = null;
 /* ---------------------------------------------------------------
  * One-time migration: remove legacy localStorage payment store.
  * The old key 'window-quote-pro-payments' was used before payment
