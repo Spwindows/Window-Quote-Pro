@@ -1,3 +1,4 @@
+let services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
 function updateCount(id, delta) {
   const s = services.find(x => x.id === id);
   if (s) {
