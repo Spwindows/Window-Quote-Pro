@@ -4,8 +4,8 @@ let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 let quoteState = JSON.parse(JSON.stringify(DEFAULT_QUOTE_STATE));
 let services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
 let proState = JSON.parse(JSON.stringify(DEFAULT_PRO_STATE));
-
 let supabaseClient = null;
+
 let realtimeChannel = null;
 let authMode = 'signin';
 let pendingInviteCode = localStorage.getItem('pending_invite') || null;
