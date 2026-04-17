@@ -11,7 +11,7 @@ let subscriptionState = {
   stripe_customer_id: null,
   stripe_subscription_id: null,
   subscription_plan: 'free',     // 'free' | 'pro_solo' | 'pro_team'
-  subscription_status: 'free',   // 'free' | 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired'
+  subscription_status: 'free', // 'free' | 'trial' | 'active' | 'cancelled' | 'expired'
   current_period_end: null,
   cancel_at_period_end: false,
   trial_end: null,
@@ -319,13 +319,7 @@ function getPlanDisplayInfo() {
         info.warning = `Your trial expires in ${trialDays} day${trialDays !== 1 ? 's' : ''}. Upgrade to keep Pro features.`;
       }
       break;
-    case 'past_due':
-      info.label = 'Past Due';
-      info.badgeClass = 'sub-plan-expired';
-      info.headerBadgeText = 'PAST DUE';
-      info.headerBadgeClass = 'badge-free';
-      info.warning = 'Your payment failed. Please update your billing to restore Pro access.';
-      break;
+    
     case 'cancelled':
       info.label = 'Cancelled';
       info.badgeClass = 'sub-plan-expired';
@@ -443,8 +437,8 @@ function normalizeSubscriptionRow(row) {
   if (!row) return null;
   return {
     id: row.id || null,
-    plan: row.plan || row.plan || 'free',
-    status: row.status || row.status || 'expired',
+    plan: row.plan || 'free',
+status: row.status || 'expired',
     trial_ends_at: row.trial_ends_at || row.trial_end || null,
     current_period_end: row.current_period_end || null,
     stripe_customer_id: row.stripe_customer_id || null,
