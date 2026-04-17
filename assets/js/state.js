@@ -8,6 +8,7 @@ let proState = JSON.parse(JSON.stringify(DEFAULT_PRO_STATE));
 let authMode = 'signin';
 let pendingInviteCode = localStorage.getItem('pending_invite') || null;
 let realtimeChannel = null;
+
 let currentJobId = null;
 let currentInvoiceJobId = null;
 let currentPaymentJobId = null;
