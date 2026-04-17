@@ -232,7 +232,7 @@ function _mapPlanToLegacy(plan) {
 
 function _mapStatusToLegacy(status) {
   if (status === 'free') return 'expired';
-  if (status === 'trialing') return 'trialing';
+  if (status === 'trial') return 'trialing'; // only for UI backwards compat
   return status || 'expired';
 }
 
