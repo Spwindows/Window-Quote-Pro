@@ -154,7 +154,7 @@ async function handleSubscriptionCreatedOrUpdated(subscription) {
     return;
   }
   // Determine plan from the first line item price
-  let plan = 'unknown';
+  let plan = 'free';
   if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
     const priceId = subscription.items.data[0].price.id;
     plan = planFromPriceId(priceId);
@@ -168,8 +168,8 @@ async function handleSubscriptionCreatedOrUpdated(subscription) {
   await upsertSubscription(userId, {
     stripe_customer_id: subscription.customer,
     stripe_subscription_id: subscription.id,
-    subscription_plan: plan,
-    subscription_status: subscription.status,
+    plan: normalizePlan(plan),
+status: normalizeStatus(subscription.status),
     current_period_end: currentPeriodEnd,
     cancel_at_period_end: !!subscription.cancel_at_period_end,
     trial_end: trialEnd
@@ -186,9 +186,10 @@ async function handleSubscriptionDeleted(subscription) {
   }
   await upsertSubscription(userId, {
     stripe_subscription_id: subscription.id,
-    plan: normalizePlan(subscription.items?.data?.[0]?.price?.id),
+    plan: const priceId = subscription.items?.data?.[0]?.price?.id;
+const plan = planFromPriceId(priceId);
 status: 'cancelled',
-    subscription_status: 'cancelled',
+    
     cancel_at_period_end: false,
     current_period_end: subscription.current_period_end
       ? new Date(subscription.current_period_end * 1000).toISOString()
