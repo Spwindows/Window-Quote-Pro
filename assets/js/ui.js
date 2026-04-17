@@ -49,7 +49,7 @@ function openPlansModal(targetPlan = 'pro', feature = '') {
 
   if (proCard) proCard.classList.remove('plan-card-dim');
   if (teamCard) teamCard.classList.remove('plan-card-dim');
-  if (targetPlan === 'team') {
+  if (targetPlan === 'team' || targetPlan === 'pro_team') {
     if (proCard) proCard.classList.add('plan-card-dim');
   } else {
     if (teamCard) teamCard.classList.add('plan-card-dim');
