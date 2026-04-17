@@ -1,8 +1,4 @@
 console.log("[WQP] pro.js loaded");
-const SUPABASE_URL = "https://cwrlnfcgryhmohopdwrs.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM";
-
-let supabaseClient = null;
 
 async function getSb() {
   if (supabaseClient) return supabaseClient;
