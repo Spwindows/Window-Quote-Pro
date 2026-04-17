@@ -1,4 +1,4 @@
-console.log("[WQP] state.js loaded");
+console.log("[WQP] state.js loaded"); 
 
 let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 let quoteState = JSON.parse(JSON.stringify(DEFAULT_QUOTE_STATE));
