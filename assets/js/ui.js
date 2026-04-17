@@ -33,7 +33,7 @@ function switchTab(t) {
 }
 
 /* ===== Centralized Plans / Paywall Modal ===== */
-function openPlansModal(targetPlan = 'pro', feature = '') {
+function openPlansModal(targetPlan = 'pro_solo', feature = '') {
   const modal = el('plans-modal');
   const title = el('plans-title');
   const subtitle = el('plans-subtitle');
