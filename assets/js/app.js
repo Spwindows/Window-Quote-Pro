@@ -2,6 +2,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log("START DOMContentLoaded");
 
   loadLocalSettings();
+
+  if (typeof services === 'undefined') {
+    window.services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
+  }
+
   renderSteppers();
   syncSecondStoreyUI();
   syncSettingsForm();
