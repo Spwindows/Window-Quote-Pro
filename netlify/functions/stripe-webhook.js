@@ -31,6 +31,25 @@ async function supabaseRequest(method, path, body) {
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
+function normalizePlan(rawPlan) {
+  const p = String(rawPlan || '').toLowerCase();
+  if (p === 'pro_solo') return 'pro_solo';
+  if (p === 'pro_team') return 'pro_team';
+  return 'free';
+}
+
+function normalizeStatus(rawStatus) {
+  const s = String(rawStatus || '').toLowerCase();
+
+  if (s === 'trialing') return 'trial';
+  if (s === 'active') return 'active';
+  if (s === 'canceled') return 'cancelled';
+  if (s === 'past_due' || s === 'unpaid' || s === 'incomplete_expired') return 'expired';
+
+  if (['trial', 'active', 'cancelled', 'expired', 'free'].includes(s)) return s;
+
+  return 'free';
+}
 
 /* ------------------------------------------------------------------ */
 /* Map Stripe price ID to plan name                                    */
@@ -38,7 +57,7 @@ async function supabaseRequest(method, path, body) {
 function planFromPriceId(priceId) {
   if (priceId === process.env.STRIPE_PRICE_ID_PRO_SOLO) return 'pro_solo';
   if (priceId === process.env.STRIPE_PRICE_ID_PRO_TEAM) return 'pro_team';
-  return 'unknown';
+  return 'free';
 }
 
 /* ------------------------------------------------------------------ */
@@ -88,7 +107,13 @@ async function handleCheckoutCompleted(session) {
   }
   const customerId = session.customer;
   const subscriptionId = session.subscription;
-  const plan = (session.metadata && session.metadata.plan) || 'unknown';
+  let plan = normalizePlan(session.metadata?.plan);
+
+if (plan === 'free' && subscriptionId) {
+  const sub = await stripe.subscriptions.retrieve(subscriptionId);
+  const priceId = sub.items?.data?.[0]?.price?.id;
+  plan = normalizePlan(planFromPriceId(priceId));
+}
 
   // Retrieve the full subscription to get status and dates
   let subStatus = 'active';
@@ -110,15 +135,14 @@ async function handleCheckoutCompleted(session) {
   }
 
   await upsertSubscription(userId, {
-    stripe_customer_id: customerId,
-    stripe_subscription_id: subscriptionId,
-    subscription_plan: plan,
-    subscription_status: subStatus,
-    current_period_end: currentPeriodEnd,
-    trial_end: trialEnd,
-    cancel_at_period_end: false
-  });
-}
+  stripe_customer_id: subscription.customer,
+  stripe_subscription_id: subscription.id,
+  plan: normalizePlan(plan),
+  status: normalizeStatus(subscription.status),
+  current_period_end: currentPeriodEnd,
+  trial_end: trialEnd,
+  cancel_at_period_end: !!subscription.cancel_at_period_end
+});
 
 async function handleSubscriptionCreatedOrUpdated(subscription) {
   const userId =
@@ -161,8 +185,9 @@ async function handleSubscriptionDeleted(subscription) {
   }
   await upsertSubscription(userId, {
     stripe_subscription_id: subscription.id,
-    subscription_plan: 'free',
-    subscription_status: 'canceled',
+    plan: normalizePlan(subscription.items?.data?.[0]?.price?.id),
+status: 'cancelled',
+    subscription_status: 'cancelled',
     cancel_at_period_end: false,
     current_period_end: subscription.current_period_end
       ? new Date(subscription.current_period_end * 1000).toISOString()
