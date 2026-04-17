@@ -73,8 +73,8 @@ function _normalizeSubscriptionRecord(row, fallbackUserId = null) {
     user_id: row.user_id || fallbackUserId || null,
     stripe_customer_id: row.stripe_customer_id || null,
     stripe_subscription_id: row.stripe_subscription_id || null,
-    subscription_plan: row.subscription_plan || 'free',
-    subscription_status: row.subscription_status || 'free',
+    subscription_plan: normalizePlan(row.plan),
+subscription_status: normalizeStatus(row.status),
     current_period_end: row.current_period_end || null,
     cancel_at_period_end: !!row.cancel_at_period_end,
     trial_end: row.trial_end || null,
@@ -109,21 +109,21 @@ function _applySubscriptionState(nextState, source, personalRow, teamRow) {
 function _subscriptionHasProAccess(row) {
   if (!row) return false;
 
-  const plan = String(row.subscription_plan || 'free').toLowerCase();
-  const status = String(row.subscription_status || 'free').toLowerCase();
+  const plan = normalizePlan(row.plan);
+const status = normalizeStatus(row.status);
   const now = new Date();
 
-  const proPlan = plan === 'pro_solo' || plan === 'pro_team' || plan === 'pro';
-  if (!proPlan) return false;
+  const isProPlan = plan === 'pro_solo' || plan === 'pro_team';
+  if (!isProPlan) return false;
 
   if (status === 'active') return true;
 
-  if (status === 'trialing') {
+  if (status === 'trial') {
     if (!row.trial_end) return true;
     return new Date(row.trial_end) > now;
   }
 
-  if (status === 'canceled') {
+  if (status === 'cancelled') {
     if (row.current_period_end && new Date(row.current_period_end) > now) {
       return true;
     }
@@ -241,38 +241,31 @@ function _mapStatusToLegacy(status) {
  * ================================================================ */
 
 function getEntitlementStatus() {
-  const status = String(subscriptionState.subscription_status || 'free').toLowerCase();
-  const plan = String(subscriptionState.subscription_plan || 'free').toLowerCase();
+  const status = normalizeStatus(subscriptionState.subscription_status);
+  const plan = normalizePlan(subscriptionState.subscription_plan);
 
-  // Active subscription
-  if (status === 'active' && (plan === 'pro_solo' || plan === 'pro_team' || plan === 'pro')) {
+  if ((plan === 'pro_solo' || plan === 'pro_team') && status === 'active') {
     return 'active';
   }
 
-  // Trialing
-  if (status === 'trialing') {
+  if (status === 'trial') {
     if (!subscriptionState.trial_end || new Date(subscriptionState.trial_end) > new Date()) {
       return 'trial';
     }
     return 'expired';
   }
 
-  // Canceled but still within paid period
-  if (status === 'canceled') {
+  if (status === 'cancelled') {
     if (subscriptionState.current_period_end && new Date(subscriptionState.current_period_end) > new Date()) {
       return 'active';
     }
     return 'cancelled';
   }
 
-  if (status === 'past_due') return 'past_due';
-  if (status === 'unpaid') return 'expired';
-  if (status === 'incomplete') return 'expired';
-  if (status === 'incomplete_expired') return 'expired';
+  if (status === 'expired') return 'expired';
 
   return 'free';
 }
-
 function hasProAccess() {
   const s = getEntitlementStatus();
   return s === 'active' || s === 'trial';
@@ -450,8 +443,8 @@ function normalizeSubscriptionRow(row) {
   if (!row) return null;
   return {
     id: row.id || null,
-    plan: row.plan || row.subscription_plan || 'free',
-    status: row.status || row.subscription_status || 'expired',
+    plan: row.plan || row.plan || 'free',
+    status: row.status || row.status || 'expired',
     trial_ends_at: row.trial_ends_at || row.trial_end || null,
     current_period_end: row.current_period_end || null,
     stripe_customer_id: row.stripe_customer_id || null,
