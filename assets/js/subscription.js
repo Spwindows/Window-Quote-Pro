@@ -189,6 +189,8 @@ async function fetchSubscriptionState() {
 
   try {
     personalRow = await _fetchPersonalSubscriptionRow(sb, user.id);
+   
+    console.log('[RAW DB ROW]', personalRow);
 
     // Default: personal subscription or free
     let effectiveRow = personalRow || _blankSubscriptionState(user.id);
@@ -207,7 +209,9 @@ async function fetchSubscriptionState() {
       }
     }
 
-    _applySubscriptionState(effectiveRow, source, personalRow, teamRow);
+   _applySubscriptionState(effectiveRow, source, personalRow, teamRow);
+
+console.log('[NORMALIZED STATE]', subscriptionState);
   } catch (e) {
     console.error('[Subscription] fetchSubscriptionState failed:', e);
 
