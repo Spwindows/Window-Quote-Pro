@@ -36,6 +36,34 @@ function _blankSubscriptionState(userId = null) {
     team_seat_count: 0
   };
 }
+function normalizePlan(rawPlan) {
+  const plan = String(rawPlan || '').trim().toLowerCase();
+
+  if (plan === 'pro_solo') return 'pro_solo';
+  if (plan === 'pro_team') return 'pro_team';
+  if (plan === 'free') return 'free';
+
+  return 'free';
+}
+
+function normalizeStatus(rawStatus) {
+  const status = String(rawStatus || '').trim().toLowerCase();
+
+  if (status === 'trialing') return 'trial';
+  if (status === 'canceled') return 'cancelled';
+
+  if (
+    status === 'free' ||
+    status === 'trial' ||
+    status === 'active' ||
+    status === 'cancelled' ||
+    status === 'expired'
+  ) {
+    return status;
+  }
+
+  return 'free';
+}
 
 function _normalizeSubscriptionRecord(row, fallbackUserId = null) {
   if (!row) return _blankSubscriptionState(fallbackUserId);
