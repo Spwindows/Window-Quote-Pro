@@ -410,12 +410,12 @@ function renderSubscriptionUI() {
 
   const upgradeBtn = el('upgrade-cta-btn');
   if (upgradeBtn) {
-    upgradeBtn.onclick = () => handleUpgradeClick('pro');
+    upgradeBtn.onclick = () => handleUpgradeClick('pro_solo');
   }
 }
 
 function handleUpgradeClick(plan) {
-  openPlansModal(plan === 'team' ? 'team' : 'pro', plan === 'team' ? 'Team features' : 'Pro features');
+  openPlansModal(plan === 'pro_team' ? 'pro_team' : 'pro_solo', plan === 'pro_team' ? 'Team features' : 'Pro features');
 }
 
 function startUpgradeFlow(plan) {
