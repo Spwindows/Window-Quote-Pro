@@ -135,14 +135,15 @@ if (plan === 'free' && subscriptionId) {
   }
 
   await upsertSubscription(userId, {
-  stripe_customer_id: subscription.customer,
-  stripe_subscription_id: subscription.id,
+  stripe_customer_id: customerId,
+  stripe_subscription_id: subscriptionId,
   plan: normalizePlan(plan),
-  status: normalizeStatus(subscription.status),
+  status: normalizeStatus(subStatus),
   current_period_end: currentPeriodEnd,
   trial_end: trialEnd,
-  cancel_at_period_end: !!subscription.cancel_at_period_end
+  cancel_at_period_end: false
 });
+  } // 
 
 async function handleSubscriptionCreatedOrUpdated(subscription) {
   const userId =
