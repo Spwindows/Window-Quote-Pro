@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (typeof services === 'undefined') {
     window.services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
   }
+  if (typeof quoteState === 'undefined') {
+  window.quoteState = JSON.parse(JSON.stringify(DEFAULT_QUOTE_STATE));
+}
 
   renderSteppers();
   syncSecondStoreyUI();
