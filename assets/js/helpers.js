@@ -25,6 +25,18 @@ function normalizeStatus(status) {
   if (n === 'active' || n === 'started') return 'in_progress';
   return n;
 }
+function hasSignedInUser() {
+  return typeof proState !== 'undefined' && !!proState && !!proState.user;
+}
+
+function isTeamOwner() {
+  if (typeof proState === 'undefined' || !proState) return false;
+  return String(proState.teamRole || '').toLowerCase() === 'owner';
+}
+
+function hasTeamContext() {
+  return typeof proState !== 'undefined' && !!proState && !!proState.teamId;
+}
 function displayStatus(status) {
   const map = {
     quoted: 'Quote Sent',
