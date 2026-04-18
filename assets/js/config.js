@@ -63,5 +63,6 @@ const DEFAULT_PRO_STATE = {
   jobs: [],
   subscription: null,
   entitlementSource: null,
-  logoDataUrl: null
+  logoDataUrl: null,
+  loading: true
 };
