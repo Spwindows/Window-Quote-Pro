@@ -780,26 +780,36 @@
   </div>
 
  
-<script src="assets/js/config.js"></script>
-<script src="assets/js/state.js"></script>
+<!-- KEEP ALL YOUR EXISTING HTML ABOVE -->
 
-<script src="assets/js/helpers.js"></script>
-<script src="assets/js/ui.js"></script>
-<script src="assets/js/quote.js"></script>
-<script src="assets/js/settings.js"></script>
+<!-- Core order is critical -->
+<script src="config.js"></script>
+<script src="state.js"></script>
 
-<script src="assets/js/subscription.js"></script>
-<script src="assets/js/pro.js"></script>
+<!-- Utilities / helpers -->
+<script src="helpers.js"></script>
 
-<script src="assets/js/jobs-core.js"></script>
-<script src="assets/js/jobs-render.js"></script>
-<script src="assets/js/jobs-payments.js"></script>
-<script src="assets/js/jobs-rebooking.js"></script>
+<!-- Core logic -->
+<script src="subscription.js"></script>
+<script src="settings.js"></script>
+<script src="quote.js"></script>
+<script src="share.js"></script>
+<script src="onboarding.js"></script>
 
-<script src="assets/js/share.js"></script>
-<script src="assets/js/onboarding.js"></script>
+<!-- Jobs -->
+<script src="jobs-core.js"></script>
+<script src="jobs-render.js"></script>
+<script src="jobs-payments.js"></script>
+<script src="jobs-rebooking.js"></script>
 
-<!-- LAST -->
-<script src="assets/js/app.js"></script>
+<!-- Pro features -->
+<script src="pro.js"></script>
+<script src="pro-logo.js"></script> <!-- THIS WAS EITHER MISSING OR LOADING TOO LATE -->
+
+<!-- UI -->
+<script src="ui.js"></script>
+
+<!-- ALWAYS LAST -->
+<script src="app.js"></script>
 </body>
 </html>
