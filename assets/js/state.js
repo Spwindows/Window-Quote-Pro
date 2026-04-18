@@ -5,7 +5,6 @@ var quoteState = JSON.parse(JSON.stringify(DEFAULT_QUOTE_STATE));
 var services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
 var proState = JSON.parse(JSON.stringify(DEFAULT_PRO_STATE));
 var supabaseClient = null;
-
 var realtimeChannel = null;
 var authMode = 'signin';
 var pendingInviteCode = localStorage.getItem('pending_invite') || null;
