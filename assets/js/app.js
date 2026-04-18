@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast('Invoices are managed from completed jobs in the Pro tab.', 'info');
       return;
     }
-    openPlansModal('pro_solo', 'Invoicing');
+    handleUpgradeClick('pro_solo');
   });
 
   bindClick('clear-counts-btn', () => {
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   bindClick('reset-all-btn', resetAllData);
 
-    bindClick('copy-invite-btn', async () => {
+  bindClick('copy-invite-btn', async () => {
     if (!canUseTeamInviteFeatures()) {
       return handleUpgradeClick('pro_team');
     }
@@ -249,6 +249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast('Share cancelled', 'error');
     }
   });
+
   bindClick('completion-invoice-btn', completionSendInvoice);
   bindClick('completion-payment-btn', completionRecordPayment);
   bindClick('completion-later-btn', completionDoLater);
