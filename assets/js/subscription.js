@@ -252,14 +252,20 @@ function getEntitlementStatus() {
   return 'free';
 }
 function hasProAccess() {
-  const s = getEntitlementStatus();
-  return s === 'active' || s === 'trial';
+  const plan = String(subscriptionState?.subscription_plan || '').toLowerCase();
+  const status = String(subscriptionState?.subscription_status || '').toLowerCase();
+
+  const validPlan = plan === 'pro_solo' || plan === 'pro_team';
+  const validStatus = status === 'trial' || status === 'active';
+
+  return validPlan && validStatus;
 }
 
 function hasTeamAccess() {
-  if (!hasProAccess()) return false;
-  const plan = String(subscriptionState.subscription_plan || '').toLowerCase();
-  return plan === 'pro_team';
+  const plan = String(subscriptionState?.subscription_plan || '').toLowerCase();
+  const status = String(subscriptionState?.subscription_status || '').toLowerCase();
+
+  return plan === 'pro_team' && (status === 'trial' || status === 'active');
 }
 
 function getTrialDaysRemaining() {
@@ -272,58 +278,41 @@ function getTrialDaysRemaining() {
 }
 
 function getPlanDisplayInfo() {
-  const status = getEntitlementStatus();
-  const trialDays = getTrialDaysRemaining();
-  const plan = String(subscriptionState.subscription_plan || 'free').toLowerCase();
+  const plan = String(subscriptionState?.subscription_plan || 'free').toLowerCase();
+  const status = String(subscriptionState?.subscription_status || 'free').toLowerCase();
 
-  const info = {
-    label: 'Free',
-    badgeClass: 'sub-plan-free',
-    headerBadgeText: 'FREE',
-    headerBadgeClass: 'badge-free',
-    warning: null,
-    trialDays: null,
-    trialPercent: 0
-  };
-
-  switch (status) {
-    case 'active':
-      info.label = plan === 'pro_team' ? 'Pro Team' : 'Pro Solo';
-      info.badgeClass = 'sub-plan-active';
-      info.headerBadgeText = 'PRO';
-      info.headerBadgeClass = 'badge-pro';
-      break;
-    case 'trial':
-      info.label = `Trial (${trialDays} day${trialDays !== 1 ? 's' : ''} left)`;
-      info.badgeClass = 'sub-plan-trial';
-      info.headerBadgeText = 'TRIAL';
-      info.headerBadgeClass = 'badge-pro';
-      info.trialDays = trialDays;
-      info.trialPercent = Math.max(0, Math.min(100, (trialDays / 7) * 100));
-      if (trialDays <= 2) {
-        info.warning = `Your trial expires in ${trialDays} day${trialDays !== 1 ? 's' : ''}. Upgrade to keep Pro features.`;
-      }
-      break;
-    
-    case 'cancelled':
-      info.label = 'Cancelled';
-      info.badgeClass = 'sub-plan-expired';
-      info.headerBadgeText = 'FREE';
-      info.headerBadgeClass = 'badge-free';
-      info.warning = 'Your subscription has been cancelled. Upgrade to restore Pro features.';
-      break;
-    case 'expired':
-      info.label = 'Expired';
-      info.badgeClass = 'sub-plan-expired';
-      info.headerBadgeText = 'FREE';
-      info.headerBadgeClass = 'badge-free';
-      info.warning = 'Your subscription has expired. Upgrade to access Pro features.';
-      break;
-    default:
-      break;
+  if (plan === 'pro_team' && status === 'trial') {
+    return {
+      headerBadgeText: 'TRIAL',
+      headerBadgeClass: 'badge-trial'
+    };
   }
 
-  return info;
+  if (plan === 'pro_team' && status === 'active') {
+    return {
+      headerBadgeText: 'PRO TEAM',
+      headerBadgeClass: 'badge-pro'
+    };
+  }
+
+  if (plan === 'pro_solo' && status === 'trial') {
+    return {
+      headerBadgeText: 'TRIAL',
+      headerBadgeClass: 'badge-trial'
+    };
+  }
+
+  if (plan === 'pro_solo' && status === 'active') {
+    return {
+      headerBadgeText: 'PRO',
+      headerBadgeClass: 'badge-pro'
+    };
+  }
+
+  return {
+    headerBadgeText: 'FREE',
+    headerBadgeClass: 'badge-free'
+  };
 }
 
 /* ================================================================
