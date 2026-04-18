@@ -1,21 +1,21 @@
-console.log("[WQP] state.js loaded"); 
+console.log("[WQP] state.js loaded");
 
-let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-let quoteState = JSON.parse(JSON.stringify(DEFAULT_QUOTE_STATE));
-let services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
-let proState = JSON.parse(JSON.stringify(DEFAULT_PRO_STATE));
-let supabaseClient = null;
+var settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+var quoteState = JSON.parse(JSON.stringify(DEFAULT_QUOTE_STATE));
+var services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
+var proState = JSON.parse(JSON.stringify(DEFAULT_PRO_STATE));
+var supabaseClient = null;
 
-let realtimeChannel = null;
-let authMode = 'signin';
-let pendingInviteCode = localStorage.getItem('pending_invite') || null;
-let jobFilter = 'quoted';
+var realtimeChannel = null;
+var authMode = 'signin';
+var pendingInviteCode = localStorage.getItem('pending_invite') || null;
+var jobFilter = 'quoted';
 
-let currentJobId = null;
-let currentInvoiceJobId = null;
-let currentPaymentJobId = null;
-let currentCompletionJobId = null;
-let currentRebookingJobId = null;
+var currentJobId = null;
+var currentInvoiceJobId = null;
+var currentPaymentJobId = null;
+var currentCompletionJobId = null;
+var currentRebookingJobId = null;
 
 /* ---------------------------------------------------------------
  * One-time migration: remove legacy localStorage payment store.
