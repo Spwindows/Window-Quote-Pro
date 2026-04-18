@@ -35,8 +35,16 @@ function displayStatus(status) {
   return map[normalizeStatus(status)] || String(status || '');
 }
 function canAccessSettings() {
+  if (typeof proState === 'undefined' || !proState) return false;
+  if (!proState.user) return false;
+
+  const role = String(proState.teamRole || 'owner').toLowerCase();
+
+  // No team yet: signed-in user can manage their own settings
   if (!proState.teamId) return true;
-  return String(proState.teamRole || '').toLowerCase() === 'owner';
+
+  // Team exists: only owner can access team/business settings
+  return role === 'owner';
 }
 
 /* ---------------------------------------------------------------
