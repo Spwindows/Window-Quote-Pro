@@ -1,27 +1,41 @@
 console.log("[WQP] subscription.js loaded");
 
-/* ================================================================
- * Subscription State Object
- * Holds the canonical subscription data fetched from Supabase.
- * All entitlement checks read from this object.
- * ================================================================ */
 let subscriptionState = {
   loaded: false,
   checkout_syncing: false,
   user_id: null,
   stripe_customer_id: null,
   stripe_subscription_id: null,
-  subscription_plan: 'free',     // 'free' | 'pro_solo' | 'pro_team'
-  subscription_status: 'free',   // 'free' | 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired'
+  subscription_plan: 'free',
+  subscription_status: 'free',
   current_period_end: null,
   cancel_at_period_end: false,
   trial_end: null,
   team_seat_count: 0
 };
 
-/* ================================================================
- * Helpers
- * ================================================================ */
+function normalizePlan(rawPlan) {
+  const p = String(rawPlan || '').trim().toLowerCase();
+  if (p === 'pro_solo') return 'pro_solo';
+  if (p === 'pro_team') return 'pro_team';
+  return 'free';
+}
+
+function normalizeSubscriptionStatus(rawStatus) {
+  const s = String(rawStatus || '').trim().toLowerCase();
+  if (s === 'trialing') return 'trial';
+  if (s === 'canceled') return 'cancelled';
+  if (s === 'past_due' || s === 'unpaid' || s === 'incomplete_expired') return 'expired';
+  if (['free', 'trial', 'active', 'cancelled', 'expired'].includes(s)) return s;
+  return 'free';
+}
+
+function normalizeCheckoutPlan(rawPlan) {
+  const p = String(rawPlan || '').trim().toLowerCase();
+  if (p === 'pro_team' || p === 'team' || p === 'team_pro' || p === 'proteam') return 'pro_team';
+  if (p === 'pro_solo' || p === 'solo' || p === 'pro') return 'pro_solo';
+  return 'pro_solo';
+}
 
 function _blankSubscriptionState(userId = null) {
   return {
@@ -44,11 +58,12 @@ function _normalizeSubscriptionRecord(row, fallbackUserId = null) {
 
   return {
     loaded: true,
+    checkout_syncing: false,
     user_id: row.user_id || fallbackUserId || null,
     stripe_customer_id: row.stripe_customer_id || null,
     stripe_subscription_id: row.stripe_subscription_id || null,
-    subscription_plan: row.subscription_plan || 'free',
-    subscription_status: row.subscription_status || 'free',
+    subscription_plan: normalizePlan(row.plan),
+    subscription_status: normalizeSubscriptionStatus(row.status),
     current_period_end: row.current_period_end || null,
     cancel_at_period_end: !!row.cancel_at_period_end,
     trial_end: row.trial_end || null,
@@ -65,12 +80,10 @@ function _applySubscriptionState(nextState, source, personalRow, teamRow) {
 
   proState.entitlementSource = source || 'personal';
 
-  // Sync into proState.subscription for backward compatibility with
-  // existing code that reads proState.subscription
   proState.subscription = {
     id: subscriptionState.stripe_subscription_id,
-    plan: _mapPlanToLegacy(subscriptionState.subscription_plan),
-    status: _mapStatusToLegacy(subscriptionState.subscription_status),
+    plan: subscriptionState.subscription_plan,
+    status: subscriptionState.subscription_status,
     trial_ends_at: subscriptionState.trial_end,
     current_period_end: subscriptionState.current_period_end,
     stripe_customer_id: subscriptionState.stripe_customer_id,
@@ -81,30 +94,24 @@ function _applySubscriptionState(nextState, source, personalRow, teamRow) {
   };
 }
 
-function _normalizeSubscriptionStatus(status) {
-  const raw = String(status || 'free').toLowerCase().trim();
-  if (raw === 'cancelled') return 'canceled';
-  return raw;
-}
-
 function _subscriptionHasProAccess(row) {
   if (!row) return false;
 
-  const plan = String(row.subscription_plan || 'free').toLowerCase();
-  const status = _normalizeSubscriptionStatus(row.subscription_status || 'free');
+  const plan = normalizePlan(row.plan);
+  const status = normalizeSubscriptionStatus(row.status);
   const now = new Date();
 
-  const proPlan = plan === 'pro_solo' || plan === 'pro_team' || plan === 'pro';
+  const proPlan = plan === 'pro_solo' || plan === 'pro_team';
   if (!proPlan) return false;
 
   if (status === 'active') return true;
 
-  if (status === 'trialing') {
+  if (status === 'trial') {
     if (!row.trial_end) return true;
     return new Date(row.trial_end) > now;
   }
 
-  if (status === 'canceled') {
+  if (status === 'cancelled') {
     if (row.current_period_end && new Date(row.current_period_end) > now) {
       return true;
     }
@@ -127,7 +134,6 @@ async function _fetchPersonalSubscriptionRow(sb, userId) {
 async function _fetchTeamOwnerSubscriptionRow(sb, teamId) {
   if (!teamId) return null;
 
-  // Find the active owner of the team
   const { data: ownerMember, error: ownerErr } = await sb
     .from('team_members')
     .select('user_id')
@@ -149,12 +155,6 @@ async function _fetchTeamOwnerSubscriptionRow(sb, teamId) {
   return ownerSub || null;
 }
 
-/* ================================================================
- * fetchSubscriptionState()
- * Queries the Supabase subscriptions table for the current user.
- * Also checks team-owner subscription inheritance for staff members.
- * Called on app boot and after returning from Stripe checkout.
- * ================================================================ */
 async function fetchSubscriptionState() {
   const sb = await getSb();
   if (!sb) return;
@@ -170,12 +170,11 @@ async function fetchSubscriptionState() {
 
   try {
     personalRow = await _fetchPersonalSubscriptionRow(sb, user.id);
+    console.log('[RAW DB ROW]', personalRow);
 
-    // Default: personal subscription or free
     let effectiveRow = personalRow || _blankSubscriptionState(user.id);
     let source = 'personal';
 
-    // If user's own row does not grant Pro access, check team-owner inheritance
     if (!_subscriptionHasProAccess(personalRow) && proState.teamId) {
       teamRow = await _fetchTeamOwnerSubscriptionRow(sb, proState.teamId);
 
@@ -189,10 +188,9 @@ async function fetchSubscriptionState() {
     }
 
     _applySubscriptionState(effectiveRow, source, personalRow, teamRow);
+    console.log('[NORMALIZED STATE]', subscriptionState);
   } catch (e) {
     console.error('[Subscription] fetchSubscriptionState failed:', e);
-
-    // Fall back cleanly instead of leaving stale state
     _applySubscriptionState(personalRow || _blankSubscriptionState(user.id), 'personal', personalRow, teamRow);
   }
 
@@ -205,166 +203,134 @@ async function fetchSubscriptionState() {
   });
 }
 
-/* Map new plan names to legacy format used by getPlanDisplayInfo */
-function _mapPlanToLegacy(plan) {
-  if (plan === 'pro_solo' || plan === 'pro_team') return 'pro';
-  return plan || 'free';
-}
-
-function _mapStatusToLegacy(status) {
-  if (status === 'free') return 'expired';
-  if (status === 'trialing') return 'trialing';
-  return status || 'expired';
-}
-
-/* ================================================================
- * Entitlement checks
- * ================================================================ */
-
 function getEntitlementStatus() {
-  const status = _normalizeSubscriptionStatus(subscriptionState.subscription_status || 'free');
-  const plan = String(subscriptionState.subscription_plan || 'free').toLowerCase();
+  const status = normalizeSubscriptionStatus(subscriptionState.subscription_status);
+  const plan = normalizePlan(subscriptionState.subscription_plan);
 
-  // Active subscription
-  if (status === 'active' && (plan === 'pro_solo' || plan === 'pro_team' || plan === 'pro')) {
+  if ((plan === 'pro_solo' || plan === 'pro_team') && status === 'active') {
     return 'active';
   }
 
-  // Trialing
-  if (status === 'trialing') {
+  if (status === 'trial') {
     if (!subscriptionState.trial_end || new Date(subscriptionState.trial_end) > new Date()) {
       return 'trial';
     }
     return 'expired';
   }
 
-  // Canceled but still within paid period
-  if (status === 'canceled') {
+  if (status === 'cancelled') {
     if (subscriptionState.current_period_end && new Date(subscriptionState.current_period_end) > new Date()) {
       return 'active';
     }
     return 'cancelled';
   }
 
-  if (status === 'past_due') return 'past_due';
-  if (status === 'unpaid') return 'expired';
-  if (status === 'incomplete') return 'expired';
-  if (status === 'incomplete_expired') return 'expired';
+  if (status === 'expired') return 'expired';
 
   return 'free';
 }
 
 function hasProAccess() {
-  const s = getEntitlementStatus();
-  return s === 'active' || s === 'trial';
+  const plan = normalizePlan(subscriptionState.subscription_plan);
+  const status = normalizeSubscriptionStatus(subscriptionState.subscription_status);
+
+  if (plan !== 'pro_solo' && plan !== 'pro_team') return false;
+
+  if (status === 'active') return true;
+
+  if (status === 'trial') {
+    if (!subscriptionState.trial_end) return true;
+    return new Date(subscriptionState.trial_end) > new Date();
+  }
+
+  return false;
 }
 
 function hasTeamAccess() {
-  if (!hasProAccess()) return false;
-  const plan = String(subscriptionState.subscription_plan || '').toLowerCase();
-  return plan === 'pro_team';
+  const plan = normalizePlan(subscriptionState.subscription_plan);
+  const status = normalizeSubscriptionStatus(subscriptionState.subscription_status);
+
+  if (plan !== 'pro_team') return false;
+
+  if (status === 'active') return true;
+
+  if (status === 'trial') {
+    if (!subscriptionState.trial_end) return true;
+    return new Date(subscriptionState.trial_end) > new Date();
+  }
+
+  return false;
 }
 
 function getTrialDaysRemaining() {
   const status = getEntitlementStatus();
   if (status !== 'trial') return null;
-  if (!subscriptionState.trial_end) return null;
+  if (!subscriptionState.trial_end) return 7;
 
   const diff = new Date(subscriptionState.trial_end) - new Date();
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
 function getPlanDisplayInfo() {
-  const status = getEntitlementStatus();
-  const isCheckoutSyncing = subscriptionState.checkout_syncing === true;
+  const plan = normalizePlan(subscriptionState.subscription_plan);
+  const status = normalizeSubscriptionStatus(subscriptionState.subscription_status);
   const trialDays = getTrialDaysRemaining();
-  const plan = String(subscriptionState.subscription_plan || 'free').toLowerCase();
 
-  const info = {
-    label: 'Free',
-    badgeClass: 'sub-plan-free',
-    headerBadgeText: 'FREE',
-    headerBadgeClass: 'badge-free',
-    warning: null,
-    trialDays: null,
-    trialPercent: 0
+  let headerBadgeText = 'FREE';
+  let headerBadgeClass = 'badge-free';
+  let label = 'FREE';
+  let badgeClass = 'badge-free';
+  let warning = '';
+  let trialPercent = 100;
+
+  if (plan === 'pro_team' && status === 'trial') {
+    headerBadgeText = 'TRIAL';
+    headerBadgeClass = 'badge-trial';
+    label = trialDays === null ? 'TRIAL' : `TRIAL (${trialDays} DAYS LEFT)`;
+    badgeClass = 'badge-trial';
+    warning = trialDays === null
+      ? 'Your trial is active.'
+      : `Your trial expires in ${trialDays} day${trialDays === 1 ? '' : 's'}. Upgrade to keep Pro features.`;
+    trialPercent = trialDays === null ? 100 : Math.max(0, Math.min(100, (trialDays / 7) * 100));
+  } else if (plan === 'pro_team' && status === 'active') {
+    headerBadgeText = 'PRO TEAM';
+    headerBadgeClass = 'badge-pro';
+    label = 'PRO TEAM';
+    badgeClass = 'badge-pro';
+  } else if (plan === 'pro_solo' && status === 'trial') {
+    headerBadgeText = 'TRIAL';
+    headerBadgeClass = 'badge-trial';
+    label = trialDays === null ? 'TRIAL' : `TRIAL (${trialDays} DAYS LEFT)`;
+    badgeClass = 'badge-trial';
+    warning = trialDays === null
+      ? 'Your trial is active.'
+      : `Your trial expires in ${trialDays} day${trialDays === 1 ? '' : 's'}. Upgrade to keep Pro features.`;
+    trialPercent = trialDays === null ? 100 : Math.max(0, Math.min(100, (trialDays / 7) * 100));
+  } else if (plan === 'pro_solo' && status === 'active') {
+    headerBadgeText = 'PRO';
+    headerBadgeClass = 'badge-pro';
+    label = 'PRO';
+    badgeClass = 'badge-pro';
+  }
+
+  return {
+    headerBadgeText,
+    headerBadgeClass,
+    label,
+    badgeClass,
+    warning,
+    trialDays,
+    trialPercent
   };
-
-  if (isCheckoutSyncing && status === 'free') {
-    info.label = 'Activating...';
-    info.badgeClass = 'sub-plan-trial';
-    info.headerBadgeText = 'SYNCING';
-    info.headerBadgeClass = 'badge-pro';
-    info.warning = 'Your checkout succeeded. Waiting for Stripe to finish syncing your access.';
-    return info;
-  }
-
-  switch (status) {
-    case 'active':
-      info.label = plan === 'pro_team' ? 'Pro Team' : 'Pro Solo';
-      info.badgeClass = 'sub-plan-active';
-      info.headerBadgeText = 'PRO';
-      info.headerBadgeClass = 'badge-pro';
-      break;
-    case 'trial':
-      info.label = `Trial (${trialDays} day${trialDays !== 1 ? 's' : ''} left)`;
-      info.badgeClass = 'sub-plan-trial';
-      info.headerBadgeText = 'TRIAL';
-      info.headerBadgeClass = 'badge-pro';
-      info.trialDays = trialDays;
-      info.trialPercent = Math.max(0, Math.min(100, (trialDays / 7) * 100));
-      if (trialDays <= 2) {
-        info.warning = `Your trial expires in ${trialDays} day${trialDays !== 1 ? 's' : ''}. Upgrade to keep Pro features.`;
-      }
-      break;
-    case 'past_due':
-      info.label = 'Past Due';
-      info.badgeClass = 'sub-plan-expired';
-      info.headerBadgeText = 'PAST DUE';
-      info.headerBadgeClass = 'badge-free';
-      info.warning = 'Your payment failed. Please update your billing to restore Pro access.';
-      break;
-    case 'cancelled':
-    case 'canceled':
-      info.label = 'Cancelled';
-      info.badgeClass = 'sub-plan-expired';
-      info.headerBadgeText = 'FREE';
-      info.headerBadgeClass = 'badge-free';
-      info.warning = 'Your subscription has been cancelled. Upgrade to restore Pro features.';
-      break;
-    case 'expired':
-      info.label = 'Expired';
-      info.badgeClass = 'sub-plan-expired';
-      info.headerBadgeText = 'FREE';
-      info.headerBadgeClass = 'badge-free';
-      info.warning = 'Your subscription has expired. Upgrade to access Pro features.';
-      break;
-    default:
-      break;
-  }
-
-  return info;
 }
 
-/* ================================================================
- * Checkout & Billing Portal
- * ================================================================ */
-
-/**
- * Start Stripe Checkout for the given plan.
- * @param {'pro_solo'|'pro_team'} plan
- */
 async function startCheckout(plan) {
   if (!proState.user) {
     showToast('Please sign in first.', 'error');
     return;
   }
 
-  const validPlans = ['pro_solo', 'pro_team'];
-  if (!validPlans.includes(plan)) {
-    showToast('Invalid plan selected.', 'error');
-    return;
-  }
+  const finalPlan = normalizeCheckoutPlan(plan);
 
   showToast('Redirecting to checkout...', 'info');
 
@@ -373,7 +339,7 @@ async function startCheckout(plan) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        plan: plan,
+        plan: finalPlan,
         userId: proState.user.id,
         email: proState.user.email
       })
@@ -385,7 +351,6 @@ async function startCheckout(plan) {
       throw new Error(data.error || 'Failed to create checkout session');
     }
 
-    // Redirect to Stripe Checkout
     window.location.href = data.url;
   } catch (err) {
     console.error('[Checkout] Error:', err);
@@ -393,9 +358,6 @@ async function startCheckout(plan) {
   }
 }
 
-/**
- * Open Stripe Billing Portal for the current user.
- */
 async function openBillingPortal() {
   if (!proState.user) {
     showToast('Please sign in first.', 'error');
@@ -426,24 +388,16 @@ async function openBillingPortal() {
   }
 }
 
-/* ================================================================
- * Legacy compatibility — loadSubscription wrapper
- * Called by existing bootPro code. Now delegates to fetchSubscriptionState.
- * ================================================================ */
 async function loadSubscription(sb) {
   await fetchSubscriptionState();
 }
 
-/* ================================================================
- * normalizeSubscriptionRow — kept for backward compat but now
- * subscription state is managed via subscriptionState object.
- * ================================================================ */
 function normalizeSubscriptionRow(row) {
   if (!row) return null;
   return {
     id: row.id || null,
-    plan: row.plan || row.subscription_plan || 'free',
-    status: row.status || row.subscription_status || 'expired',
+    plan: normalizePlan(row.plan),
+    status: normalizeSubscriptionStatus(row.status),
     trial_ends_at: row.trial_ends_at || row.trial_end || null,
     current_period_end: row.current_period_end || null,
     stripe_customer_id: row.stripe_customer_id || null,
@@ -454,9 +408,6 @@ function normalizeSubscriptionRow(row) {
   };
 }
 
-/* ================================================================
- * Subscription UI rendering
- * ================================================================ */
 function renderSubscriptionUI() {
   const container = el('subscription-status-container');
   if (!container) return;
@@ -481,20 +432,20 @@ function renderSubscriptionUI() {
     html += `<div class="sub-trial-bar-fill ${barClass}" style="width:${info.trialPercent}%"></div>`;
     html += '</div>';
     html += `<div class="sub-status-detail">${info.trialDays} of 7 trial days remaining</div>`;
+  } else if (status === 'trial') {
+    html += '<div class="sub-status-detail">Trial active</div>';
   }
 
   if (info.warning) {
     html += `<div class="sub-warning">${escapeHtml(info.warning)}</div>`;
   }
 
-  if (status === 'active') {
-    if (subscriptionState.current_period_end) {
-      const renewDate = new Date(subscriptionState.current_period_end).toLocaleDateString();
-      if (subscriptionState.cancel_at_period_end) {
-        html += `<div class="sub-status-detail">Access until ${renewDate} (not renewing)</div>`;
-      } else {
-        html += `<div class="sub-status-detail">Renews on ${renewDate}</div>`;
-      }
+  if (status === 'active' && subscriptionState.current_period_end) {
+    const renewDate = new Date(subscriptionState.current_period_end).toLocaleDateString();
+    if (subscriptionState.cancel_at_period_end) {
+      html += `<div class="sub-status-detail">Access until ${renewDate} (not renewing)</div>`;
+    } else {
+      html += `<div class="sub-status-detail">Renews on ${renewDate}</div>`;
     }
   }
 
@@ -502,13 +453,10 @@ function renderSubscriptionUI() {
     html += '<div class="sub-status-detail" style="color:#6366f1;">Access via team subscription</div>';
   }
 
-  // Manage Subscription button for paid/trialing users
-  const canManageOwnSubscription = (status === 'active' || status === 'trial') && proState.entitlementSource !== 'team';
-  if (canManageOwnSubscription) {
+  if (status === 'active' || status === 'trial') {
     html += '<button class="btn btn-secondary btn-full btn-sm" id="manage-subscription-btn" type="button" style="margin-top:0.5rem;">Manage Subscription</button>';
   }
 
-  // Upgrade CTA for non-pro users
   const isTeamStaff = proState.teamId && proState.teamRole !== 'owner';
   const isTeamEntitled = proState.entitlementSource === 'team';
   const showUpgrade = status !== 'active' && status !== 'trial' && !isTeamStaff && !isTeamEntitled;
@@ -520,7 +468,6 @@ function renderSubscriptionUI() {
   html += '</div>';
   container.innerHTML = html;
 
-  // Bind event handlers after rendering
   const manageBtn = el('manage-subscription-btn');
   if (manageBtn) {
     manageBtn.onclick = () => openBillingPortal();
@@ -528,61 +475,46 @@ function renderSubscriptionUI() {
 
   const upgradeBtn = el('upgrade-cta-btn');
   if (upgradeBtn) {
-    upgradeBtn.onclick = () => handleUpgradeClick('pro_solo');
+    upgradeBtn.onclick = () => startCheckout('pro_solo');
   }
 }
 
 function handleUpgradeClick(plan) {
-  openPlansModal(plan === 'pro_team' ? 'pro_team' : 'pro_solo', plan === 'pro_team' ? 'Team features' : 'Pro features');
+  startCheckout(normalizeCheckoutPlan(plan));
 }
 
 function startUpgradeFlow(plan) {
-  closePlansModal();
-  if (plan === 'pro_team' || plan === 'team') {
-    startCheckout('pro_team');
-  } else {
-    startCheckout('pro_solo');
-  }
+  if (typeof closePlansModal === 'function') closePlansModal();
+  startCheckout(normalizeCheckoutPlan(plan));
 }
 
-/* ================================================================
- * Checkout return handler
- * Checks URL params for ?checkout=success or ?checkout=cancel
- * ================================================================ */
 async function handleCheckoutReturn() {
   const params = new URLSearchParams(window.location.search);
   const checkoutResult = params.get('checkout');
 
   if (!checkoutResult) return;
 
-  // Clean the URL
   const url = new URL(window.location.href);
   url.searchParams.delete('checkout');
   window.history.replaceState({}, '', url.pathname + url.search);
 
   if (checkoutResult === 'success') {
-    subscriptionState.checkout_syncing = true;
-    renderSubscriptionUI();
-    renderProUI();
-    showToast('Checkout succeeded. Waiting for Stripe to activate your access...', 'success');
+    showToast('Subscription activated! Updating access...', 'success');
 
-    const delayScheduleMs = [1000, 1500, 2000, 2500, 3000, 4000, 5000, 6500, 8000, 10000];
+    const maxAttempts = 8;
+    const delayMs = 2000;
 
-    for (let attempt = 0; attempt < delayScheduleMs.length; attempt++) {
-      await new Promise(r => setTimeout(r, delayScheduleMs[attempt]));
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise(r => setTimeout(r, delayMs));
       await fetchSubscriptionState();
 
       if (hasProAccess()) {
         break;
       }
 
-      console.log(`[CheckoutReturn] Waiting for subscription activation... attempt ${attempt + 1}/${delayScheduleMs.length}`);
-      renderSubscriptionUI();
-      renderProUI();
+      console.log(`[CheckoutReturn] Waiting for subscription activation... attempt ${attempt}/${maxAttempts}`);
     }
 
-    subscriptionState.checkout_syncing = false;
-    await fetchSubscriptionState();
     renderSubscriptionUI();
     renderProUI();
     syncSettingsForm();
@@ -591,7 +523,7 @@ async function handleCheckoutReturn() {
     if (hasProAccess()) {
       showToast('Pro access is now active.', 'success');
     } else {
-      showToast('Checkout completed, but the Stripe webhook has not updated Supabase yet.', 'info');
+      showToast('Checkout completed, but activation is still syncing. Please refresh in a moment.', 'info');
     }
   } else if (checkoutResult === 'cancel') {
     showToast('Checkout cancelled. You can upgrade anytime.', 'info');
