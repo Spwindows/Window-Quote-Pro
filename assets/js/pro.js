@@ -11,12 +11,22 @@ async function getSb() {
   }
 }
 
-/* bootPro is wrapped with asyncGuard after definition to prevent
- * concurrent calls from DOMContentLoaded, handleAuth, createTeam,
- * joinTeam, and saveTeamJob all firing overlapping Supabase RPCs. */
+function canUseProFeatures() {
+  return hasProAccess();
+}
+
+function canUseTeamFeatures() {
+  return hasTeamAccess();
+}
+
+function canUseTeamInviteFeatures() {
+  return hasTeamAccess() && (proState.teamRole || '').toLowerCase() === 'owner';
+}
+
 async function _bootProInner() {
   const sb = await getSb();
   if (!sb) return;
+
   let user = null;
   try {
     const { data } = await sb.auth.getUser();
@@ -24,25 +34,29 @@ async function _bootProInner() {
   } catch (e) {
     console.warn('getUser failed:', e.message);
   }
+
   if (!user) {
     proState.user = null;
     renderProUI();
     return;
   }
+
   proState.user = user;
+
   try {
     const { data: team, error } = await sb.rpc('get_my_team');
     const noTeam =
       error ||
       !team ||
       (Array.isArray(team) && team.length === 0);
+
     if (noTeam) {
       proState.teamId = null;
       proState.teamName = '';
       proState.teamRole = '';
       proState.inviteCode = '';
       proState.jobs = [];
-      /* Check for pending invite code */
+
       if (pendingInviteCode) {
         try {
           const { error: joinErr } = await sb.rpc('join_team_by_invite', {
@@ -68,29 +82,34 @@ async function _bootProInner() {
       proState.inviteCode = t.invite_code;
       localStorage.removeItem('pending_invite');
       pendingInviteCode = null;
+
       const { data: jobs } = await sb
         .from('jobs')
         .select('*')
         .eq('team_id', proState.teamId)
         .order('created_at', { ascending: false });
+
       proState.jobs = jobs || [];
+
       const { data: s } = await sb
         .from('team_settings')
         .select('*')
         .eq('team_id', proState.teamId)
         .single();
+
       if (s) applyTeamSettings(s);
       setupRealtimeChannel(sb);
     }
   } catch (e) {
     console.error(e);
   }
-  /* Load subscription entitlement (works with or without team) */
+
   try {
     await loadSubscription(sb);
   } catch (e) {
     console.error('Subscription load error', e);
   }
+
   renderProUI();
   renderSubscriptionUI();
   syncSettingsForm();
@@ -107,6 +126,7 @@ async function _handleAuthInner() {
   const password = (el('auth-password') || {}).value || '';
   const sb = await getSb();
   if (!sb) return;
+
   try {
     let res;
     if (authMode === 'signup') {
@@ -119,6 +139,7 @@ async function _handleAuthInner() {
     } else {
       res = await sb.auth.signInWithPassword({ email, password });
     }
+
     if (res.error) throw res.error;
     showToast('Welcome!', 'success');
     await bootPro();
@@ -129,10 +150,17 @@ async function _handleAuthInner() {
 const handleAuth = asyncGuard(_handleAuthInner, 'handleAuth');
 
 async function _createTeamInner() {
+  if (!canUseTeamFeatures()) {
+    showToast('Upgrade to Pro Team to create a team.', 'error');
+    return;
+  }
+
   const name = ((el('team-name-input') || {}).value || '').trim();
   if (!name) return showToast('Enter business name', 'error');
+
   const sb = await getSb();
   if (!sb) return;
+
   try {
     const { error } = await sb.rpc('create_team', {
       p_business_name: name
@@ -147,10 +175,17 @@ async function _createTeamInner() {
 const createTeam = asyncGuard(_createTeamInner, 'createTeam');
 
 async function _joinTeamInner() {
+  if (!canUseTeamFeatures()) {
+    showToast('Upgrade to Pro Team to join a team.', 'error');
+    return;
+  }
+
   const code = ((el('invite-code-input') || {}).value || '').trim();
   if (!code) return showToast('Enter invite code', 'error');
+
   const sb = await getSb();
   if (!sb) return;
+
   try {
     const { error } = await sb.rpc('join_team_by_invite', {
       p_invite_code: code
@@ -209,11 +244,16 @@ function renderProUI() {
     headerBadge.className = planInfo.headerBadgeClass;
   }
 
-  if (proState.teamId) {
+  const canTeam = canUseTeamFeatures();
+
+  if (proState.teamId && canTeam) {
     if (teamSetup) teamSetup.classList.add('hidden');
     if (teamDash) teamDash.classList.remove('hidden');
-  } else {
+  } else if (!proState.teamId && canTeam) {
     if (teamSetup) teamSetup.classList.remove('hidden');
+    if (teamDash) teamDash.classList.add('hidden');
+  } else {
+    if (teamSetup) teamSetup.classList.add('hidden');
     if (teamDash) teamDash.classList.add('hidden');
   }
 
@@ -221,20 +261,19 @@ function renderProUI() {
   const invoiceUpsellBtn = el('invoice-upsell-btn');
   if (invoiceUpsellCard) invoiceUpsellCard.classList.remove('hidden');
   if (invoiceUpsellBtn) {
-    invoiceUpsellBtn.textContent = hasProAccess() ? 'Go to Invoices' : 'Unlock Invoices 🔒';
-    invoiceUpsellBtn.classList.toggle('btn-primary', !hasProAccess());
-    invoiceUpsellBtn.classList.toggle('btn-secondary', hasProAccess());
+    invoiceUpsellBtn.textContent = canUseProFeatures() ? 'Go to Invoices' : 'Unlock Invoices 🔒';
+    invoiceUpsellBtn.classList.toggle('btn-primary', !canUseProFeatures());
+    invoiceUpsellBtn.classList.toggle('btn-secondary', canUseProFeatures());
   }
 
   const logoSection = el('logo-upload-section');
   if (logoSection) {
-    logoSection.classList.toggle('hidden', !proState.teamId || !canAccessSettings());
+    logoSection.classList.toggle('hidden', !canUseProFeatures() || !proState.teamId || !canAccessSettings());
   }
-  if (proState.teamId && canAccessSettings()) {
+  if (canUseProFeatures() && proState.teamId && canAccessSettings()) {
     renderLogoPreview();
   }
 
-  /* Render rebooking dashboard */
   if (typeof renderRebookingSection === 'function') renderRebookingSection();
 }
 
