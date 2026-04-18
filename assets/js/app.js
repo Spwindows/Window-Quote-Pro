@@ -8,11 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   syncSettingsForm();
   renderSettingsGrids();
   updateQuoteDisplay();
-  await bootPro();
-
-  /* Handle return from Stripe Checkout (?checkout=success|cancel) */
   await handleCheckoutReturn();
-
+await bootPro();
   console.log("FINISHED");
 
   if (!localStorage.getItem('wqp-onboarding-done')) {
