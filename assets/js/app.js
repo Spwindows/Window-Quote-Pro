@@ -3,13 +3,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   loadLocalSettings();
 
-await bootPro(); // 🔥 FIRST
+  // Quote/UI first
+  if (typeof renderSteppers === 'function') renderSteppers();
+  if (typeof syncSecondStoreyUI === 'function') syncSecondStoreyUI();
+  if (typeof syncSettingsForm === 'function') syncSettingsForm();
+  if (typeof renderSettingsGrids === 'function') renderSettingsGrids();
+  if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
 
-renderSteppers();
-syncSecondStoreyUI();
-syncSettingsForm();
-renderSettingsGrids();
-updateQuoteDisplay();
+  // Then Pro/subscription boot
+  if (typeof bootPro === 'function') {
+    await bootPro();
+  }
+
+  // Handle return from Stripe Checkout (?checkout=success|cancel)
+  if (typeof handleCheckoutReturn === 'function') {
+    await handleCheckoutReturn();
+  }
+
   console.log("FINISHED");
 
   if (!localStorage.getItem('wqp-onboarding-done')) {
@@ -68,9 +78,9 @@ updateQuoteDisplay();
     quoteState.secondStoreyEnabled = false;
     quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
 
-    renderSteppers();
-    syncSecondStoreyUI();
-    updateQuoteDisplay();
+    if (typeof renderSteppers === 'function') renderSteppers();
+    if (typeof syncSecondStoreyUI === 'function') syncSecondStoreyUI();
+    if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
   });
 
   bindClick('global-reset-btn', () => {
@@ -96,17 +106,16 @@ updateQuoteDisplay();
     const extToggle = el('external-only-toggle');
     if (extToggle) extToggle.checked = false;
 
-    syncSecondStoreyUI();
-    renderSteppers();
-    updateQuoteDisplay();
+    if (typeof syncSecondStoreyUI === 'function') syncSecondStoreyUI();
+    if (typeof renderSteppers === 'function') renderSteppers();
+    if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
   });
 
   const extToggle = el('external-only-toggle');
-
   if (extToggle) {
     extToggle.onchange = e => {
       quoteState.externalOnly = e.target.checked;
-      updateQuoteDisplay();
+      if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
     };
   }
 
@@ -118,8 +127,8 @@ updateQuoteDisplay();
       if (!quoteState.secondStoreyEnabled) {
         quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
       }
-      syncSecondStoreyUI();
-      updateQuoteDisplay();
+      if (typeof syncSecondStoreyUI === 'function') syncSecondStoreyUI();
+      if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
     };
   }
 
@@ -182,16 +191,16 @@ updateQuoteDisplay();
     settings.secondStoreyPercent = safeNum(getVal('settings-second-storey-percent'), settings.secondStoreyPercent);
     settings.secondStoreyFixedAmount = safeNum(getVal('settings-second-storey-fixed'), settings.secondStoreyFixedAmount);
 
-    settings.paymentAccountName   = (el('s-payment-account-name')   || {}).value || '';
-    settings.paymentBankName      = (el('s-payment-bank-name')      || {}).value || '';
-    settings.paymentBSB           = (el('s-payment-bsb')            || {}).value || '';
+    settings.paymentAccountName = (el('s-payment-account-name') || {}).value || '';
+    settings.paymentBankName = (el('s-payment-bank-name') || {}).value || '';
+    settings.paymentBSB = (el('s-payment-bsb') || {}).value || '';
     settings.paymentAccountNumber = (el('s-payment-account-number') || {}).value || '';
-    settings.paymentReference     = (el('s-payment-reference')      || {}).value || '';
-    settings.paymentLink          = (el('s-payment-link')           || {}).value || '';
+    settings.paymentReference = (el('s-payment-reference') || {}).value || '';
+    settings.paymentLink = (el('s-payment-link') || {}).value || '';
 
     saveLocalSettings();
     await saveSettingsToServer();
-    updateQuoteDisplay();
+    if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
   });
 
   bindClick('reset-all-btn', resetAllData);
