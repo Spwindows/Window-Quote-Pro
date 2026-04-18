@@ -10,6 +10,20 @@ async function getSb() {
     return null;
   }
 }
+function enforceTeamAccess(action = 'Team Feature') {
+  if (!hasTeamAccess()) {
+    showToast(`Upgrade to Pro Team to use ${action}`, 'error');
+    handleUpgradeClick('pro_team');
+    return false;
+  }
+
+  if ((proState.teamRole || '').toLowerCase() !== 'owner') {
+    showToast('Only the team owner can perform this action.', 'error');
+    return false;
+  }
+
+  return true;
+}
 
 function canUseProFeatures() {
   return hasProAccess();
@@ -150,10 +164,11 @@ async function _handleAuthInner() {
 const handleAuth = asyncGuard(_handleAuthInner, 'handleAuth');
 
 async function _createTeamInner() {
-  if (!canUseTeamFeatures()) {
-    showToast('Upgrade to Pro Team to create a team.', 'error');
-    return;
-  }
+  if (!hasTeamAccess()) {
+  showToast('Upgrade to Pro Team to create a team.', 'error');
+  handleUpgradeClick('pro_team');
+  return;
+}
 
   const name = ((el('team-name-input') || {}).value || '').trim();
   if (!name) return showToast('Enter business name', 'error');
@@ -175,10 +190,11 @@ async function _createTeamInner() {
 const createTeam = asyncGuard(_createTeamInner, 'createTeam');
 
 async function _joinTeamInner() {
-  if (!canUseTeamFeatures()) {
-    showToast('Upgrade to Pro Team to join a team.', 'error');
-    return;
-  }
+  if (!hasTeamAccess()) {
+  showToast('Upgrade to Pro Team to join a team.', 'error');
+  handleUpgradeClick('pro_team');
+  return;
+}
 
   const code = ((el('invite-code-input') || {}).value || '').trim();
   if (!code) return showToast('Enter invite code', 'error');
@@ -244,8 +260,7 @@ function renderProUI() {
     headerBadge.className = planInfo.headerBadgeClass;
   }
 
-  const canTeam = canUseTeamFeatures();
-
+  const canTeam = hasTeamAccess();
   if (proState.teamId && canTeam) {
     if (teamSetup) teamSetup.classList.add('hidden');
     if (teamDash) teamDash.classList.remove('hidden');
