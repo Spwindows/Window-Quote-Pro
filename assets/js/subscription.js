@@ -30,6 +30,13 @@ function normalizeStatus(rawStatus) {
   return 'free';
 }
 
+function normalizeCheckoutPlan(rawPlan) {
+  const p = String(rawPlan || '').trim().toLowerCase();
+  if (p === 'pro_team' || p === 'team' || p === 'team_pro' || p === 'proteam') return 'pro_team';
+  if (p === 'pro_solo' || p === 'solo' || p === 'pro') return 'pro_solo';
+  return 'pro_solo';
+}
+
 function _blankSubscriptionState(userId = null) {
   return {
     loaded: true,
@@ -75,8 +82,8 @@ function _applySubscriptionState(nextState, source, personalRow, teamRow) {
 
   proState.subscription = {
     id: subscriptionState.stripe_subscription_id,
-    plan: subscriptionState.subscription_plan === 'free' ? 'free' : 'pro',
-    status: subscriptionState.subscription_status === 'trial' ? 'trialing' : subscriptionState.subscription_status,
+    plan: subscriptionState.subscription_plan,
+    status: subscriptionState.subscription_status,
     trial_ends_at: subscriptionState.trial_end,
     current_period_end: subscriptionState.current_period_end,
     stripe_customer_id: subscriptionState.stripe_customer_id,
@@ -127,7 +134,6 @@ async function _fetchPersonalSubscriptionRow(sb, userId) {
 async function _fetchTeamOwnerSubscriptionRow(sb, teamId) {
   if (!teamId) return null;
 
-  // Find the active owner of the team
   const { data: ownerMember, error: ownerErr } = await sb
     .from('team_members')
     .select('user_id')
@@ -149,12 +155,6 @@ async function _fetchTeamOwnerSubscriptionRow(sb, teamId) {
   return ownerSub || null;
 }
 
-/* ================================================================
- * fetchSubscriptionState()
- * Queries the Supabase subscriptions table for the current user.
- * Also checks team-owner subscription inheritance for staff members.
- * Called on app boot and after returning from Stripe checkout.
- * ================================================================ */
 async function fetchSubscriptionState() {
   const sb = await getSb();
   if (!sb) return;
@@ -170,14 +170,11 @@ async function fetchSubscriptionState() {
 
   try {
     personalRow = await _fetchPersonalSubscriptionRow(sb, user.id);
-   
     console.log('[RAW DB ROW]', personalRow);
 
-    // Default: personal subscription or free
     let effectiveRow = personalRow || _blankSubscriptionState(user.id);
     let source = 'personal';
 
-    // If user's own row does not grant Pro access, check team-owner inheritance
     if (!_subscriptionHasProAccess(personalRow) && proState.teamId) {
       teamRow = await _fetchTeamOwnerSubscriptionRow(sb, proState.teamId);
 
@@ -190,13 +187,10 @@ async function fetchSubscriptionState() {
       }
     }
 
-   _applySubscriptionState(effectiveRow, source, personalRow, teamRow);
-
-console.log('[NORMALIZED STATE]', subscriptionState);
+    _applySubscriptionState(effectiveRow, source, personalRow, teamRow);
+    console.log('[NORMALIZED STATE]', subscriptionState);
   } catch (e) {
     console.error('[Subscription] fetchSubscriptionState failed:', e);
-
-    // Fall back cleanly instead of leaving stale state
     _applySubscriptionState(personalRow || _blankSubscriptionState(user.id), 'personal', personalRow, teamRow);
   }
 
@@ -208,22 +202,6 @@ console.log('[NORMALIZED STATE]', subscriptionState);
     hasTeamAccess: hasTeamAccess()
   });
 }
-
-/* Map new plan names to legacy format used by getPlanDisplayInfo */
-function _mapPlanToLegacy(plan) {
-  if (plan === 'pro_solo' || plan === 'pro_team') return 'pro';
-  return plan || 'free';
-}
-
-function _mapStatusToLegacy(status) {
-  if (status === 'free') return 'expired';
-  if (status === 'trial') return 'trialing'; // only for UI backwards compat
-  return status || 'expired';
-}
-
-/* ================================================================
- * Entitlement checks
- * ================================================================ */
 
 function getEntitlementStatus() {
   const status = normalizeStatus(subscriptionState.subscription_status);
@@ -251,89 +229,108 @@ function getEntitlementStatus() {
 
   return 'free';
 }
+
 function hasProAccess() {
-  const plan = String(subscriptionState?.subscription_plan || '').toLowerCase();
-  const status = String(subscriptionState?.subscription_status || '').toLowerCase();
+  const plan = normalizePlan(subscriptionState.subscription_plan);
+  const status = normalizeStatus(subscriptionState.subscription_status);
 
-  const validPlan = plan === 'pro_solo' || plan === 'pro_team';
-  const validStatus = status === 'trial' || status === 'active';
+  if (plan !== 'pro_solo' && plan !== 'pro_team') return false;
 
-  return validPlan && validStatus;
+  if (status === 'active') return true;
+
+  if (status === 'trial') {
+    if (!subscriptionState.trial_end) return true;
+    return new Date(subscriptionState.trial_end) > new Date();
+  }
+
+  return false;
 }
 
 function hasTeamAccess() {
-  const plan = String(subscriptionState?.subscription_plan || '').toLowerCase();
-  const status = String(subscriptionState?.subscription_status || '').toLowerCase();
+  const plan = normalizePlan(subscriptionState.subscription_plan);
+  const status = normalizeStatus(subscriptionState.subscription_status);
 
-  return plan === 'pro_team' && (status === 'trial' || status === 'active');
+  if (plan !== 'pro_team') return false;
+
+  if (status === 'active') return true;
+
+  if (status === 'trial') {
+    if (!subscriptionState.trial_end) return true;
+    return new Date(subscriptionState.trial_end) > new Date();
+  }
+
+  return false;
 }
 
 function getTrialDaysRemaining() {
   const status = getEntitlementStatus();
   if (status !== 'trial') return null;
-  if (!subscriptionState.trial_end) return null;
+  if (!subscriptionState.trial_end) return 7;
 
   const diff = new Date(subscriptionState.trial_end) - new Date();
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
 function getPlanDisplayInfo() {
-  const plan = String(subscriptionState?.subscription_plan || 'free').toLowerCase();
-  const status = String(subscriptionState?.subscription_status || 'free').toLowerCase();
+  const plan = normalizePlan(subscriptionState.subscription_plan);
+  const status = normalizeStatus(subscriptionState.subscription_status);
+  const trialDays = getTrialDaysRemaining();
+
+  let headerBadgeText = 'FREE';
+  let headerBadgeClass = 'badge-free';
+  let label = 'FREE';
+  let badgeClass = 'badge-free';
+  let warning = '';
+  let trialPercent = 100;
 
   if (plan === 'pro_team' && status === 'trial') {
-    return {
-      headerBadgeText: 'TRIAL',
-      headerBadgeClass: 'badge-trial'
-    };
-  }
-
-  if (plan === 'pro_team' && status === 'active') {
-    return {
-      headerBadgeText: 'PRO TEAM',
-      headerBadgeClass: 'badge-pro'
-    };
-  }
-
-  if (plan === 'pro_solo' && status === 'trial') {
-    return {
-      headerBadgeText: 'TRIAL',
-      headerBadgeClass: 'badge-trial'
-    };
-  }
-
-  if (plan === 'pro_solo' && status === 'active') {
-    return {
-      headerBadgeText: 'PRO',
-      headerBadgeClass: 'badge-pro'
-    };
+    headerBadgeText = 'TRIAL';
+    headerBadgeClass = 'badge-trial';
+    label = trialDays === null ? 'TRIAL' : `TRIAL (${trialDays} DAYS LEFT)`;
+    badgeClass = 'badge-trial';
+    warning = trialDays === null
+      ? 'Your trial is active.'
+      : `Your trial expires in ${trialDays} day${trialDays === 1 ? '' : 's'}. Upgrade to keep Pro features.`;
+    trialPercent = trialDays === null ? 100 : Math.max(0, Math.min(100, (trialDays / 7) * 100));
+  } else if (plan === 'pro_team' && status === 'active') {
+    headerBadgeText = 'PRO TEAM';
+    headerBadgeClass = 'badge-pro';
+    label = 'PRO TEAM';
+    badgeClass = 'badge-pro';
+  } else if (plan === 'pro_solo' && status === 'trial') {
+    headerBadgeText = 'TRIAL';
+    headerBadgeClass = 'badge-trial';
+    label = trialDays === null ? 'TRIAL' : `TRIAL (${trialDays} DAYS LEFT)`;
+    badgeClass = 'badge-trial';
+    warning = trialDays === null
+      ? 'Your trial is active.'
+      : `Your trial expires in ${trialDays} day${trialDays === 1 ? '' : 's'}. Upgrade to keep Pro features.`;
+    trialPercent = trialDays === null ? 100 : Math.max(0, Math.min(100, (trialDays / 7) * 100));
+  } else if (plan === 'pro_solo' && status === 'active') {
+    headerBadgeText = 'PRO';
+    headerBadgeClass = 'badge-pro';
+    label = 'PRO';
+    badgeClass = 'badge-pro';
   }
 
   return {
-    headerBadgeText: 'FREE',
-    headerBadgeClass: 'badge-free'
+    headerBadgeText,
+    headerBadgeClass,
+    label,
+    badgeClass,
+    warning,
+    trialDays,
+    trialPercent
   };
 }
 
-/* ================================================================
- * Checkout & Billing Portal
- * ================================================================ */
-
-/**
- * Start Stripe Checkout for the given plan.
- * @param {'pro_solo'|'pro_team'} plan
- */
 async function startCheckout(plan) {
   if (!proState.user) {
     showToast('Please sign in first.', 'error');
     return;
   }
 
-  const validPlans = ['pro_solo', 'pro_team'];
-  if (!validPlans.includes(plan)) {
-    showToast('Invalid plan selected.', 'error');
-    return;
-  }
+  const finalPlan = normalizeCheckoutPlan(plan);
 
   showToast('Redirecting to checkout...', 'info');
 
@@ -342,7 +339,7 @@ async function startCheckout(plan) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        plan: plan,
+        plan: finalPlan,
         userId: proState.user.id,
         email: proState.user.email
       })
@@ -354,7 +351,6 @@ async function startCheckout(plan) {
       throw new Error(data.error || 'Failed to create checkout session');
     }
 
-    // Redirect to Stripe Checkout
     window.location.href = data.url;
   } catch (err) {
     console.error('[Checkout] Error:', err);
@@ -362,9 +358,6 @@ async function startCheckout(plan) {
   }
 }
 
-/**
- * Open Stripe Billing Portal for the current user.
- */
 async function openBillingPortal() {
   if (!proState.user) {
     showToast('Please sign in first.', 'error');
@@ -395,24 +388,16 @@ async function openBillingPortal() {
   }
 }
 
-/* ================================================================
- * Legacy compatibility — loadSubscription wrapper
- * Called by existing bootPro code. Now delegates to fetchSubscriptionState.
- * ================================================================ */
 async function loadSubscription(sb) {
   await fetchSubscriptionState();
 }
 
-/* ================================================================
- * normalizeSubscriptionRow — kept for backward compat but now
- * subscription state is managed via subscriptionState object.
- * ================================================================ */
 function normalizeSubscriptionRow(row) {
   if (!row) return null;
   return {
     id: row.id || null,
-    plan: row.plan || 'free',
-status: row.status || 'expired',
+    plan: normalizePlan(row.plan),
+    status: normalizeStatus(row.status),
     trial_ends_at: row.trial_ends_at || row.trial_end || null,
     current_period_end: row.current_period_end || null,
     stripe_customer_id: row.stripe_customer_id || null,
@@ -423,9 +408,6 @@ status: row.status || 'expired',
   };
 }
 
-/* ================================================================
- * Subscription UI rendering
- * ================================================================ */
 function renderSubscriptionUI() {
   const container = el('subscription-status-container');
   if (!container) return;
@@ -450,20 +432,20 @@ function renderSubscriptionUI() {
     html += `<div class="sub-trial-bar-fill ${barClass}" style="width:${info.trialPercent}%"></div>`;
     html += '</div>';
     html += `<div class="sub-status-detail">${info.trialDays} of 7 trial days remaining</div>`;
+  } else if (status === 'trial') {
+    html += '<div class="sub-status-detail">Trial active</div>';
   }
 
   if (info.warning) {
     html += `<div class="sub-warning">${escapeHtml(info.warning)}</div>`;
   }
 
-  if (status === 'active') {
-    if (subscriptionState.current_period_end) {
-      const renewDate = new Date(subscriptionState.current_period_end).toLocaleDateString();
-      if (subscriptionState.cancel_at_period_end) {
-        html += `<div class="sub-status-detail">Access until ${renewDate} (not renewing)</div>`;
-      } else {
-        html += `<div class="sub-status-detail">Renews on ${renewDate}</div>`;
-      }
+  if (status === 'active' && subscriptionState.current_period_end) {
+    const renewDate = new Date(subscriptionState.current_period_end).toLocaleDateString();
+    if (subscriptionState.cancel_at_period_end) {
+      html += `<div class="sub-status-detail">Access until ${renewDate} (not renewing)</div>`;
+    } else {
+      html += `<div class="sub-status-detail">Renews on ${renewDate}</div>`;
     }
   }
 
@@ -471,12 +453,10 @@ function renderSubscriptionUI() {
     html += '<div class="sub-status-detail" style="color:#6366f1;">Access via team subscription</div>';
   }
 
-  // Manage Subscription button for paid/trialing users
   if (status === 'active' || status === 'trial') {
     html += '<button class="btn btn-secondary btn-full btn-sm" id="manage-subscription-btn" type="button" style="margin-top:0.5rem;">Manage Subscription</button>';
   }
 
-  // Upgrade CTA for non-pro users
   const isTeamStaff = proState.teamId && proState.teamRole !== 'owner';
   const isTeamEntitled = proState.entitlementSource === 'team';
   const showUpgrade = status !== 'active' && status !== 'trial' && !isTeamStaff && !isTeamEntitled;
@@ -488,7 +468,6 @@ function renderSubscriptionUI() {
   html += '</div>';
   container.innerHTML = html;
 
-  // Bind event handlers after rendering
   const manageBtn = el('manage-subscription-btn');
   if (manageBtn) {
     manageBtn.onclick = () => openBillingPortal();
@@ -496,34 +475,25 @@ function renderSubscriptionUI() {
 
   const upgradeBtn = el('upgrade-cta-btn');
   if (upgradeBtn) {
-    upgradeBtn.onclick = () => handleUpgradeClick('pro_solo');
+    upgradeBtn.onclick = () => startCheckout('pro_solo');
   }
 }
 
 function handleUpgradeClick(plan) {
-  openPlansModal(plan === 'pro_team' ? 'pro_team' : 'pro_solo', plan === 'pro_team' ? 'Team features' : 'Pro features');
+  startCheckout(normalizeCheckoutPlan(plan));
 }
 
 function startUpgradeFlow(plan) {
-  closePlansModal();
-  if (plan === 'pro_team' || plan === 'team') {
-    startCheckout('pro_team');
-  } else {
-    startCheckout('pro_solo');
-  }
+  if (typeof closePlansModal === 'function') closePlansModal();
+  startCheckout(normalizeCheckoutPlan(plan));
 }
 
-/* ================================================================
- * Checkout return handler
- * Checks URL params for ?checkout=success or ?checkout=cancel
- * ================================================================ */
 async function handleCheckoutReturn() {
   const params = new URLSearchParams(window.location.search);
   const checkoutResult = params.get('checkout');
 
   if (!checkoutResult) return;
 
-  // Clean the URL
   const url = new URL(window.location.href);
   url.searchParams.delete('checkout');
   window.history.replaceState({}, '', url.pathname + url.search);
@@ -531,7 +501,6 @@ async function handleCheckoutReturn() {
   if (checkoutResult === 'success') {
     showToast('Subscription activated! Updating access...', 'success');
 
-    // Retry because Stripe webhook + DB write can take longer than 2 seconds
     const maxAttempts = 8;
     const delayMs = 2000;
 
