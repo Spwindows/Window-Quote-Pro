@@ -21,7 +21,7 @@ function normalizePlan(rawPlan) {
   return 'free';
 }
 
-function normalizeStatus(rawStatus) {
+function normalizeSubscriptionStatus(rawStatus) {
   const s = String(rawStatus || '').trim().toLowerCase();
   if (s === 'trialing') return 'trial';
   if (s === 'canceled') return 'cancelled';
@@ -63,7 +63,7 @@ function _normalizeSubscriptionRecord(row, fallbackUserId = null) {
     stripe_customer_id: row.stripe_customer_id || null,
     stripe_subscription_id: row.stripe_subscription_id || null,
     subscription_plan: normalizePlan(row.plan),
-    subscription_status: normalizeStatus(row.status),
+    subscription_status: normalizeSubscriptionStatus(row.status),
     current_period_end: row.current_period_end || null,
     cancel_at_period_end: !!row.cancel_at_period_end,
     trial_end: row.trial_end || null,
@@ -98,7 +98,7 @@ function _subscriptionHasProAccess(row) {
   if (!row) return false;
 
   const plan = normalizePlan(row.plan);
-  const status = normalizeStatus(row.status);
+  const status = normalizeSubscriptionStatus(row.status);
   const now = new Date();
 
   const proPlan = plan === 'pro_solo' || plan === 'pro_team';
@@ -204,7 +204,7 @@ async function fetchSubscriptionState() {
 }
 
 function getEntitlementStatus() {
-  const status = normalizeStatus(subscriptionState.subscription_status);
+  const status = normalizeSubscriptionStatus(subscriptionState.subscription_status);
   const plan = normalizePlan(subscriptionState.subscription_plan);
 
   if ((plan === 'pro_solo' || plan === 'pro_team') && status === 'active') {
@@ -232,7 +232,7 @@ function getEntitlementStatus() {
 
 function hasProAccess() {
   const plan = normalizePlan(subscriptionState.subscription_plan);
-  const status = normalizeStatus(subscriptionState.subscription_status);
+  const status = normalizeSubscriptionStatus(subscriptionState.subscription_status);
 
   if (plan !== 'pro_solo' && plan !== 'pro_team') return false;
 
@@ -248,7 +248,7 @@ function hasProAccess() {
 
 function hasTeamAccess() {
   const plan = normalizePlan(subscriptionState.subscription_plan);
-  const status = normalizeStatus(subscriptionState.subscription_status);
+  const status = normalizeSubscriptionStatus(subscriptionState.subscription_status);
 
   if (plan !== 'pro_team') return false;
 
@@ -273,7 +273,7 @@ function getTrialDaysRemaining() {
 
 function getPlanDisplayInfo() {
   const plan = normalizePlan(subscriptionState.subscription_plan);
-  const status = normalizeStatus(subscriptionState.subscription_status);
+  const status = normalizeSubscriptionStatus(subscriptionState.subscription_status);
   const trialDays = getTrialDaysRemaining();
 
   let headerBadgeText = 'FREE';
@@ -397,7 +397,7 @@ function normalizeSubscriptionRow(row) {
   return {
     id: row.id || null,
     plan: normalizePlan(row.plan),
-    status: normalizeStatus(row.status),
+    status: normalizeSubscriptionStatus(row.status),
     trial_ends_at: row.trial_ends_at || row.trial_end || null,
     current_period_end: row.current_period_end || null,
     stripe_customer_id: row.stripe_customer_id || null,
