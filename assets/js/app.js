@@ -3,13 +3,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   loadLocalSettings();
 
-  renderSteppers();
-  syncSecondStoreyUI();
-  syncSettingsForm();
-  renderSettingsGrids();
-  updateQuoteDisplay();
-  await handleCheckoutReturn();
-await bootPro();
+await bootPro(); // 🔥 FIRST
+
+renderSteppers();
+syncSecondStoreyUI();
+syncSettingsForm();
+renderSettingsGrids();
+updateQuoteDisplay();
   console.log("FINISHED");
 
   if (!localStorage.getItem('wqp-onboarding-done')) {
