@@ -68,15 +68,9 @@ console.log("[WQP] state.js loaded");
     };
   }
 
-  if (typeof window.supabaseClient === 'undefined') {
-    window.supabaseClient = null;
-  }
-  if (typeof window.realtimeChannel === 'undefined') {
-    window.realtimeChannel = null;
-  }
-  if (typeof window.authMode === 'undefined') {
-    window.authMode = 'signin';
-  }
+  if (typeof window.supabaseClient === 'undefined') window.supabaseClient = null;
+  if (typeof window.realtimeChannel === 'undefined') window.realtimeChannel = null;
+  if (typeof window.authMode === 'undefined') window.authMode = 'signin';
 
   const storedInvite = localStorage.getItem('pending_invite') || null;
   if (typeof window.pendingInviteCode === 'undefined' || window.pendingInviteCode === null) {
@@ -89,20 +83,4 @@ console.log("[WQP] state.js loaded");
   if (typeof window.currentPaymentJobId === 'undefined') window.currentPaymentJobId = null;
   if (typeof window.currentCompletionJobId === 'undefined') window.currentCompletionJobId = null;
   if (typeof window.currentRebookingJobId === 'undefined') window.currentRebookingJobId = null;
-
-  // keep classic global identifiers available to the rest of the app
-  settings = window.settings;
-  quoteState = window.quoteState;
-  services = window.services;
-  proState = window.proState;
-  supabaseClient = window.supabaseClient;
-  realtimeChannel = window.realtimeChannel;
-  authMode = window.authMode;
-  pendingInviteCode = window.pendingInviteCode;
-  jobFilter = window.jobFilter;
-  currentJobId = window.currentJobId;
-  currentInvoiceJobId = window.currentInvoiceJobId;
-  currentPaymentJobId = window.currentPaymentJobId;
-  currentCompletionJobId = window.currentCompletionJobId;
-  currentRebookingJobId = window.currentRebookingJobId;
 })();
