@@ -48,16 +48,14 @@ function displayStatus(status) {
 }
 function canAccessSettings() {
   if (typeof proState === 'undefined' || !proState) return true;
-
-  // Signed-out / free mode must still be able to use local business settings.
   if (!proState.user) return true;
 
   const role = String(proState.teamRole || 'owner').toLowerCase();
 
-  // No team yet: signed-in user can manage their own settings.
+  // No team yet: signed-in user can manage their own settings
   if (!proState.teamId) return true;
 
-  // Team exists: only owner can access team/business settings.
+  // Team exists: only owner can access team/business settings
   return role === 'owner';
 }
 

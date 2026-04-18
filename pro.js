@@ -49,13 +49,7 @@ async function _bootProInner() {
   const ps = getSafeProState();
 
   const sb = await getSb();
-  if (!sb) {
-    ps.user = null;
-    renderProUI();
-    if (typeof syncSettingsForm === 'function') syncSettingsForm();
-    if (typeof renderSettingsGrids === 'function') renderSettingsGrids();
-    return;
-  }
+  if (!sb) return;
 
   let user = null;
   try {
@@ -159,13 +153,7 @@ async function _handleAuthInner() {
   const email = (el('auth-email') || {}).value || '';
   const password = (el('auth-password') || {}).value || '';
   const sb = await getSb();
-  if (!sb) {
-    ps.user = null;
-    renderProUI();
-    if (typeof syncSettingsForm === 'function') syncSettingsForm();
-    if (typeof renderSettingsGrids === 'function') renderSettingsGrids();
-    return;
-  }
+  if (!sb) return;
 
   try {
     let res;
@@ -202,13 +190,7 @@ async function _createTeamInner() {
   if (!name) return showToast('Enter business name', 'error');
 
   const sb = await getSb();
-  if (!sb) {
-    ps.user = null;
-    renderProUI();
-    if (typeof syncSettingsForm === 'function') syncSettingsForm();
-    if (typeof renderSettingsGrids === 'function') renderSettingsGrids();
-    return;
-  }
+  if (!sb) return;
 
   try {
     const { error } = await sb.rpc('create_team', {
@@ -235,13 +217,7 @@ async function _joinTeamInner() {
   if (!code) return showToast('Enter invite code', 'error');
 
   const sb = await getSb();
-  if (!sb) {
-    ps.user = null;
-    renderProUI();
-    if (typeof syncSettingsForm === 'function') syncSettingsForm();
-    if (typeof renderSettingsGrids === 'function') renderSettingsGrids();
-    return;
-  }
+  if (!sb) return;
 
   try {
     const { error } = await sb.rpc('join_team_by_invite', {
@@ -258,13 +234,27 @@ async function _joinTeamInner() {
 const joinTeam = asyncGuard(_joinTeamInner, 'joinTeam');
 
 
-function renderSettingsAccessUI() {
+function renderSettingsVisibility() {
   const ownerView = el('settings-owner-view');
   const staffLock = el('settings-staff-lock');
-  const canAccess = canAccessSettings();
+  const inviteCard = el('team-invite-card');
+  const paymentDetails = el('payment-details-section');
+  const paymentLock = el('payment-details-lock');
+  const resetBtn = el('reset-all-btn');
 
-  if (ownerView) ownerView.classList.toggle('hidden', !canAccess);
-  if (staffLock) staffLock.classList.toggle('hidden', canAccess);
+  const signedIn = !!(proState && proState.user);
+  const ownerAccess = canAccessSettings();
+  const proAccess = typeof hasProAccess === 'function' ? hasProAccess() : false;
+  const ownerTeam = !!(signedIn && proState.teamId && ownerAccess);
+
+  if (ownerView) ownerView.classList.toggle('hidden', signedIn && !ownerAccess);
+  if (staffLock) staffLock.classList.toggle('hidden', !(signedIn && !ownerAccess));
+
+  if (inviteCard) inviteCard.classList.toggle('hidden', !ownerTeam);
+  if (resetBtn) resetBtn.classList.toggle('hidden', !ownerAccess);
+
+  if (paymentDetails) paymentDetails.classList.toggle('hidden', !ownerAccess || !proAccess);
+  if (paymentLock) paymentLock.classList.toggle('hidden', !ownerAccess || proAccess);
 }
 
 function renderProUI() {
@@ -287,7 +277,7 @@ function renderProUI() {
       headerBadge.textContent = 'FREE';
       headerBadge.className = 'badge-free';
     }
-    renderSettingsAccessUI();
+    renderSettingsVisibility();
     return;
   }
 
@@ -344,13 +334,12 @@ function renderProUI() {
     logoSection.classList.toggle('hidden', !canUseProFeatures() || !ps.teamId || !canAccessSettings());
   }
 
-  if (canUseProFeatures() && ps.teamId && canAccessSettings() && typeof renderLogoPreview === 'function') {
+  if (canUseProFeatures() && ps.teamId && canAccessSettings()) {
     renderLogoPreview();
   }
 
-  renderSettingsAccessUI();
-
   if (typeof renderRebookingSection === 'function') renderRebookingSection();
+  renderSettingsVisibility();
 }
 
 async function handleSignOut() {
