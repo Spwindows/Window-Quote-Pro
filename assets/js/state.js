@@ -3,10 +3,7 @@ console.log("[WQP] state.js loaded");
 var settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 var quoteState = JSON.parse(JSON.stringify(DEFAULT_QUOTE_STATE));
 var services = JSON.parse(JSON.stringify(DEFAULT_SERVICES));
-
-window.proState = JSON.parse(JSON.stringify(DEFAULT_PRO_STATE));
-var proState = window.proState;
-
+var proState = JSON.parse(JSON.stringify(DEFAULT_PRO_STATE));
 var supabaseClient = null;
 
 var realtimeChannel = null;
