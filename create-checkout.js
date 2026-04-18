@@ -122,6 +122,7 @@ exports.handler = async (event) => {
           stripe_customer_id: stripeCustomerId,
           subscription_plan: 'free',
           subscription_status: 'free',
+          cancel_at_period_end: false,
           updated_at: new Date().toISOString()
         }
       );
@@ -147,6 +148,20 @@ exports.handler = async (event) => {
         plan: plan
       }
     };
+
+    // Keep a known customer → user link even before webhook delivery.
+    await supabaseRequest(
+      'POST',
+      'subscriptions?on_conflict=user_id',
+      {
+        user_id: userId,
+        stripe_customer_id: stripeCustomerId,
+        subscription_plan: 'free',
+        subscription_status: 'free',
+        cancel_at_period_end: false,
+        updated_at: new Date().toISOString()
+      }
+    );
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
