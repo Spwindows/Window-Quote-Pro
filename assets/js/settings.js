@@ -97,9 +97,17 @@ function applyTeamSettings(s) {
 
 function syncSettingsForm() {
   if (!window.settings || typeof window.settings !== 'object') {
-    window.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    console.warn("[WQP] settings missing, rebuilding safely");
+
+    if (typeof DEFAULT_SETTINGS !== 'undefined') {
+      window.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    } else {
+      // HARD FALLBACK — prevents crash even if config.js fails
+      window.settings = {};
+    }
   }
-  settings = window.settings;
+
+  const settings = window.settings;
 
   const setVal = (id, value) => {
     const node = el(id);
@@ -111,37 +119,38 @@ function syncSettingsForm() {
     if (node) node.checked = !!value;
   };
 
-  setVal('s-bizname', settings.businessName);
-  setVal('s-contact', settings.contactName);
-  setVal('s-phone', settings.businessPhone);
-  setVal('s-email', settings.businessEmail);
-  setVal('s-abn', settings.businessAbn);
-  setVal('s-website', settings.businessWebsite);
-  setVal('s-address', settings.businessAddress);
-  setVal('s-message', settings.customMessage);
+  // SAFE ACCESS (no crash even if fields missing)
+  setVal('s-bizname', settings.businessName || '');
+  setVal('s-contact', settings.contactName || '');
+  setVal('s-phone', settings.businessPhone || '');
+  setVal('s-email', settings.businessEmail || '');
+  setVal('s-abn', settings.businessAbn || '');
+  setVal('s-website', settings.businessWebsite || '');
+  setVal('s-address', settings.businessAddress || '');
+  setVal('s-message', settings.customMessage || '');
 
-  setVal('settings-pricing-mode', settings.pricingMode);
-  setVal('settings-hourly-rate', settings.hourlyRate);
-  setVal('settings-external-percent', settings.externalOnlyPercent);
-  setVal('settings-travel-fee', settings.travelFee);
-  setVal('settings-discount', settings.discount);
+  setVal('settings-pricing-mode', settings.pricingMode || 'standard');
+  setVal('settings-hourly-rate', settings.hourlyRate || 0);
+  setVal('settings-external-percent', settings.externalOnlyPercent || 0);
+  setVal('settings-travel-fee', settings.travelFee || 0);
+  setVal('settings-discount', settings.discount || 0);
 
   setChecked('settings-gst-enabled', settings.gstEnabled);
-  setVal('settings-gst-rate', settings.gstRate);
+  setVal('settings-gst-rate', settings.gstRate || 0);
 
   setVal('settings-quote-format', settings.quoteFormat || 'itemised');
 
   setChecked('settings-second-storey-pricing-enabled', settings.secondStoreyPricingEnabled);
   setVal('settings-second-storey-mode', settings.secondStoreyMode || 'percent');
-  setVal('settings-second-storey-percent', settings.secondStoreyPercent);
-  setVal('settings-second-storey-fixed', settings.secondStoreyFixedAmount);
+  setVal('settings-second-storey-percent', settings.secondStoreyPercent || 0);
+  setVal('settings-second-storey-fixed', settings.secondStoreyFixedAmount || 0);
 
-  setVal('s-payment-account-name', settings.paymentAccountName);
-  setVal('s-payment-bank-name', settings.paymentBankName);
-  setVal('s-payment-bsb', settings.paymentBSB);
-  setVal('s-payment-account-number', settings.paymentAccountNumber);
-  setVal('s-payment-reference', settings.paymentReference);
-  setVal('s-payment-link', settings.paymentLink);
+  setVal('s-payment-account-name', settings.paymentAccountName || '');
+  setVal('s-payment-bank-name', settings.paymentBankName || '');
+  setVal('s-payment-bsb', settings.paymentBSB || '');
+  setVal('s-payment-account-number', settings.paymentAccountNumber || '');
+  setVal('s-payment-reference', settings.paymentReference || '');
+  setVal('s-payment-link', settings.paymentLink || '');
 }
 function renderSettingsGrids() {
   if (!canAccessSettings()) return;
