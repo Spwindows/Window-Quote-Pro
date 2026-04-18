@@ -1,30 +1,39 @@
 console.log("[WQP] subscription.js loaded");
 
-/* ================================================================
- * Subscription State Object
- * Holds the canonical subscription data fetched from Supabase.
- * All entitlement checks read from this object.
- * ================================================================ */
 let subscriptionState = {
   loaded: false,
+  checkout_syncing: false,
   user_id: null,
   stripe_customer_id: null,
   stripe_subscription_id: null,
-  subscription_plan: 'free',     // 'free' | 'pro_solo' | 'pro_team'
-  subscription_status: 'free', // 'free' | 'trial' | 'active' | 'cancelled' | 'expired'
+  subscription_plan: 'free',
+  subscription_status: 'free',
   current_period_end: null,
   cancel_at_period_end: false,
   trial_end: null,
   team_seat_count: 0
 };
 
-/* ================================================================
- * Helpers
- * ================================================================ */
+function normalizePlan(rawPlan) {
+  const p = String(rawPlan || '').trim().toLowerCase();
+  if (p === 'pro_solo') return 'pro_solo';
+  if (p === 'pro_team') return 'pro_team';
+  return 'free';
+}
+
+function normalizeStatus(rawStatus) {
+  const s = String(rawStatus || '').trim().toLowerCase();
+  if (s === 'trialing') return 'trial';
+  if (s === 'canceled') return 'cancelled';
+  if (s === 'past_due' || s === 'unpaid' || s === 'incomplete_expired') return 'expired';
+  if (['free', 'trial', 'active', 'cancelled', 'expired'].includes(s)) return s;
+  return 'free';
+}
 
 function _blankSubscriptionState(userId = null) {
   return {
     loaded: true,
+    checkout_syncing: false,
     user_id: userId,
     stripe_customer_id: null,
     stripe_subscription_id: null,
@@ -36,45 +45,18 @@ function _blankSubscriptionState(userId = null) {
     team_seat_count: 0
   };
 }
-function normalizePlan(rawPlan) {
-  const plan = String(rawPlan || '').trim().toLowerCase();
-
-  if (plan === 'pro_solo') return 'pro_solo';
-  if (plan === 'pro_team') return 'pro_team';
-  if (plan === 'free') return 'free';
-
-  return 'free';
-}
-
-function normalizeStatus(rawStatus) {
-  const status = String(rawStatus || '').trim().toLowerCase();
-
-  if (status === 'trialing') return 'trial';
-  if (status === 'canceled') return 'cancelled';
-
-  if (
-    status === 'free' ||
-    status === 'trial' ||
-    status === 'active' ||
-    status === 'cancelled' ||
-    status === 'expired'
-  ) {
-    return status;
-  }
-
-  return 'free';
-}
 
 function _normalizeSubscriptionRecord(row, fallbackUserId = null) {
   if (!row) return _blankSubscriptionState(fallbackUserId);
 
   return {
     loaded: true,
+    checkout_syncing: false,
     user_id: row.user_id || fallbackUserId || null,
     stripe_customer_id: row.stripe_customer_id || null,
     stripe_subscription_id: row.stripe_subscription_id || null,
     subscription_plan: normalizePlan(row.plan),
-subscription_status: normalizeStatus(row.status),
+    subscription_status: normalizeStatus(row.status),
     current_period_end: row.current_period_end || null,
     cancel_at_period_end: !!row.cancel_at_period_end,
     trial_end: row.trial_end || null,
@@ -85,17 +67,16 @@ subscription_status: normalizeStatus(row.status),
 function _applySubscriptionState(nextState, source, personalRow, teamRow) {
   subscriptionState = {
     ..._normalizeSubscriptionRecord(nextState, proState.user?.id || null),
-    loaded: true
+    loaded: true,
+    checkout_syncing: subscriptionState.checkout_syncing === true
   };
 
   proState.entitlementSource = source || 'personal';
 
-  // Sync into proState.subscription for backward compatibility with
-  // existing code that reads proState.subscription
   proState.subscription = {
     id: subscriptionState.stripe_subscription_id,
-    plan: _mapPlanToLegacy(subscriptionState.subscription_plan),
-    status: _mapStatusToLegacy(subscriptionState.subscription_status),
+    plan: subscriptionState.subscription_plan === 'free' ? 'free' : 'pro',
+    status: subscriptionState.subscription_status === 'trial' ? 'trialing' : subscriptionState.subscription_status,
     trial_ends_at: subscriptionState.trial_end,
     current_period_end: subscriptionState.current_period_end,
     stripe_customer_id: subscriptionState.stripe_customer_id,
@@ -110,11 +91,11 @@ function _subscriptionHasProAccess(row) {
   if (!row) return false;
 
   const plan = normalizePlan(row.plan);
-const status = normalizeStatus(row.status);
+  const status = normalizeStatus(row.status);
   const now = new Date();
 
-  const isProPlan = plan === 'pro_solo' || plan === 'pro_team';
-  if (!isProPlan) return false;
+  const proPlan = plan === 'pro_solo' || plan === 'pro_team';
+  if (!proPlan) return false;
 
   if (status === 'active') return true;
 
