@@ -125,8 +125,39 @@ async function loadTeamEntitlement(sb) {
   }
 }
 
+function patchButtonTextByLabel(matchRegex, newText, clickHandler) {
+  const buttons = Array.from(document.querySelectorAll('button'));
+  buttons.forEach((btn) => {
+    const text = (btn.textContent || '').trim();
+    if (!matchRegex.test(text)) return;
+
+    btn.textContent = newText;
+    if (clickHandler) {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        clickHandler();
+      };
+    }
+  });
+}
+
+function hideElementsByIds(ids) {
+  ids.forEach((id) => {
+    const node = el(id);
+    if (node) node.classList.add('hidden');
+  });
+}
+
+function showElementsByIds(ids) {
+  ids.forEach((id) => {
+    const node = el(id);
+    if (node) node.classList.remove('hidden');
+  });
+}
+
 function gateTeamInviteControls() {
-  const allowed = canManageTeamInvites();
+  const canInvite = canManageTeamInvites();
 
   const sectionIds = [
     'team-invite-section',
@@ -138,15 +169,7 @@ function gateTeamInviteControls() {
   const textIds = [
     'team-invite-note',
     'team-invite-help',
-    'team-invite-warning',
-    'team-gate-message'
-  ];
-
-  const codeIds = [
-    'team-invite-code',
-    'invite-code-display',
-    'team-invite-link',
-    'team-share-link'
+    'team-invite-warning'
   ];
 
   const actionIds = [
@@ -163,71 +186,55 @@ function gateTeamInviteControls() {
 
   const sections = sectionIds.map(id => el(id)).filter(Boolean);
   const texts = textIds.map(id => el(id)).filter(Boolean);
-  const codes = codeIds.map(id => el(id)).filter(Boolean);
   const actions = actionIds.map(id => el(id)).filter(Boolean);
 
-  if (allowed) {
-    sections.forEach(node => node.classList.remove('team-upsell-locked'));
-    texts.forEach(node => {
-      if (node.dataset.originalText) node.textContent = node.dataset.originalText;
-      node.classList.add('hidden');
-    });
-    codes.forEach(node => {
-      node.classList.remove('blur-sm', 'opacity-60');
-      if (node.dataset.originalText) node.textContent = node.dataset.originalText;
-      if (node.dataset.originalHref) node.href = node.dataset.originalHref;
-    });
+  if (canInvite) {
+    sections.forEach(node => node.classList.remove('hidden'));
+    texts.forEach(node => node.classList.add('hidden'));
     actions.forEach(btn => {
       btn.disabled = false;
-      btn.classList.remove('btn-primary');
       if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
-      if (btn.dataset.originalOnclick) {
-        try {
-          btn.setAttribute('onclick', btn.dataset.originalOnclick);
-        } catch (_) {}
-      }
     });
     return;
   }
 
-  sections.forEach(node => node.classList.remove('hidden'));
+  // Keep section available as upsell for owners, hidden for staff/free
+  if (isOwnerUser() && canUseProFeatures()) {
+    sections.forEach(node => node.classList.remove('hidden'));
+    texts.forEach(node => {
+      node.textContent = 'Upgrade to Pro Team to invite staff and use linked team accounts.';
+      node.classList.remove('hidden');
+    });
+    actions.forEach(btn => {
+      if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent || '';
+      btn.textContent = 'Upgrade to Pro Team';
+      btn.disabled = false;
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        upsellToTeam('Inviting staff requires Pro Team.');
+      };
+    });
+  } else {
+    sections.forEach(node => node.classList.add('hidden'));
+  }
 
-  texts.forEach(node => {
-    if (!node.dataset.originalText) node.dataset.originalText = node.textContent || '';
-    node.textContent = isOwnerUser()
-      ? 'Upgrade to Pro Team to invite staff and use linked team accounts.'
-      : 'Your owner must upgrade to Pro Team to enable team access.';
-    node.classList.remove('hidden');
+  // Generic fallback: any visible invite/share buttons become upsell
+  patchButtonTextByLabel(/invite|share link|copy invite/i, 'Upgrade to Pro Team', () => {
+    upsellToTeam('Inviting staff requires Pro Team.');
   });
+}
 
-  codes.forEach(node => {
-    if (!node.dataset.originalText) node.dataset.originalText = node.textContent || '';
-    if (node.tagName === 'A' && !node.dataset.originalHref) {
-      node.dataset.originalHref = node.getAttribute('href') || '';
-    }
-    node.textContent = 'Upgrade to Pro Team';
-    if (node.tagName === 'A') {
-      node.removeAttribute('href');
-    }
-    node.classList.add('blur-sm', 'opacity-60');
-  });
+function patchQuoteTeamActions() {
+  const hasTeam = canUseTeamFeatures();
 
-  actions.forEach(btn => {
-    if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent || '';
-    btn.textContent = 'Upgrade to Pro Team';
-    btn.disabled = false;
-    btn.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      upsellToTeam(isOwnerUser()
-        ? 'Inviting staff requires Pro Team.'
-        : 'Your owner must upgrade to Pro Team to enable invites.');
-    };
-    try {
-      btn.removeAttribute('href');
-      btn.setAttribute('type', 'button');
-    } catch (_) {}
-  });
+  if (hasTeam) {
+    patchButtonTextByLabel(/^add to team$/i, 'Add to Team');
+    return;
+  }
+
+  // Solo/free should not see team language in quote workflow
+  patchButtonTextByLabel(/^add to team$/i, 'Add Job');
 }
 
 /* bootPro is wrapped with asyncGuard after definition to prevent
@@ -354,6 +361,17 @@ async function _bootProInner() {
   renderJobsList();
   if (typeof renderRebookingSection === 'function') renderRebookingSection();
   updateQuoteDisplay();
+
+  // Patch any quote/settings buttons rendered after the main UI pass
+  setTimeout(() => {
+    patchQuoteTeamActions();
+    gateTeamInviteControls();
+  }, 0);
+
+  setTimeout(() => {
+    patchQuoteTeamActions();
+    gateTeamInviteControls();
+  }, 250);
 }
 
 const bootPro = asyncGuard(_bootProInner, 'bootPro');
@@ -492,7 +510,7 @@ function renderProUI() {
     headerBadge.className = planInfo.headerBadgeClass;
   }
 
-  // Keep buttons clickable so they trigger the upgrade modal instead of doing nothing.
+  // Keep buttons clickable so they trigger upgrade modal instead of doing nothing.
   if (createTeamBtn) createTeamBtn.disabled = false;
   if (joinTeamBtn) joinTeamBtn.disabled = false;
   if (inviteInput) inviteInput.disabled = false;
@@ -503,10 +521,12 @@ function renderProUI() {
   const isOwner = isOwnerUser();
   const isStaff = isStaffUser();
 
+  // Pro dashboard stays visible for all paid users.
   if (teamDash) {
-    teamDash.classList.toggle('hidden', !hasUnlockedTeam);
+    teamDash.classList.toggle('hidden', !hasPro);
   }
 
+  // Team setup is only an upsell for Solo owners or actual setup for Team owners without a team yet.
   if (teamSetup) {
     let showTeamSetup = false;
 
@@ -558,6 +578,7 @@ function renderProUI() {
   }
 
   gateTeamInviteControls();
+  patchQuoteTeamActions();
 }
 
 async function handleSignOut() {
