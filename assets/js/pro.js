@@ -21,10 +21,20 @@ function getCurrentPlanCode() {
   ).toLowerCase();
 }
 
+function canUseProFeatures() {
+  return typeof hasProAccess === 'function' ? hasProAccess() : false;
+}
+
 function canUseTeamFeatures() {
-  const plan = getCurrentPlanCode();
-  const entitled = typeof hasProAccess === 'function' ? hasProAccess() : false;
-  return entitled && plan === 'pro_team';
+  return canUseProFeatures() && getCurrentPlanCode() === 'pro_team';
+}
+
+function isStaffUser() {
+  return String(proState.teamRole || '').toLowerCase() === 'staff';
+}
+
+function isOwnerUser() {
+  return String(proState.teamRole || '').toLowerCase() === 'owner';
 }
 
 function requireProTeamForTeamAction(actionLabel) {
@@ -319,19 +329,19 @@ function renderProUI() {
   const teamSetup = el('pro-team-setup');
   const teamDash = el('pro-team-dashboard');
   const headerBadge = el('pro-badge');
-  const teamLocked = !canUseTeamFeatures();
 
   const createTeamBtn = el('create-team-btn');
   const joinTeamBtn = el('join-team-btn');
   const inviteInput = el('invite-code-input');
   const teamNameInput = el('team-name-input');
-
-  if (createTeamBtn) createTeamBtn.disabled = teamLocked;
-  if (joinTeamBtn) joinTeamBtn.disabled = teamLocked;
-  if (inviteInput) inviteInput.disabled = teamLocked;
-  if (teamNameInput) teamNameInput.disabled = teamLocked;
+  const teamGateMsg = el('team-gate-message');
 
   if (!proState.user) {
+    if (createTeamBtn) createTeamBtn.disabled = false;
+    if (joinTeamBtn) joinTeamBtn.disabled = false;
+    if (inviteInput) inviteInput.disabled = false;
+    if (teamNameInput) teamNameInput.disabled = false;
+
     if (authPanel) authPanel.classList.remove('hidden');
     if (dashboard) dashboard.classList.add('hidden');
     if (accountPanel) accountPanel.classList.add('hidden');
@@ -341,6 +351,7 @@ function renderProUI() {
       headerBadge.textContent = 'FREE';
       headerBadge.className = 'badge-free';
     }
+    if (teamGateMsg) teamGateMsg.classList.add('hidden');
     return;
   }
 
@@ -370,39 +381,66 @@ function renderProUI() {
     headerBadge.className = planInfo.headerBadgeClass;
   }
 
-  const isTeamOwner = !!proState.teamId && String(proState.teamRole || '').toLowerCase() === 'owner';
+  // Buttons stay clickable so they can trigger upgrade modals.
+  if (createTeamBtn) createTeamBtn.disabled = false;
+  if (joinTeamBtn) joinTeamBtn.disabled = false;
+  if (inviteInput) inviteInput.disabled = false;
+  if (teamNameInput) teamNameInput.disabled = false;
+
   const hasUnlockedTeam = canUseTeamFeatures();
+  const hasPro = canUseProFeatures();
+  const isOwner = isOwnerUser();
+  const isStaff = isStaffUser();
 
-  if (proState.teamId) {
-    if (hasUnlockedTeam) {
-      if (teamSetup) teamSetup.classList.add('hidden');
-      if (teamDash) teamDash.classList.remove('hidden');
+  // Team dashboard is ONLY for Pro Team users.
+  if (teamDash) {
+    teamDash.classList.toggle('hidden', !hasUnlockedTeam);
+  }
+
+  // Team setup panel rules:
+  // - Free: hidden (free only gets quoting)
+  // - Pro Solo owner: visible so clicking create/join triggers upgrade
+  // - Pro Team owner: hidden if already in team, visible if not yet in team
+  // - Staff: hidden
+  if (teamSetup) {
+    let showTeamSetup = false;
+
+    if (!hasPro) {
+      showTeamSetup = false;
+    } else if (isStaff) {
+      showTeamSetup = false;
+    } else if (hasUnlockedTeam) {
+      showTeamSetup = !proState.teamId;
     } else {
-      if (teamSetup) teamSetup.classList.remove('hidden');
-      if (teamDash) teamDash.classList.add('hidden');
-
-      const teamGateMsg = el('team-gate-message');
-      if (teamGateMsg) {
-        teamGateMsg.textContent = isTeamOwner
-          ? 'Upgrade to Pro Team to invite staff and use linked team accounts.'
-          : 'Your owner must upgrade to Pro Team to enable team access.';
-        teamGateMsg.classList.remove('hidden');
-      }
+      showTeamSetup = true;
     }
-  } else {
-    if (teamSetup) teamSetup.classList.remove('hidden');
-    if (teamDash) teamDash.classList.add('hidden');
+
+    teamSetup.classList.toggle('hidden', !showTeamSetup);
+  }
+
+  if (teamGateMsg) {
+    if (!hasPro) {
+      teamGateMsg.classList.add('hidden');
+    } else if (!hasUnlockedTeam) {
+      teamGateMsg.textContent = isOwner
+        ? 'Upgrade to Pro Team to create a team, invite staff, and use linked team accounts.'
+        : 'Your owner must upgrade to Pro Team to enable team access.';
+      teamGateMsg.classList.remove('hidden');
+    } else {
+      teamGateMsg.classList.add('hidden');
+    }
   }
 
   const invoiceUpsellCard = el('invoice-upsell-card');
   const invoiceUpsellBtn = el('invoice-upsell-btn');
   if (invoiceUpsellCard) invoiceUpsellCard.classList.remove('hidden');
   if (invoiceUpsellBtn) {
-    invoiceUpsellBtn.textContent = hasProAccess() ? 'Go to Invoices' : 'Unlock Invoices 🔒';
-    invoiceUpsellBtn.classList.toggle('btn-primary', !hasProAccess());
-    invoiceUpsellBtn.classList.toggle('btn-secondary', hasProAccess());
+    invoiceUpsellBtn.textContent = hasPro ? 'Go to Invoices' : 'Unlock Invoices 🔒';
+    invoiceUpsellBtn.classList.toggle('btn-primary', !hasPro);
+    invoiceUpsellBtn.classList.toggle('btn-secondary', hasPro);
   }
 
+  // Settings remain owner-only.
   const logoSection = el('logo-upload-section');
   if (logoSection) {
     logoSection.classList.toggle('hidden', !proState.teamId || !canAccessSettings());
