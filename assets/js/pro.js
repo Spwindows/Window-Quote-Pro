@@ -421,6 +421,15 @@ if (profileError) {
     throw profileError;
   }
 }
+      const { data: existingProfile } = await sb
+  .from('profiles')
+  .select('id')
+  .eq('id', userId)
+  .maybeSingle();
+
+if (!existingProfile) {
+  throw new Error('Profile creation failed');
+}
 } else {
       res = await sb.auth.signInWithPassword({ email, password });
     }
