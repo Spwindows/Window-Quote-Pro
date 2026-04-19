@@ -11,6 +11,34 @@ async function getSb() {
   }
 }
 
+function getCurrentPlanCode() {
+  const sub = proState.subscription || {};
+  return String(
+    sub.subscription_plan ||
+    sub.plan ||
+    subscriptionState?.subscription_plan ||
+    'free'
+  ).toLowerCase();
+}
+
+function canUseTeamFeatures() {
+  const plan = getCurrentPlanCode();
+  const entitled = typeof hasProAccess === 'function' ? hasProAccess() : false;
+  return entitled && plan === 'pro_team';
+}
+
+function requireProTeamForTeamAction(actionLabel) {
+  if (canUseTeamFeatures()) return true;
+
+  showToast(`${actionLabel} requires Pro Team. Upgrade to unlock team features.`, 'info');
+
+  if (typeof openPlansModal === 'function') {
+    openPlansModal('team', 'Upgrade to Pro Team to add staff and manage linked accounts.');
+  }
+
+  return false;
+}
+
 function hasActiveLikeStatus(status) {
   const s = String(status || '').toLowerCase();
   return s === 'trial' || s === 'trialing' || s === 'active';
@@ -43,15 +71,8 @@ async function loadTeamEntitlement(sb) {
     if (subErr) throw subErr;
     if (!ownerSub) return;
 
-    const plan =
-      ownerSub.subscription_plan ||
-      ownerSub.plan ||
-      'free';
-
-    const status =
-      ownerSub.subscription_status ||
-      ownerSub.status ||
-      'free';
+    const plan = ownerSub.subscription_plan || ownerSub.plan || 'free';
+    const status = ownerSub.subscription_status || ownerSub.status || 'free';
 
     if (!hasActiveLikeStatus(status)) return;
 
@@ -114,20 +135,32 @@ async function _bootProInner() {
       proState.jobs = [];
 
       if (pendingInviteCode) {
-        try {
-          const { error: joinErr } = await sb.rpc('join_team_by_invite', {
-            p_invite_code: pendingInviteCode
-          });
-          if (joinErr) throw joinErr;
-          showToast('Joined team!', 'success');
+        if (!canUseTeamFeatures()) {
+          showToast('Joining a team requires Pro Team. Upgrade to continue.', 'info');
           localStorage.removeItem('pending_invite');
           pendingInviteCode = null;
-          return await _bootProInner();
-        } catch (joinE) {
-          console.error('Auto-join failed:', joinE.message);
-          showToast('Could not join team with that invite code', 'error');
-          localStorage.removeItem('pending_invite');
-          pendingInviteCode = null;
+
+          if (typeof openPlansModal === 'function') {
+            openPlansModal('team', 'Upgrade to Pro Team to join a team and access linked accounts.');
+          }
+        } else {
+          try {
+            const { error: joinErr } = await sb.rpc('join_team_by_invite', {
+              p_invite_code: pendingInviteCode
+            });
+
+            if (joinErr) throw joinErr;
+
+            showToast('Joined team!', 'success');
+            localStorage.removeItem('pending_invite');
+            pendingInviteCode = null;
+            return await _bootProInner();
+          } catch (joinE) {
+            console.error('Auto-join failed:', joinE.message);
+            showToast('Could not join team with that invite code', 'error');
+            localStorage.removeItem('pending_invite');
+            pendingInviteCode = null;
+          }
         }
       }
     } else {
@@ -160,14 +193,12 @@ async function _bootProInner() {
     console.error(e);
   }
 
-  /* Load personal subscription first */
   try {
     await loadSubscription(sb);
   } catch (e) {
     console.error('Subscription load error', e);
   }
 
-  /* Staff inherit entitlement from owner subscription */
   try {
     await loadTeamEntitlement(sb);
   } catch (e) {
@@ -216,6 +247,8 @@ async function _handleAuthInner() {
 const handleAuth = asyncGuard(_handleAuthInner, 'handleAuth');
 
 async function _createTeamInner() {
+  if (!requireProTeamForTeamAction('Creating a team')) return;
+
   const name = ((el('team-name-input') || {}).value || '').trim();
   if (!name) return showToast('Enter business name', 'error');
 
@@ -237,6 +270,8 @@ async function _createTeamInner() {
 const createTeam = asyncGuard(_createTeamInner, 'createTeam');
 
 async function _joinTeamInner() {
+  if (!requireProTeamForTeamAction('Joining a team')) return;
+
   const code = ((el('invite-code-input') || {}).value || '').trim();
   if (!code) return showToast('Enter invite code', 'error');
 
@@ -264,6 +299,17 @@ function renderProUI() {
   const teamSetup = el('pro-team-setup');
   const teamDash = el('pro-team-dashboard');
   const headerBadge = el('pro-badge');
+  const teamLocked = !canUseTeamFeatures();
+
+  const createTeamBtn = el('create-team-btn');
+  const joinTeamBtn = el('join-team-btn');
+  const inviteInput = el('invite-code-input');
+  const teamNameInput = el('team-name-input');
+
+  if (createTeamBtn) createTeamBtn.disabled = teamLocked;
+  if (joinTeamBtn) joinTeamBtn.disabled = teamLocked;
+  if (inviteInput) inviteInput.disabled = teamLocked;
+  if (teamNameInput) teamNameInput.disabled = teamLocked;
 
   if (!proState.user) {
     if (authPanel) authPanel.classList.remove('hidden');
@@ -293,7 +339,9 @@ function renderProUI() {
   if (roleBadge) {
     const role = (proState.teamRole || 'owner').toLowerCase();
     roleBadge.textContent = role === 'owner' ? 'Owner' : 'Staff';
-    roleBadge.className = role === 'owner' ? 'role-badge role-owner' : 'role-badge role-staff';
+    roleBadge.className = role === 'owner'
+      ? 'role-badge role-owner'
+      : 'role-badge role-staff';
   }
 
   const planInfo = getPlanDisplayInfo();
@@ -327,7 +375,9 @@ function renderProUI() {
     renderLogoPreview();
   }
 
-  if (typeof renderRebookingSection === 'function') renderRebookingSection();
+  if (typeof renderRebookingSection === 'function') {
+    renderRebookingSection();
+  }
 }
 
 async function handleSignOut() {
