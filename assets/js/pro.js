@@ -11,12 +11,71 @@ async function getSb() {
   }
 }
 
+function hasActiveLikeStatus(status) {
+  const s = String(status || '').toLowerCase();
+  return s === 'trial' || s === 'trialing' || s === 'active';
+}
+
+async function loadTeamEntitlement(sb) {
+  if (!proState.user || !proState.teamId) return;
+
+  const role = String(proState.teamRole || '').toLowerCase();
+  if (role === 'owner') return;
+
+  try {
+    const { data: ownerMember, error: ownerErr } = await sb
+      .from('team_members')
+      .select('user_id, role, status')
+      .eq('team_id', proState.teamId)
+      .eq('role', 'owner')
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (ownerErr) throw ownerErr;
+    if (!ownerMember?.user_id) return;
+
+    const { data: ownerSub, error: subErr } = await sb
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', ownerMember.user_id)
+      .maybeSingle();
+
+    if (subErr) throw subErr;
+    if (!ownerSub) return;
+
+    const plan =
+      ownerSub.subscription_plan ||
+      ownerSub.plan ||
+      'free';
+
+    const status =
+      ownerSub.subscription_status ||
+      ownerSub.status ||
+      'free';
+
+    if (!hasActiveLikeStatus(status)) return;
+
+    proState.subscription = {
+      ...(proState.subscription || {}),
+      ...ownerSub,
+      subscription_plan: plan,
+      subscription_status: status,
+      plan,
+      status
+    };
+    proState.entitlementSource = 'team';
+  } catch (e) {
+    console.error('Team entitlement load error', e);
+  }
+}
+
 /* bootPro is wrapped with asyncGuard after definition to prevent
  * concurrent calls from DOMContentLoaded, handleAuth, createTeam,
  * joinTeam, and saveTeamJob all firing overlapping Supabase RPCs. */
 async function _bootProInner() {
   const sb = await getSb();
   if (!sb) return;
+
   let user = null;
   try {
     const { data } = await sb.auth.getUser();
@@ -24,25 +83,36 @@ async function _bootProInner() {
   } catch (e) {
     console.warn('getUser failed:', e.message);
   }
+
   if (!user) {
     proState.user = null;
+    proState.teamId = null;
+    proState.teamName = '';
+    proState.teamRole = '';
+    proState.inviteCode = '';
+    proState.jobs = [];
+    proState.subscription = null;
+    proState.entitlementSource = null;
     renderProUI();
     return;
   }
+
   proState.user = user;
+
   try {
     const { data: team, error } = await sb.rpc('get_my_team');
     const noTeam =
       error ||
       !team ||
       (Array.isArray(team) && team.length === 0);
+
     if (noTeam) {
       proState.teamId = null;
       proState.teamName = '';
       proState.teamRole = '';
       proState.inviteCode = '';
       proState.jobs = [];
-      /* Check for pending invite code */
+
       if (pendingInviteCode) {
         try {
           const { error: joinErr } = await sb.rpc('join_team_by_invite', {
@@ -68,29 +138,42 @@ async function _bootProInner() {
       proState.inviteCode = t.invite_code;
       localStorage.removeItem('pending_invite');
       pendingInviteCode = null;
+
       const { data: jobs } = await sb
         .from('jobs')
         .select('*')
         .eq('team_id', proState.teamId)
         .order('created_at', { ascending: false });
+
       proState.jobs = jobs || [];
+
       const { data: s } = await sb
         .from('team_settings')
         .select('*')
         .eq('team_id', proState.teamId)
         .single();
+
       if (s) applyTeamSettings(s);
       setupRealtimeChannel(sb);
     }
   } catch (e) {
     console.error(e);
   }
-  /* Load subscription entitlement (works with or without team) */
+
+  /* Load personal subscription first */
   try {
     await loadSubscription(sb);
   } catch (e) {
     console.error('Subscription load error', e);
   }
+
+  /* Staff inherit entitlement from owner subscription */
+  try {
+    await loadTeamEntitlement(sb);
+  } catch (e) {
+    console.error('Team subscription inheritance error', e);
+  }
+
   renderProUI();
   renderSubscriptionUI();
   syncSettingsForm();
@@ -100,6 +183,7 @@ async function _bootProInner() {
   if (typeof renderRebookingSection === 'function') renderRebookingSection();
   updateQuoteDisplay();
 }
+
 const bootPro = asyncGuard(_bootProInner, 'bootPro');
 
 async function _handleAuthInner() {
@@ -107,6 +191,7 @@ async function _handleAuthInner() {
   const password = (el('auth-password') || {}).value || '';
   const sb = await getSb();
   if (!sb) return;
+
   try {
     let res;
     if (authMode === 'signup') {
@@ -119,6 +204,7 @@ async function _handleAuthInner() {
     } else {
       res = await sb.auth.signInWithPassword({ email, password });
     }
+
     if (res.error) throw res.error;
     showToast('Welcome!', 'success');
     await bootPro();
@@ -126,13 +212,16 @@ async function _handleAuthInner() {
     showToast(e.message, 'error');
   }
 }
+
 const handleAuth = asyncGuard(_handleAuthInner, 'handleAuth');
 
 async function _createTeamInner() {
   const name = ((el('team-name-input') || {}).value || '').trim();
   if (!name) return showToast('Enter business name', 'error');
+
   const sb = await getSb();
   if (!sb) return;
+
   try {
     const { error } = await sb.rpc('create_team', {
       p_business_name: name
@@ -144,13 +233,16 @@ async function _createTeamInner() {
     showToast(e.message, 'error');
   }
 }
+
 const createTeam = asyncGuard(_createTeamInner, 'createTeam');
 
 async function _joinTeamInner() {
   const code = ((el('invite-code-input') || {}).value || '').trim();
   if (!code) return showToast('Enter invite code', 'error');
+
   const sb = await getSb();
   if (!sb) return;
+
   try {
     const { error } = await sb.rpc('join_team_by_invite', {
       p_invite_code: code
@@ -162,6 +254,7 @@ async function _joinTeamInner() {
     showToast(e.message, 'error');
   }
 }
+
 const joinTeam = asyncGuard(_joinTeamInner, 'joinTeam');
 
 function renderProUI() {
@@ -234,7 +327,6 @@ function renderProUI() {
     renderLogoPreview();
   }
 
-  /* Render rebooking dashboard */
   if (typeof renderRebookingSection === 'function') renderRebookingSection();
 }
 
@@ -247,6 +339,7 @@ async function handleSignOut() {
     }
     await sb.auth.signOut();
   }
+
   proState.subscription = null;
   proState.entitlementSource = null;
   proState.logoDataUrl = null;
