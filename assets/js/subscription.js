@@ -21,64 +21,38 @@ let subscriptionState = {
 /* ================================================================
  * fetchSubscriptionState()
  * Queries the Supabase subscriptions table for the current user.
+ * Also supports team-based entitlement inheritance for staff users.
  * Called on app boot and after returning from Stripe checkout.
  * ================================================================ */
-async function fetchSubscriptionState() {
-  const sb = await getSb();
-  if (!sb) return;
+function _blankSubscriptionState(userId) {
+  return {
+    loaded: true,
+    user_id: userId || null,
+    stripe_customer_id: null,
+    stripe_subscription_id: null,
+    subscription_plan: 'free',
+    subscription_status: 'free',
+    current_period_end: null,
+    cancel_at_period_end: false,
+    trial_end: null,
+    team_seat_count: 0
+  };
+}
 
-  const user = proState.user;
-  if (!user) {
-    subscriptionState = { ...subscriptionState, loaded: true, subscription_plan: 'free', subscription_status: 'free' };
-    return;
-  }
+function _applySubscriptionRow(row, source) {
+  subscriptionState = {
+    loaded: true,
+    user_id: row?.user_id || null,
+    stripe_customer_id: row?.stripe_customer_id || null,
+    stripe_subscription_id: row?.stripe_subscription_id || null,
+    subscription_plan: row?.subscription_plan || 'free',
+    subscription_status: row?.subscription_status || 'free',
+    current_period_end: row?.current_period_end || null,
+    cancel_at_period_end: !!row?.cancel_at_period_end,
+    trial_end: row?.trial_end || null,
+    team_seat_count: row?.team_seat_count || 0
+  };
 
-  try {
-    const { data, error } = await sb
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.warn('[Subscription] Fetch error:', error.message);
-      // Fall through — keep current state, mark loaded
-    } else if (data) {
-      subscriptionState = {
-        loaded: true,
-        user_id: data.user_id,
-        stripe_customer_id: data.stripe_customer_id,
-        stripe_subscription_id: data.stripe_subscription_id,
-        subscription_plan: data.subscription_plan || 'free',
-        subscription_status: data.subscription_status || 'free',
-        current_period_end: data.current_period_end || null,
-        cancel_at_period_end: !!data.cancel_at_period_end,
-        trial_end: data.trial_end || null,
-        team_seat_count: data.team_seat_count || 0
-      };
-    } else {
-      // No row exists — user is on free plan
-      subscriptionState = {
-        loaded: true,
-        user_id: user.id,
-        stripe_customer_id: null,
-        stripe_subscription_id: null,
-        subscription_plan: 'free',
-        subscription_status: 'free',
-        current_period_end: null,
-        cancel_at_period_end: false,
-        trial_end: null,
-        team_seat_count: 0
-      };
-    }
-  } catch (e) {
-    console.error('[Subscription] fetchSubscriptionState failed:', e);
-  }
-
-  subscriptionState.loaded = true;
-
-  // Sync into proState.subscription for backward compatibility with
-  // existing code that reads proState.subscription
   proState.subscription = {
     id: subscriptionState.stripe_subscription_id,
     plan: _mapPlanToLegacy(subscriptionState.subscription_plan),
@@ -86,15 +60,118 @@ async function fetchSubscriptionState() {
     trial_ends_at: subscriptionState.trial_end,
     current_period_end: subscriptionState.current_period_end,
     stripe_customer_id: subscriptionState.stripe_customer_id,
-    _source: 'personal',
-    _score: 0,
-    _personal: null,
-    _team: null
+    _source: source || 'personal',
+    _score: source === 'team' ? 100 : 200,
+    _personal: source === 'personal' ? row : null,
+    _team: source === 'team' ? row : null
   };
+  proState.entitlementSource = source || 'personal';
+}
+
+async function _fetchSubscriptionRowForUser(sb, userId) {
+  if (!userId) return null;
+  const { data, error } = await sb
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('[Subscription] Fetch error for user', userId, error.message);
+    return null;
+  }
+  return data || null;
+}
+
+async function _findTeamOwnerSubscription(sb) {
+  if (!proState.teamId) return null;
+  try {
+    const { data: ownerMember, error } = await sb
+      .from('team_members')
+      .select('user_id, role, status')
+      .eq('team_id', proState.teamId)
+      .eq('role', 'owner')
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !ownerMember?.user_id) {
+      if (error) console.warn('[Subscription] Could not resolve team owner:', error.message);
+      return null;
+    }
+
+    const ownerSub = await _fetchSubscriptionRowForUser(sb, ownerMember.user_id);
+    return ownerSub || null;
+  } catch (e) {
+    console.warn('[Subscription] Team entitlement lookup failed:', e.message);
+    return null;
+  }
+}
+
+async function fetchSubscriptionState() {
+  const sb = await getSb();
+  if (!sb) return;
+
+  const user = proState.user;
+  if (!user) {
+    subscriptionState = _blankSubscriptionState(null);
+    proState.subscription = null;
+    proState.entitlementSource = null;
+    return;
+  }
+
+  proState.entitlementSource = null;
+  let personalRow = null;
+  try {
+    personalRow = await _fetchSubscriptionRowForUser(sb, user.id);
+  } catch (e) {
+    console.error('[Subscription] personal lookup failed:', e);
+  }
+
+  if (personalRow) {
+    _applySubscriptionRow(personalRow, 'personal');
+  } else {
+    subscriptionState = _blankSubscriptionState(user.id);
+    proState.subscription = {
+      id: null,
+      plan: 'free',
+      status: 'expired',
+      trial_ends_at: null,
+      current_period_end: null,
+      stripe_customer_id: null,
+      _source: 'personal',
+      _score: 0,
+      _personal: null,
+      _team: null
+    };
+  }
+
+  const personalEntitlement = getEntitlementStatus();
+  const shouldCheckTeam = !!proState.teamId && String(proState.teamRole || '').toLowerCase() !== 'owner' && (personalEntitlement === 'free' || personalEntitlement === 'expired');
+
+  if (shouldCheckTeam) {
+    const ownerSub = await _findTeamOwnerSubscription(sb);
+    if (ownerSub) {
+      const ownerStatus = String(ownerSub.subscription_status || 'free').toLowerCase();
+      const ownerPlan = String(ownerSub.subscription_plan || 'free').toLowerCase();
+      const ownerHasAccess = (
+        (ownerStatus === 'active' && (ownerPlan === 'pro_team' || ownerPlan === 'pro')) ||
+        (ownerStatus === 'trialing' && ownerSub.trial_end && new Date(ownerSub.trial_end) > new Date()) ||
+        (ownerStatus === 'canceled' && ownerSub.current_period_end && new Date(ownerSub.current_period_end) > new Date())
+      );
+
+      if (ownerHasAccess) {
+        _applySubscriptionRow(ownerSub, 'team');
+      }
+    }
+  }
+
+  subscriptionState.loaded = true;
 
   console.log('[Subscription] State loaded:', {
     plan: subscriptionState.subscription_plan,
     status: subscriptionState.subscription_status,
+    entitlementSource: proState.entitlementSource,
     hasProAccess: hasProAccess(),
     hasTeamAccess: hasTeamAccess()
   });
@@ -443,10 +520,26 @@ async function handleCheckoutReturn() {
   window.history.replaceState({}, '', url.pathname + url.search);
 
   if (checkoutResult === 'success') {
-    showToast('Subscription activated! Welcome to Pro.', 'success');
-    // Wait a moment for webhook to process, then refresh state
-    await new Promise(r => setTimeout(r, 2000));
-    await fetchSubscriptionState();
+    showToast('Checkout complete. Syncing subscription…', 'success');
+
+    let synced = false;
+    for (let i = 0; i < 8; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      await fetchSubscriptionState();
+      const status = getEntitlementStatus();
+      if (status === 'active' || status === 'trial') {
+        synced = true;
+        break;
+      }
+    }
+
+    if (!synced) {
+      console.warn('[Checkout] Subscription row not visible yet after retry window');
+      showToast('Checkout succeeded, but billing is still syncing. Refresh again in a moment if needed.', 'info');
+    } else {
+      showToast('Subscription activated. Pro features unlocked.', 'success');
+    }
+
     renderSubscriptionUI();
     renderProUI();
     syncSettingsForm();
