@@ -43,7 +43,7 @@ function syncSecondStoreyUI() {
   const toggle = el('second-storey-toggle');
   if (toggle) toggle.checked = !!quoteState.secondStoreyEnabled;
 
-  const panel = el('second-storey-counts');
+  const panel = el('second-storey-counts') || el('second-storey-inputs');
   if (panel) panel.classList.toggle('hidden', !quoteState.secondStoreyEnabled);
 
   getEligibleSecondStoreyServiceIds().forEach(id => {
@@ -60,7 +60,7 @@ function syncSecondStoreyUI() {
 }
 
 function renderSteppers() {
-  const container = el('steppers-container');
+  const container = el('steppers-container') || el('stepper-grid');
   if (!container) return;
 
   container.innerHTML = services.map(s => `
