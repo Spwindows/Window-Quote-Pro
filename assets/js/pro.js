@@ -266,7 +266,8 @@ async function _bootProInner() {
   }
 
   proState.user = user;
-// 🔥 Prevent settings leaking between users
+
+  // 🔥 Prevent settings leaking between users
 const lastUserId = localStorage.getItem('wqp-last-user');
 
 if (user && lastUserId !== user.id) {
