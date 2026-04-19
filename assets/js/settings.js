@@ -96,62 +96,64 @@ function applyTeamSettings(s) {
 }
 
 function syncSettingsForm() {
-  if (!window.settings || typeof window.settings !== 'object') {
-    console.warn("[WQP] settings missing, rebuilding safely");
+  const isOwner   = canAccessSettings();
+  const ownerView = el('settings-owner-view');
+  const staffLock = el('settings-staff-lock');
 
-    if (typeof DEFAULT_SETTINGS !== 'undefined') {
-      window.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-    } else {
-      // HARD FALLBACK — prevents crash even if config.js fails
-      window.settings = {};
-    }
-  }
+  if (ownerView) ownerView.classList.toggle('hidden', !isOwner);
+  if (staffLock) staffLock.classList.toggle('hidden', isOwner);
+  if (!isOwner) return;
 
-  const settings = window.settings;
-
-  const setVal = (id, value) => {
-    const node = el(id);
-    if (node) node.value = value ?? '';
+  const setVal = (id, val) => {
+    const e = el(id);
+    if (e) e.value = val;
   };
 
-  const setChecked = (id, value) => {
-    const node = el(id);
-    if (node) node.checked = !!value;
+  const setChecked = (id, val) => {
+    const e = el(id);
+    if (e) e.checked = val;
   };
 
-  // SAFE ACCESS (no crash even if fields missing)
-  setVal('s-bizname', settings.businessName || '');
-  setVal('s-contact', settings.contactName || '');
-  setVal('s-phone', settings.businessPhone || '');
-  setVal('s-email', settings.businessEmail || '');
-  setVal('s-abn', settings.businessAbn || '');
-  setVal('s-website', settings.businessWebsite || '');
-  setVal('s-address', settings.businessAddress || '');
-  setVal('s-message', settings.customMessage || '');
-
-  setVal('settings-pricing-mode', settings.pricingMode || 'standard');
-  setVal('settings-hourly-rate', settings.hourlyRate || 0);
-  setVal('settings-external-percent', settings.externalOnlyPercent || 0);
-  setVal('settings-travel-fee', settings.travelFee || 0);
-  setVal('settings-discount', settings.discount || 0);
-
+  setVal('s-bizname',                settings.businessName);
+  setVal('s-contact',                settings.contactName);
+  setVal('s-phone',                  settings.businessPhone);
+  setVal('s-email',                  settings.businessEmail);
+  setVal('s-abn',        settings.businessAbn);
+  setVal('s-website',    settings.businessWebsite);
+  setVal('s-address',    settings.businessAddress);
+  setVal('s-message',                settings.customMessage);
+  setVal('settings-pricing-mode',    settings.pricingMode);
+  setVal('settings-hourly-rate',     settings.hourlyRate);
+  setVal('settings-external-percent',settings.externalOnlyPercent);
+  setVal('settings-travel-fee',      settings.travelFee);
+  setVal('settings-discount',        settings.discount);
   setChecked('settings-gst-enabled', settings.gstEnabled);
-  setVal('settings-gst-rate', settings.gstRate || 0);
-
-  setVal('settings-quote-format', settings.quoteFormat || 'itemised');
-
-  setChecked('settings-second-storey-pricing-enabled', settings.secondStoreyPricingEnabled);
+  setVal('settings-gst-rate',        settings.gstRate);
+  setVal('settings-quote-format',    settings.quoteFormat || 'itemised');
+  setChecked('settings-second-storey-pricing-enabled', !!settings.secondStoreyPricingEnabled);
   setVal('settings-second-storey-mode', settings.secondStoreyMode || 'percent');
-  setVal('settings-second-storey-percent', settings.secondStoreyPercent || 0);
-  setVal('settings-second-storey-fixed', settings.secondStoreyFixedAmount || 0);
+  setVal('settings-second-storey-percent', settings.secondStoreyPercent ?? 20);
+  setVal('settings-second-storey-fixed', settings.secondStoreyFixedAmount ?? 5);
+  setVal('team-invite-code',         proState.inviteCode || '');
 
-  setVal('s-payment-account-name', settings.paymentAccountName || '');
-  setVal('s-payment-bank-name', settings.paymentBankName || '');
-  setVal('s-payment-bsb', settings.paymentBSB || '');
+  /* FIX 3: Sync payment detail fields */
+  setVal('s-payment-account-name',   settings.paymentAccountName || '');
+  setVal('s-payment-bank-name',      settings.paymentBankName || '');
+  setVal('s-payment-bsb',            settings.paymentBSB || '');
   setVal('s-payment-account-number', settings.paymentAccountNumber || '');
-  setVal('s-payment-reference', settings.paymentReference || '');
-  setVal('s-payment-link', settings.paymentLink || '');
+  setVal('s-payment-reference',      settings.paymentReference || '');
+  setVal('s-payment-link',           settings.paymentLink || '');
+
+  /* FIX 4: Toggle payment details section visibility based on Pro access */
+  const paymentSection = el('payment-details-section');
+  const paymentLock    = el('payment-details-lock');
+  if (paymentSection && paymentLock) {
+    const isPro = hasProAccess();
+    paymentSection.classList.toggle('hidden', !isPro);
+    paymentLock.classList.toggle('hidden', isPro);
+  }
 }
+
 function renderSettingsGrids() {
   if (!canAccessSettings()) return;
 

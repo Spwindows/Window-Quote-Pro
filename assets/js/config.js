@@ -1,10 +1,9 @@
 
 console.log("[WQP] config.js loaded");
 
-const SUPABASE_URL = "https://cwrlnfcgryhmohopdwrs.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM";
-
-let supabaseClient = null;
+const SUPABASE_URL = 'https://cwrlnfcgryhmohopdwrs.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_cZS7gdA_x9PVboQs1bFoYA_I2YTaUaM';
+const STORAGE_KEY = 'window-quote-pro-v5-settings';
 
 const DEFAULT_SETTINGS = {
   businessName: '',
@@ -63,6 +62,5 @@ const DEFAULT_PRO_STATE = {
   jobs: [],
   subscription: null,
   entitlementSource: null,
-  logoDataUrl: null,
-  loading: true
+  logoDataUrl: null
 };

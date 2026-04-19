@@ -25,18 +25,6 @@ function normalizeStatus(status) {
   if (n === 'active' || n === 'started') return 'in_progress';
   return n;
 }
-function hasSignedInUser() {
-  return typeof proState !== 'undefined' && !!proState && !!proState.user;
-}
-
-function isTeamOwner() {
-  if (typeof proState === 'undefined' || !proState) return false;
-  return String(proState.teamRole || '').toLowerCase() === 'owner';
-}
-
-function hasTeamContext() {
-  return typeof proState !== 'undefined' && !!proState && !!proState.teamId;
-}
 function displayStatus(status) {
   const map = {
     quoted: 'Quote Sent',
@@ -47,16 +35,8 @@ function displayStatus(status) {
   return map[normalizeStatus(status)] || String(status || '');
 }
 function canAccessSettings() {
-  if (typeof proState === 'undefined' || !proState) return false;
-  if (!proState.user) return false;
-
-  const role = String(proState.teamRole || 'owner').toLowerCase();
-
-  // No team yet: signed-in user can manage their own settings
   if (!proState.teamId) return true;
-
-  // Team exists: only owner can access team/business settings
-  return role === 'owner';
+  return String(proState.teamRole || '').toLowerCase() === 'owner';
 }
 
 /* ---------------------------------------------------------------

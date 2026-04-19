@@ -2,23 +2,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log("START DOMContentLoaded");
 
   loadLocalSettings();
+  renderSteppers();
+  syncSecondStoreyUI();
+  syncSettingsForm();
+  renderSettingsGrids();
+  updateQuoteDisplay();
+  await bootPro();
 
-  // Quote/UI first
-  if (typeof renderSteppers === 'function') renderSteppers();
-  if (typeof syncSecondStoreyUI === 'function') syncSecondStoreyUI();
-  if (typeof syncSettingsForm === 'function') syncSettingsForm();
-  if (typeof renderSettingsGrids === 'function') renderSettingsGrids();
-  if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
-
-  // Then Pro/subscription boot
-  if (typeof bootPro === 'function') {
-    await bootPro();
-  }
-
-  // Handle return from Stripe Checkout (?checkout=success|cancel)
-  if (typeof handleCheckoutReturn === 'function') {
-    await handleCheckoutReturn();
-  }
+  /* Handle return from Stripe Checkout (?checkout=success|cancel) */
+  await handleCheckoutReturn();
 
   console.log("FINISHED");
 
@@ -67,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast('Invoices are managed from completed jobs in the Pro tab.', 'info');
       return;
     }
-    handleUpgradeClick('pro_solo');
+    openPlansModal('pro', 'Invoicing');
   });
 
   bindClick('clear-counts-btn', () => {
@@ -78,9 +70,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     quoteState.secondStoreyEnabled = false;
     quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
 
-    if (typeof renderSteppers === 'function') renderSteppers();
-    if (typeof syncSecondStoreyUI === 'function') syncSecondStoreyUI();
-    if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
+    renderSteppers();
+    syncSecondStoreyUI();
+    updateQuoteDisplay();
   });
 
   bindClick('global-reset-btn', () => {
@@ -99,23 +91,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (e) e.value = v;
     };
 
-    setVal('cust-name', '');
-    setVal('cust-phone', '');
-    setVal('cust-address', '');
+    setVal('q-name', '');
+    setVal('q-phone', '');
+    setVal('q-email', '');
+    setVal('q-address', '');
 
     const extToggle = el('external-only-toggle');
     if (extToggle) extToggle.checked = false;
 
-    if (typeof syncSecondStoreyUI === 'function') syncSecondStoreyUI();
-    if (typeof renderSteppers === 'function') renderSteppers();
-    if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
+    syncSecondStoreyUI();
+    renderSteppers();
+    updateQuoteDisplay();
   });
 
   const extToggle = el('external-only-toggle');
+
   if (extToggle) {
     extToggle.onchange = e => {
       quoteState.externalOnly = e.target.checked;
-      if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
+      updateQuoteDisplay();
     };
   }
 
@@ -127,8 +121,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!quoteState.secondStoreyEnabled) {
         quoteState.upstairsCounts = { sw: 0, lw: 0, sd: 0 };
       }
-      if (typeof syncSecondStoreyUI === 'function') syncSecondStoreyUI();
-      if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
+      syncSecondStoreyUI();
+      updateQuoteDisplay();
     };
   }
 
@@ -191,26 +185,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     settings.secondStoreyPercent = safeNum(getVal('settings-second-storey-percent'), settings.secondStoreyPercent);
     settings.secondStoreyFixedAmount = safeNum(getVal('settings-second-storey-fixed'), settings.secondStoreyFixedAmount);
 
-    settings.paymentAccountName = (el('s-payment-account-name') || {}).value || '';
-    settings.paymentBankName = (el('s-payment-bank-name') || {}).value || '';
-    settings.paymentBSB = (el('s-payment-bsb') || {}).value || '';
+    /* FIX 3: Read payment detail fields from settings form */
+    settings.paymentAccountName   = (el('s-payment-account-name')   || {}).value || '';
+    settings.paymentBankName      = (el('s-payment-bank-name')      || {}).value || '';
+    settings.paymentBSB           = (el('s-payment-bsb')            || {}).value || '';
     settings.paymentAccountNumber = (el('s-payment-account-number') || {}).value || '';
-    settings.paymentReference = (el('s-payment-reference') || {}).value || '';
-    settings.paymentLink = (el('s-payment-link') || {}).value || '';
+    settings.paymentReference     = (el('s-payment-reference')      || {}).value || '';
+    settings.paymentLink          = (el('s-payment-link')           || {}).value || '';
 
     saveLocalSettings();
     await saveSettingsToServer();
-    if (typeof updateQuoteDisplay === 'function') updateQuoteDisplay();
+    updateQuoteDisplay();
   });
 
   bindClick('reset-all-btn', resetAllData);
 
+  /* FIX 2 & 7: All team-gated actions now route to centralized plans modal */
   bindClick('copy-invite-btn', async () => {
-    if (!canUseTeamInviteFeatures()) {
-      return handleUpgradeClick('pro_team');
+    if (!proState.teamId) {
+      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
+      return showToast('Create a team first to get an invite code', 'info');
     }
-
-    if (!proState.teamId || !proState.inviteCode) {
+    if (!proState.inviteCode) {
+      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
 
@@ -223,11 +220,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   bindClick('share-invite-btn', async () => {
-    if (!canUseTeamInviteFeatures()) {
-      return handleUpgradeClick('pro_team');
+    if (!proState.teamId) {
+      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
+      return showToast('Create a team first to get an invite code', 'info');
     }
-
-    if (!proState.teamId || !proState.inviteCode) {
+    if (!proState.inviteCode) {
+      if (!hasProAccess()) return openPlansModal('team', 'Team Features');
       return showToast('Create a team first to get an invite code', 'info');
     }
 
@@ -256,30 +254,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  /* ===== Completion modal bindings ===== */
   bindClick('completion-invoice-btn', completionSendInvoice);
   bindClick('completion-payment-btn', completionRecordPayment);
   bindClick('completion-later-btn', completionDoLater);
 
+  /* ===== Payment modal bindings ===== */
   bindClick('payment-submit-btn', recordPayment);
   bindClick('payment-cancel-btn', closePaymentModal);
 
+  /* ===== Payment confirm modal bindings ===== */
   bindClick('payconfirm-receipt-btn', paymentConfirmSendReceipt);
   bindClick('payconfirm-skip-btn', paymentConfirmSkip);
 
+  /* ===== Rebooking modal binding ===== */
   bindClick('rebooking-submit-btn', submitRebookingModal);
 
+  /* ===== Logo upload binding ===== */
   const logoInput = el('logo-file-input');
   if (logoInput) {
     logoInput.onchange = () => handleLogoUpload(logoInput);
   }
   bindClick('logo-remove-btn', removeLogo);
 
+  /* ===== Desktop email modal bindings (FIX 1) ===== */
   bindClick('desktop-email-open-btn', desktopEmailOpen);
   bindClick('desktop-email-close-btn', closeDesktopEmailModal);
 
+  /* ===== Invoice due date modal bindings (FIX 2) ===== */
   bindClick('invoice-duedate-confirm-btn', confirmInvoiceDueDate);
   bindClick('invoice-duedate-cancel-btn', closeInvoiceDueDateModal);
 
+  /* Toggle custom date field visibility in due date modal */
   const termsSelect = el('invoice-terms-select');
   if (termsSelect) {
     termsSelect.onchange = function() {

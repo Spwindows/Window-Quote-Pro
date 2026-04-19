@@ -33,7 +33,7 @@ function switchTab(t) {
 }
 
 /* ===== Centralized Plans / Paywall Modal ===== */
-function openPlansModal(targetPlan = 'pro_solo', feature = '') {
+function openPlansModal(targetPlan = 'pro', feature = '') {
   const modal = el('plans-modal');
   const title = el('plans-title');
   const subtitle = el('plans-subtitle');
@@ -49,7 +49,7 @@ function openPlansModal(targetPlan = 'pro_solo', feature = '') {
 
   if (proCard) proCard.classList.remove('plan-card-dim');
   if (teamCard) teamCard.classList.remove('plan-card-dim');
-  if (targetPlan === 'team' || targetPlan === 'pro_team') {
+  if (targetPlan === 'team') {
     if (proCard) proCard.classList.add('plan-card-dim');
   } else {
     if (teamCard) teamCard.classList.add('plan-card-dim');
