@@ -1,7 +1,6 @@
 // netlify/functions/stripe-webhook.js
 // Handles Stripe webhook events and updates Supabase subscriptions table.
 // Environment variables: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
-//   STRIPE_PRICE_ID_PRO_SOLO, STRIPE_PRICE_ID_PRO_TEAM,
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -10,8 +9,10 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
+const fetch = globalThis.fetch || require('node-fetch');
+
 /* ------------------------------------------------------------------ */
-/* Supabase REST helper — uses Node 18 native fetch                    */
+/* Supabase REST helper                                                */
 /* ------------------------------------------------------------------ */
 async function supabaseRequest(method, path, body) {
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
@@ -46,6 +47,7 @@ function planFromPriceId(priceId) {
 /* ------------------------------------------------------------------ */
 function getUserIdFromMetadata(obj) {
   if (!obj) return null;
+  // Check subscription_data.metadata, session metadata, subscription metadata
   if (obj.metadata && obj.metadata.supabase_user_id) return obj.metadata.supabase_user_id;
   if (obj.client_reference_id) return obj.client_reference_id;
   return null;
@@ -62,42 +64,47 @@ async function getUserIdFromCustomer(stripeCustomerId) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Upsert subscription row in Supabase (idempotent)                    */
+/* Upsert subscription row — idempotent by user_id                     */
 /* ------------------------------------------------------------------ */
-async function upsertSubscription(userId, data) {
-  const payload = {
-    user_id: userId,
-    ...data,
-    updated_at: new Date().toISOString()
-  };
+async function upsertSubscription(userId, patch) {
+  if (!userId) {
+    console.warn('upsertSubscription: no userId, skipping');
+    return;
+  }
+  patch.user_id = userId;
+  patch.updated_at = new Date().toISOString();
+
   await supabaseRequest(
     'POST',
     'subscriptions?on_conflict=user_id',
-    payload
+    patch
   );
 }
 
 /* ------------------------------------------------------------------ */
 /* Event handlers                                                      */
 /* ------------------------------------------------------------------ */
+
 async function handleCheckoutCompleted(session) {
   const userId = getUserIdFromMetadata(session);
   if (!userId) {
     console.warn('checkout.session.completed: no userId found');
     return;
   }
+
   const customerId = session.customer;
   const subscriptionId = session.subscription;
   const plan = (session.metadata && session.metadata.plan) || 'unknown';
 
-  // Retrieve the full subscription to get status and dates
+  // Fetch the subscription from Stripe for accurate status
   let subStatus = 'active';
   let currentPeriodEnd = null;
   let trialEnd = null;
+
   if (subscriptionId) {
     try {
       const sub = await stripe.subscriptions.retrieve(subscriptionId);
-      subStatus = sub.status;
+      subStatus = sub.status; // 'trialing', 'active', etc.
       currentPeriodEnd = sub.current_period_end
         ? new Date(sub.current_period_end * 1000).toISOString()
         : null;
@@ -105,7 +112,7 @@ async function handleCheckoutCompleted(session) {
         ? new Date(sub.trial_end * 1000).toISOString()
         : null;
     } catch (e) {
-      console.warn('Could not retrieve subscription:', e.message);
+      console.warn('Could not fetch subscription:', e.message);
     }
   }
 
@@ -124,22 +131,26 @@ async function handleSubscriptionCreatedOrUpdated(subscription) {
   const userId =
     getUserIdFromMetadata(subscription) ||
     (await getUserIdFromCustomer(subscription.customer));
+
   if (!userId) {
     console.warn('subscription event: no userId found for customer', subscription.customer);
     return;
   }
+
   // Determine plan from the first line item price
   let plan = 'unknown';
   if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
     const priceId = subscription.items.data[0].price.id;
     plan = planFromPriceId(priceId);
   }
+
   const currentPeriodEnd = subscription.current_period_end
     ? new Date(subscription.current_period_end * 1000).toISOString()
     : null;
   const trialEnd = subscription.trial_end
     ? new Date(subscription.trial_end * 1000).toISOString()
     : null;
+
   await upsertSubscription(userId, {
     stripe_customer_id: subscription.customer,
     stripe_subscription_id: subscription.id,
@@ -155,10 +166,12 @@ async function handleSubscriptionDeleted(subscription) {
   const userId =
     getUserIdFromMetadata(subscription) ||
     (await getUserIdFromCustomer(subscription.customer));
+
   if (!userId) {
     console.warn('subscription.deleted: no userId found');
     return;
   }
+
   await upsertSubscription(userId, {
     stripe_subscription_id: subscription.id,
     subscription_plan: 'free',
@@ -172,8 +185,10 @@ async function handleSubscriptionDeleted(subscription) {
 
 async function handleInvoicePaid(invoice) {
   if (!invoice.subscription) return;
+
   const userId = await getUserIdFromCustomer(invoice.customer);
   if (!userId) return;
+
   // Refresh subscription state from Stripe for accuracy
   try {
     const sub = await stripe.subscriptions.retrieve(invoice.subscription);
@@ -185,8 +200,10 @@ async function handleInvoicePaid(invoice) {
 
 async function handleInvoicePaymentFailed(invoice) {
   if (!invoice.subscription) return;
+
   const userId = await getUserIdFromCustomer(invoice.customer);
   if (!userId) return;
+
   // Refresh subscription state — Stripe will have set status to past_due
   try {
     const sub = await stripe.subscriptions.retrieve(invoice.subscription);
@@ -221,19 +238,24 @@ exports.handler = async (event) => {
       case 'checkout.session.completed':
         await handleCheckoutCompleted(stripeEvent.data.object);
         break;
+
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
         await handleSubscriptionCreatedOrUpdated(stripeEvent.data.object);
         break;
+
       case 'customer.subscription.deleted':
         await handleSubscriptionDeleted(stripeEvent.data.object);
         break;
+
       case 'invoice.paid':
         await handleInvoicePaid(stripeEvent.data.object);
         break;
+
       case 'invoice.payment_failed':
         await handleInvoicePaymentFailed(stripeEvent.data.object);
         break;
+
       default:
         console.log(`Unhandled event type: ${stripeEvent.type}`);
     }
