@@ -71,10 +71,30 @@ async function loadTeamEntitlement(sb) {
     if (subErr) throw subErr;
     if (!ownerSub) return;
 
-    const plan = ownerSub.subscription_plan || ownerSub.plan || 'free';
-    const status = ownerSub.subscription_status || ownerSub.status || 'free';
+    const plan = String(
+      ownerSub.subscription_plan ||
+      ownerSub.plan ||
+      'free'
+    ).toLowerCase();
 
-    if (!hasActiveLikeStatus(status)) return;
+    const status = String(
+      ownerSub.subscription_status ||
+      ownerSub.status ||
+      'free'
+    ).toLowerCase();
+
+    const ownerHasTeamEntitlement =
+      plan === 'pro_team' &&
+      (
+        status === 'active' ||
+        status === 'trial' ||
+        status === 'trialing'
+      );
+
+    if (!ownerHasTeamEntitlement) {
+      proState.entitlementSource = null;
+      return;
+    }
 
     proState.subscription = {
       ...(proState.subscription || {}),
@@ -353,7 +373,6 @@ function renderProUI() {
   const isTeamOwner = !!proState.teamId && String(proState.teamRole || '').toLowerCase() === 'owner';
   const hasUnlockedTeam = canUseTeamFeatures();
 
-  // Solo/free owners with an existing team must NOT see active team dashboard features
   if (proState.teamId) {
     if (hasUnlockedTeam) {
       if (teamSetup) teamSetup.classList.add('hidden');
@@ -362,7 +381,6 @@ function renderProUI() {
       if (teamSetup) teamSetup.classList.remove('hidden');
       if (teamDash) teamDash.classList.add('hidden');
 
-      // Optional: if there is a message area, explain why
       const teamGateMsg = el('team-gate-message');
       if (teamGateMsg) {
         teamGateMsg.textContent = isTeamOwner
@@ -397,6 +415,7 @@ function renderProUI() {
     renderRebookingSection();
   }
 }
+
 async function handleSignOut() {
   const sb = await getSb();
   if (sb) {
