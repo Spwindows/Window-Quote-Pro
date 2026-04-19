@@ -83,7 +83,7 @@ exports.handler = async (event) => {
 
     const rows = await supabaseRequest(
       'GET',
-      `subscriptions?user_id=eq.${userId}&select=stripe_customer_id`
+      `subscriptions?user_id=eq.${userId}&select=user_id,stripe_customer_id`
     );
 
     if (rows && rows.length > 0 && rows[0].stripe_customer_id) {
@@ -107,22 +107,41 @@ exports.handler = async (event) => {
         });
         stripeCustomerId = customer.id;
       }
+    }
 
+    const existingRows = await supabaseRequest(
+      'GET',
+      `subscriptions?user_id=eq.${userId}&select=user_id`
+    );
+
+    const trialEndIso = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const payload = {
+      stripe_customer_id: stripeCustomerId,
+      plan: plan,
+      status: 'trial',
+      subscription_plan: plan,
+      subscription_status: 'trialing',
+      updated_at: new Date().toISOString(),
+      trial_ends_at: trialEndIso,
+      trial_end: trialEndIso
+    };
+
+    if (existingRows && existingRows.length > 0) {
       await supabaseRequest(
-  'POST',
-  'subscriptions?on_conflict=user_id',
-  {
-    user_id: userId,
-    stripe_customer_id: stripeCustomerId,
-    plan: plan,
-    status: 'trial',
-    subscription_plan: plan,
-    subscription_status: 'trialing',
-    updated_at: new Date().toISOString(),
-    trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    trial_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-  }
-);
+        'PATCH',
+        `subscriptions?user_id=eq.${userId}`,
+        payload
+      );
+    } else {
+      await supabaseRequest(
+        'POST',
+        'subscriptions',
+        {
+          user_id: userId,
+          ...payload
+        }
+      );
     }
 
     const sessionParams = {
