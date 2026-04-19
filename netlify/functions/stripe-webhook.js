@@ -1,7 +1,7 @@
 // netlify/functions/stripe-webhook.js
 // Handles Stripe webhook events and updates Supabase subscriptions table.
 // Environment variables: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+// SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -10,6 +10,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 const fetch = globalThis.fetch;
+
 /* ------------------------------------------------------------------ */
 /* Supabase REST helper                                                */
 /* ------------------------------------------------------------------ */
@@ -21,19 +22,22 @@ async function supabaseRequest(method, path, body) {
     'Content-Type': 'application/json',
     Prefer: 'return=representation'
   };
+
   const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
+
   const res = await fetch(url, opts);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Supabase ${method} ${path}: ${res.status} ${text}`);
   }
+
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
 
 /* ------------------------------------------------------------------ */
-/* Map Stripe price ID to plan name                                    */
+/* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 function planFromPriceId(priceId) {
   if (priceId === process.env.STRIPE_PRICE_ID_PRO_SOLO) return 'pro_solo';
@@ -41,12 +45,8 @@ function planFromPriceId(priceId) {
   return 'unknown';
 }
 
-/* ------------------------------------------------------------------ */
-/* Resolve Supabase user_id from Stripe metadata or customer lookup    */
-/* ------------------------------------------------------------------ */
 function getUserIdFromMetadata(obj) {
   if (!obj) return null;
-  // Check subscription_data.metadata, session metadata, subscription metadata
   if (obj.metadata && obj.metadata.supabase_user_id) return obj.metadata.supabase_user_id;
   if (obj.client_reference_id) return obj.client_reference_id;
   return null;
@@ -54,36 +54,81 @@ function getUserIdFromMetadata(obj) {
 
 async function getUserIdFromCustomer(stripeCustomerId) {
   if (!stripeCustomerId) return null;
+
   const rows = await supabaseRequest(
     'GET',
     `subscriptions?stripe_customer_id=eq.${stripeCustomerId}&select=user_id`
   );
+
   if (rows && rows.length > 0) return rows[0].user_id;
   return null;
 }
 
+function toLegacyStatus(subscriptionStatus) {
+  if (!subscriptionStatus) return 'free';
+  if (subscriptionStatus === 'trialing') return 'trial';
+  return subscriptionStatus;
+}
+
+function toLegacyPlan(subscriptionPlan) {
+  if (!subscriptionPlan || subscriptionPlan === 'unknown') return 'free';
+  if (subscriptionPlan === 'free') return 'free';
+  if (subscriptionPlan === 'pro_solo') return 'pro_solo';
+  if (subscriptionPlan === 'pro_team') return 'pro_team';
+  return 'free';
+}
+
 /* ------------------------------------------------------------------ */
-/* Upsert subscription row — idempotent by user_id                     */
+/* Upsert subscription row safely                                      */
 /* ------------------------------------------------------------------ */
 async function upsertSubscription(userId, patch) {
   if (!userId) {
     console.warn('upsertSubscription: no userId, skipping');
     return;
   }
-  patch.user_id = userId;
-  patch.updated_at = new Date().toISOString();
 
-  await supabaseRequest(
-    'POST',
-    'subscriptions?on_conflict=user_id',
-    patch
+  const normalizedPatch = {
+    ...patch,
+    user_id: userId,
+    updated_at: new Date().toISOString()
+  };
+
+  if (normalizedPatch.subscription_plan !== undefined) {
+    normalizedPatch.plan = toLegacyPlan(normalizedPatch.subscription_plan);
+  }
+
+  if (normalizedPatch.subscription_status !== undefined) {
+    normalizedPatch.status = toLegacyStatus(normalizedPatch.subscription_status);
+  }
+
+  // If canceled, make sure legacy plan also drops to free
+  if (normalizedPatch.subscription_status === 'canceled') {
+    normalizedPatch.plan = 'free';
+  }
+
+  const existing = await supabaseRequest(
+    'GET',
+    `subscriptions?user_id=eq.${userId}&select=user_id`
   );
+
+  if (existing && existing.length > 0) {
+    await supabaseRequest(
+      'PATCH',
+      `subscriptions?user_id=eq.${userId}`,
+      normalizedPatch
+    );
+  } else {
+    await supabaseRequest(
+      'POST',
+      'subscriptions',
+      normalizedPatch
+    );
+  }
 }
 
 /* ------------------------------------------------------------------ */
 /* Event handlers                                                      */
 /* ------------------------------------------------------------------ */
-
 async function handleCheckoutCompleted(session) {
   const userId = getUserIdFromMetadata(session);
   if (!userId) {
@@ -95,7 +140,6 @@ async function handleCheckoutCompleted(session) {
   const subscriptionId = session.subscription;
   const plan = (session.metadata && session.metadata.plan) || 'unknown';
 
-  // Fetch the subscription from Stripe for accurate status
   let subStatus = 'active';
   let currentPeriodEnd = null;
   let trialEnd = null;
@@ -103,7 +147,7 @@ async function handleCheckoutCompleted(session) {
   if (subscriptionId) {
     try {
       const sub = await stripe.subscriptions.retrieve(subscriptionId);
-      subStatus = sub.status; // 'trialing', 'active', etc.
+      subStatus = sub.status;
       currentPeriodEnd = sub.current_period_end
         ? new Date(sub.current_period_end * 1000).toISOString()
         : null;
@@ -136,7 +180,6 @@ async function handleSubscriptionCreatedOrUpdated(subscription) {
     return;
   }
 
-  // Determine plan from the first line item price
   let plan = 'unknown';
   if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
     const priceId = subscription.items.data[0].price.id;
@@ -188,7 +231,6 @@ async function handleInvoicePaid(invoice) {
   const userId = await getUserIdFromCustomer(invoice.customer);
   if (!userId) return;
 
-  // Refresh subscription state from Stripe for accuracy
   try {
     const sub = await stripe.subscriptions.retrieve(invoice.subscription);
     await handleSubscriptionCreatedOrUpdated(sub);
@@ -203,7 +245,6 @@ async function handleInvoicePaymentFailed(invoice) {
   const userId = await getUserIdFromCustomer(invoice.customer);
   if (!userId) return;
 
-  // Refresh subscription state — Stripe will have set status to past_due
   try {
     const sub = await stripe.subscriptions.retrieve(invoice.subscription);
     await handleSubscriptionCreatedOrUpdated(sub);
@@ -220,7 +261,6 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: 'Method not allowed' };
   }
 
-  /* Verify webhook signature */
   let stripeEvent;
   try {
     const sig = event.headers['stripe-signature'];
@@ -260,9 +300,10 @@ exports.handler = async (event) => {
     }
   } catch (err) {
     console.error(`Error processing ${stripeEvent.type}:`, err);
-    // Return 200 to prevent Stripe from retrying on application errors
-    // that would produce the same result. Log for investigation.
-    return { statusCode: 200, body: JSON.stringify({ received: true, error: err.message }) };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ received: true, error: err.message })
+    };
   }
 
   return { statusCode: 200, body: JSON.stringify({ received: true }) };
