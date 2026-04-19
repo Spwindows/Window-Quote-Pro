@@ -9,8 +9,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
-const fetch = globalThis.fetch || require('node-fetch');
-
+const fetch = globalThis.fetch;
 /* ------------------------------------------------------------------ */
 /* Supabase REST helper                                                */
 /* ------------------------------------------------------------------ */
