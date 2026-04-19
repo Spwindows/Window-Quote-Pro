@@ -8,7 +8,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const fetch = globalThis.fetch || require('node-fetch');
+const fetch = globalThis.fetch;
 
 async function supabaseRequest(method, path, body) {
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
