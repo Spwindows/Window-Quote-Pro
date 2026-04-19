@@ -106,8 +106,8 @@ exports.handler = async (event) => {
         {
           user_id: userId,
           stripe_customer_id: stripeCustomerId,
-          subscription_plan: 'free',
-          subscription_status: 'free',
+          subscription_plan: plan,              // 'pro_solo' or 'pro_team'
+          subscription_status: 'trialing'
           updated_at: new Date().toISOString()
         }
       );
