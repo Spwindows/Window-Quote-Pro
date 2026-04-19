@@ -1,5 +1,7 @@
 console.log("[WQP] pro.js loaded");
 
+let quoteActionObserver = null;
+
 async function getSb() {
   if (supabaseClient) return supabaseClient;
   try {
@@ -198,7 +200,6 @@ function gateTeamInviteControls() {
     return;
   }
 
-  // Keep section available as upsell for owners, hidden for staff/free
   if (isOwnerUser() && canUseProFeatures()) {
     sections.forEach(node => node.classList.remove('hidden'));
     texts.forEach(node => {
@@ -219,42 +220,57 @@ function gateTeamInviteControls() {
     sections.forEach(node => node.classList.add('hidden'));
   }
 
-  // Generic fallback: any visible invite/share buttons become upsell
   patchButtonTextByLabel(/invite|share link|copy invite/i, 'Upgrade to Pro Team', () => {
     upsellToTeam('Inviting staff requires Pro Team.');
   });
 }
 
 function patchQuoteTeamActions() {
-  const buttons = Array.from(document.querySelectorAll('button'));
+  const btn =
+    el('save-team-job-btn') ||
+    document.querySelector('[data-action="save-team-job"]');
 
-  buttons.forEach((btn) => {
-    const text = (btn.textContent || '').trim();
+  if (!btn) return;
 
-    if (!/^add to team$/i.test(text) && !/^add job$/i.test(text)) return;
+  const hasPro = canUseProFeatures();
+  const hasTeam = canUseTeamFeatures();
 
-    if (!canUseProFeatures()) {
-      btn.classList.add('hidden');
-      return;
-    }
+  btn.style.display = hasPro ? '' : 'none';
+  btn.classList.toggle('hidden', !hasPro);
+  btn.disabled = !hasPro;
 
-    btn.classList.remove('hidden');
+  if (!hasPro) {
+    btn.textContent = 'Add Job';
+    btn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showToast('Upgrade to Pro to save jobs.', 'info');
 
-    if (canUseTeamFeatures()) {
-      btn.textContent = 'Add to Team';
-      btn.onclick = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        await saveTeamJob();
-      };
-    } else {
-      btn.textContent = 'Add Job';
-      btn.onclick = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        await saveTeamJob();
-      };
-    }
+      if (typeof openPlansModal === 'function') {
+        openPlansModal('solo', 'Upgrade to Pro to unlock job saving.');
+      }
+    };
+    return;
+  }
+
+  btn.textContent = hasTeam ? 'Add to Team' : 'Add Job';
+  btn.onclick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await saveTeamJob();
+  };
+}
+
+function ensureQuoteActionObserver() {
+  if (quoteActionObserver || !document.body) return;
+
+  quoteActionObserver = new MutationObserver(() => {
+    patchQuoteTeamActions();
+  });
+
+  quoteActionObserver.observe(document.body, {
+    childList: true,
+    subtree: true
   });
 }
 
@@ -288,13 +304,12 @@ async function _bootProInner() {
 
   proState.user = user;
 
-  // 🔥 Prevent settings leaking between users
-const lastUserId = localStorage.getItem('wqp-last-user');
+  const lastUserId = localStorage.getItem('wqp-last-user');
+  if (user && lastUserId !== user.id) {
+    localStorage.removeItem('wqp-settings');
+    localStorage.setItem('wqp-last-user', user.id);
+  }
 
-if (user && lastUserId !== user.id) {
-  localStorage.removeItem('wqp-settings');
-  localStorage.setItem('wqp-last-user', user.id);
-}
   try {
     const { data: team, error } = await sb.rpc('get_my_team');
     const noTeam =
@@ -387,23 +402,19 @@ if (user && lastUserId !== user.id) {
   gateTeamInviteControls();
   updateKPIs();
   renderJobsList();
-  if (typeof renderRebookingSection === 'function') renderRebookingSection();
-  const saveTeamBtn = el('save-team-job-btn');
-if (saveTeamBtn) {
-  const showAddJob = canUseProFeatures();
-  saveTeamBtn.classList.toggle('hidden', !showAddJob);
-}
 
-  // Patch any quote/settings buttons rendered after the main UI pass
-  setTimeout(() => {
-    patchQuoteTeamActions();
-    gateTeamInviteControls();
-  }, 0);
+  if (typeof renderRebookingSection === 'function') {
+    renderRebookingSection();
+  }
 
-  setTimeout(() => {
-    patchQuoteTeamActions();
-    gateTeamInviteControls();
-  }, 250);
+  [0, 150, 400, 800].forEach((delay) => {
+    setTimeout(() => {
+      patchQuoteTeamActions();
+      gateTeamInviteControls();
+    }, delay);
+  });
+
+  ensureQuoteActionObserver();
 }
 
 const bootPro = asyncGuard(_bootProInner, 'bootPro');
@@ -427,9 +438,6 @@ async function _handleAuthInner() {
       });
 
       if (res.error) throw res.error;
-
-      // Let Supabase trigger create the profile row.
-      // Do NOT insert into profiles here.
     } else {
       res = await sb.auth.signInWithPassword({ email, password });
       if (res.error) throw res.error;
@@ -549,7 +557,6 @@ function renderProUI() {
     headerBadge.className = planInfo.headerBadgeClass;
   }
 
-  // Keep buttons clickable so they trigger upgrade modal instead of doing nothing.
   if (createTeamBtn) createTeamBtn.disabled = false;
   if (joinTeamBtn) joinTeamBtn.disabled = false;
   if (inviteInput) inviteInput.disabled = false;
@@ -560,12 +567,10 @@ function renderProUI() {
   const isOwner = isOwnerUser();
   const isStaff = isStaffUser();
 
-  // Pro dashboard stays visible for all paid users.
   if (teamDash) {
     teamDash.classList.toggle('hidden', !hasPro);
   }
 
-  // Team setup is only an upsell for Solo owners or actual setup for Team owners without a team yet.
   if (teamSetup) {
     let showTeamSetup = false;
 
