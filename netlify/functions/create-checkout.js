@@ -17,8 +17,7 @@ const PRICE_MAP = {
 /* Minimal Supabase REST helper (avoids bundling @supabase/supabase-js */
 /* in the serverless function — keeps cold starts fast).               */
 /* ------------------------------------------------------------------ */
-const fetch = globalThis.fetch || require('node-fetch');
-
+const fetch = globalThis.fetch;
 async function supabaseRequest(method, path, body) {
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
   const headers = {
