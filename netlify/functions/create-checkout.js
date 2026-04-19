@@ -109,16 +109,20 @@ exports.handler = async (event) => {
       }
 
       await supabaseRequest(
-        'POST',
-        'subscriptions?on_conflict=user_id',
-        {
-          user_id: userId,
-          stripe_customer_id: stripeCustomerId,
-          subscription_plan: plan,
-          subscription_status: 'trialing',
-          updated_at: new Date().toISOString()
-        }
-      );
+  'POST',
+  'subscriptions?on_conflict=user_id',
+  {
+    user_id: userId,
+    stripe_customer_id: stripeCustomerId,
+    plan: plan,
+    status: 'trial',
+    subscription_plan: plan,
+    subscription_status: 'trialing',
+    updated_at: new Date().toISOString(),
+    trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    trial_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  }
+);
     }
 
     const sessionParams = {
