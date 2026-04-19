@@ -250,7 +250,7 @@ function getItemisedServiceRows(extPct, data) {
       : `${safeNum(settings.secondStoreyPercent, 20)}% uplift`;
     rows.push(`
       <tr style="border-bottom: 1px solid #f3f4f6;">
-        <td style="padding: 12px; font-size: 14px;">Second Storey Access (${escapeHtml(modeLabel)})</td>
+        <td style="padding: 12px; font-size: 14px;">2nd Storey Surcharge</td>
         <td style="padding: 12px; text-align: center; font-size: 14px;">${data.secondStoreyItemCount}</td>
         <td style="padding: 12px; text-align: right; font-size: 14px;">$${data.secondStoreySurcharge.toFixed(2)}</td>
       </tr>
@@ -312,6 +312,10 @@ function buildQuoteSummaryText(data) {
 
   summary += `\n*PRICING:*\nSubtotal: $${data.subtotal.toFixed(2)}\n`;
 
+  if (data.secondStoreySurcharge > 0) {
+  summary += `2nd Storey Surcharge: +$${data.secondStoreySurcharge.toFixed(2)}\n`;
+}
+
   if (safeNum(settings.travelFee, 0) > 0) {
     summary += `Travel Fee: +$${safeNum(settings.travelFee, 0).toFixed(2)}\n`;
   }
@@ -361,6 +365,7 @@ function updateQuoteDisplay() {
       <div class="summary-stat"><div class="summary-stat-label">Total</div><div class="summary-stat-value">$${data.total.toFixed(2)}</div></div>
       <div class="summary-stat"><div class="summary-stat-label">Minutes</div><div class="summary-stat-value">${data.totalMinutes.toFixed(0)}</div></div>
       <div class="summary-stat"><div class="summary-stat-label">Hours</div><div class="summary-stat-value">${data.estimatedHours.toFixed(2)}</div></div>
+      ${data.secondStoreySurcharge > 0 ? `<div class="summary-stat"><div class="summary-stat-label">2nd Storey Surcharge</div><div class="summary-stat-value">$${data.secondStoreySurcharge.toFixed(2)}</div></div>` : ''}
     `;
   }
 
@@ -372,7 +377,6 @@ function updateQuoteDisplay() {
     saveTeamBtn.classList.toggle('hidden', !proState.teamId || !hasProAccess());
   }
 }
-
 function buildPdfHtml(data, quoteNum) {
   const isPro = hasProAccess();
   const customerName = escapeHtml((el('q-name') ? el('q-name').value : '') || 'Customer');
