@@ -226,15 +226,36 @@ function gateTeamInviteControls() {
 }
 
 function patchQuoteTeamActions() {
-  const hasTeam = canUseTeamFeatures();
+  const buttons = Array.from(document.querySelectorAll('button'));
 
-  if (hasTeam) {
-    patchButtonTextByLabel(/^add to team$/i, 'Add to Team');
-    return;
-  }
+  buttons.forEach((btn) => {
+    const text = (btn.textContent || '').trim();
 
-  // Solo/free should not see team language in quote workflow
-  patchButtonTextByLabel(/^add to team$/i, 'Add Job');
+    if (!/^add to team$/i.test(text) && !/^add job$/i.test(text)) return;
+
+    if (!canUseProFeatures()) {
+      btn.classList.add('hidden');
+      return;
+    }
+
+    btn.classList.remove('hidden');
+
+    if (canUseTeamFeatures()) {
+      btn.textContent = 'Add to Team';
+      btn.onclick = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        await saveTeamJob();
+      };
+    } else {
+      btn.textContent = 'Add Job';
+      btn.onclick = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        await saveTeamJob();
+      };
+    }
+  });
 }
 
 /* bootPro is wrapped with asyncGuard after definition to prevent
