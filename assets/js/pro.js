@@ -388,7 +388,11 @@ if (user && lastUserId !== user.id) {
   updateKPIs();
   renderJobsList();
   if (typeof renderRebookingSection === 'function') renderRebookingSection();
-  updateQuoteDisplay();
+  const saveTeamBtn = el('save-team-job-btn');
+if (saveTeamBtn) {
+  const showAddJob = canUseProFeatures();
+  saveTeamBtn.classList.toggle('hidden', !showAddJob);
+}
 
   // Patch any quote/settings buttons rendered after the main UI pass
   setTimeout(() => {
