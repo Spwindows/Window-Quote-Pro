@@ -350,9 +350,27 @@ function renderProUI() {
     headerBadge.className = planInfo.headerBadgeClass;
   }
 
+  const isTeamOwner = !!proState.teamId && String(proState.teamRole || '').toLowerCase() === 'owner';
+  const hasUnlockedTeam = canUseTeamFeatures();
+
+  // Solo/free owners with an existing team must NOT see active team dashboard features
   if (proState.teamId) {
-    if (teamSetup) teamSetup.classList.add('hidden');
-    if (teamDash) teamDash.classList.remove('hidden');
+    if (hasUnlockedTeam) {
+      if (teamSetup) teamSetup.classList.add('hidden');
+      if (teamDash) teamDash.classList.remove('hidden');
+    } else {
+      if (teamSetup) teamSetup.classList.remove('hidden');
+      if (teamDash) teamDash.classList.add('hidden');
+
+      // Optional: if there is a message area, explain why
+      const teamGateMsg = el('team-gate-message');
+      if (teamGateMsg) {
+        teamGateMsg.textContent = isTeamOwner
+          ? 'Upgrade to Pro Team to invite staff and use linked team accounts.'
+          : 'Your owner must upgrade to Pro Team to enable team access.';
+        teamGateMsg.classList.remove('hidden');
+      }
+    }
   } else {
     if (teamSetup) teamSetup.classList.remove('hidden');
     if (teamDash) teamDash.classList.add('hidden');
@@ -379,7 +397,6 @@ function renderProUI() {
     renderRebookingSection();
   }
 }
-
 async function handleSignOut() {
   const sb = await getSb();
   if (sb) {
