@@ -266,7 +266,13 @@ async function _bootProInner() {
   }
 
   proState.user = user;
+// 🔥 Prevent settings leaking between users
+const lastUserId = localStorage.getItem('wqp-last-user');
 
+if (user && lastUserId !== user.id) {
+  localStorage.removeItem('wqp-settings');
+  localStorage.setItem('wqp-last-user', user.id);
+}
   try {
     const { data: team, error } = await sb.rpc('get_my_team');
     const noTeam =
