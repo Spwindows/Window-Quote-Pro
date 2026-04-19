@@ -384,64 +384,39 @@ if (user && lastUserId !== user.id) {
 const bootPro = asyncGuard(_bootProInner, 'bootPro');
 
 async function _handleAuthInner() {
-  const email = (el('auth-email') || {}).value || '';
+  const email = ((el('auth-email') || {}).value || '').trim();
   const password = (el('auth-password') || {}).value || '';
   const sb = await getSb();
   if (!sb) return;
 
   try {
     let res;
+
     if (authMode === 'signup') {
-  const name = (el('auth-name') || {}).value || '';
+      const name = ((el('auth-name') || {}).value || '').trim();
 
-  res = await sb.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: name } }
-  });
+      res = await sb.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: name } }
+      });
 
-  if (res.error) throw res.error;
+      if (res.error) throw res.error;
 
-  const userId = res.data?.user?.id;
-
-  if (!userId) throw new Error("User ID missing");
-
-  // 🔥 CREATE PROFILE HERE
-  const { error: profileError } = await sb.from('profiles').insert({
-  id: userId,
-  full_name: name || '',
-  email: email
-});
-
-if (profileError) {
-  console.error('Profile insert failed:', profileError);
-
-  // Prevent hard crash if profile already exists
-  if (profileError.code !== '23505') { // duplicate key
-    throw profileError;
-  }
-}
-      const { data: existingProfile } = await sb
-  .from('profiles')
-  .select('id')
-  .eq('id', userId)
-  .maybeSingle();
-
-if (!existingProfile) {
-  throw new Error('Profile creation failed');
-}
-} else {
+      // Let Supabase trigger create the profile row.
+      // Do NOT insert into profiles here.
+    } else {
       res = await sb.auth.signInWithPassword({ email, password });
+      if (res.error) throw res.error;
     }
 
-    if (res.error) throw res.error;
     showToast('Welcome!', 'success');
     await bootPro();
   } catch (e) {
-    showToast(e.message, 'error');
+    console.error('Auth error:', e);
+    showToast(e.message || 'Authentication failed', 'error');
   }
 }
-
 const handleAuth = asyncGuard(_handleAuthInner, 'handleAuth');
 
 async function _createTeamInner() {
