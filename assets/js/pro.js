@@ -37,15 +37,20 @@ function isOwnerUser() {
   return String(proState.teamRole || '').toLowerCase() === 'owner';
 }
 
+function canManageTeamInvites() {
+  return canUseTeamFeatures() && isOwnerUser();
+}
+
+function upsellToTeam(message) {
+  showToast(message || 'This feature requires Pro Team.', 'info');
+  if (typeof openPlansModal === 'function') {
+    openPlansModal('team', 'Upgrade to Pro Team to invite staff and manage linked accounts.');
+  }
+}
+
 function requireProTeamForTeamAction(actionLabel) {
   if (canUseTeamFeatures()) return true;
-
-  showToast(`${actionLabel} requires Pro Team. Upgrade to unlock team features.`, 'info');
-
-  if (typeof openPlansModal === 'function') {
-    openPlansModal('team', 'Upgrade to Pro Team to add staff and manage linked accounts.');
-  }
-
+  upsellToTeam(`${actionLabel} requires Pro Team. Upgrade to unlock team features.`);
   return false;
 }
 
@@ -118,6 +123,111 @@ async function loadTeamEntitlement(sb) {
   } catch (e) {
     console.error('Team entitlement load error', e);
   }
+}
+
+function gateTeamInviteControls() {
+  const allowed = canManageTeamInvites();
+
+  const sectionIds = [
+    'team-invite-section',
+    'team-invite-card',
+    'settings-team-invite-card',
+    'settings-team-invite-section'
+  ];
+
+  const textIds = [
+    'team-invite-note',
+    'team-invite-help',
+    'team-invite-warning',
+    'team-gate-message'
+  ];
+
+  const codeIds = [
+    'team-invite-code',
+    'invite-code-display',
+    'team-invite-link',
+    'team-share-link'
+  ];
+
+  const actionIds = [
+    'team-invite-btn',
+    'team-share-btn',
+    'team-copy-btn',
+    'copy-invite-btn',
+    'share-invite-btn',
+    'invite-staff-btn',
+    'team-invite-share-btn',
+    'team-invite-copy-btn',
+    'invite-link-btn'
+  ];
+
+  const sections = sectionIds.map(id => el(id)).filter(Boolean);
+  const texts = textIds.map(id => el(id)).filter(Boolean);
+  const codes = codeIds.map(id => el(id)).filter(Boolean);
+  const actions = actionIds.map(id => el(id)).filter(Boolean);
+
+  if (allowed) {
+    sections.forEach(node => node.classList.remove('team-upsell-locked'));
+    texts.forEach(node => {
+      if (node.dataset.originalText) node.textContent = node.dataset.originalText;
+      node.classList.add('hidden');
+    });
+    codes.forEach(node => {
+      node.classList.remove('blur-sm', 'opacity-60');
+      if (node.dataset.originalText) node.textContent = node.dataset.originalText;
+      if (node.dataset.originalHref) node.href = node.dataset.originalHref;
+    });
+    actions.forEach(btn => {
+      btn.disabled = false;
+      btn.classList.remove('btn-primary');
+      if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+      if (btn.dataset.originalOnclick) {
+        try {
+          btn.setAttribute('onclick', btn.dataset.originalOnclick);
+        } catch (_) {}
+      }
+    });
+    return;
+  }
+
+  sections.forEach(node => node.classList.remove('hidden'));
+
+  texts.forEach(node => {
+    if (!node.dataset.originalText) node.dataset.originalText = node.textContent || '';
+    node.textContent = isOwnerUser()
+      ? 'Upgrade to Pro Team to invite staff and use linked team accounts.'
+      : 'Your owner must upgrade to Pro Team to enable team access.';
+    node.classList.remove('hidden');
+  });
+
+  codes.forEach(node => {
+    if (!node.dataset.originalText) node.dataset.originalText = node.textContent || '';
+    if (node.tagName === 'A' && !node.dataset.originalHref) {
+      node.dataset.originalHref = node.getAttribute('href') || '';
+    }
+    node.textContent = 'Upgrade to Pro Team';
+    if (node.tagName === 'A') {
+      node.removeAttribute('href');
+    }
+    node.classList.add('blur-sm', 'opacity-60');
+  });
+
+  actions.forEach(btn => {
+    if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent || '';
+    btn.textContent = 'Upgrade to Pro Team';
+    btn.disabled = false;
+    btn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      upsellToTeam(isOwnerUser()
+        ? 'Inviting staff requires Pro Team.'
+        : 'Your owner must upgrade to Pro Team to enable invites.');
+    };
+    try {
+      btn.removeAttribute('href');
+      btn.setAttribute('type', 'button');
+    } catch (_) {}
+  });
 }
 
 /* bootPro is wrapped with asyncGuard after definition to prevent
@@ -239,6 +349,7 @@ async function _bootProInner() {
   renderSubscriptionUI();
   syncSettingsForm();
   renderSettingsGrids();
+  gateTeamInviteControls();
   updateKPIs();
   renderJobsList();
   if (typeof renderRebookingSection === 'function') renderRebookingSection();
@@ -381,7 +492,7 @@ function renderProUI() {
     headerBadge.className = planInfo.headerBadgeClass;
   }
 
-  // Buttons stay clickable so they can trigger upgrade modals.
+  // Keep buttons clickable so they trigger the upgrade modal instead of doing nothing.
   if (createTeamBtn) createTeamBtn.disabled = false;
   if (joinTeamBtn) joinTeamBtn.disabled = false;
   if (inviteInput) inviteInput.disabled = false;
@@ -392,16 +503,10 @@ function renderProUI() {
   const isOwner = isOwnerUser();
   const isStaff = isStaffUser();
 
-  // Team dashboard is ONLY for Pro Team users.
   if (teamDash) {
     teamDash.classList.toggle('hidden', !hasUnlockedTeam);
   }
 
-  // Team setup panel rules:
-  // - Free: hidden (free only gets quoting)
-  // - Pro Solo owner: visible so clicking create/join triggers upgrade
-  // - Pro Team owner: hidden if already in team, visible if not yet in team
-  // - Staff: hidden
   if (teamSetup) {
     let showTeamSetup = false;
 
@@ -440,7 +545,6 @@ function renderProUI() {
     invoiceUpsellBtn.classList.toggle('btn-secondary', hasPro);
   }
 
-  // Settings remain owner-only.
   const logoSection = el('logo-upload-section');
   if (logoSection) {
     logoSection.classList.toggle('hidden', !proState.teamId || !canAccessSettings());
@@ -452,6 +556,8 @@ function renderProUI() {
   if (typeof renderRebookingSection === 'function') {
     renderRebookingSection();
   }
+
+  gateTeamInviteControls();
 }
 
 async function handleSignOut() {
