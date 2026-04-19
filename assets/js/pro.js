@@ -392,13 +392,27 @@ async function _handleAuthInner() {
   try {
     let res;
     if (authMode === 'signup') {
-      const name = (el('auth-name') || {}).value || '';
-      res = await sb.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: name } }
-      });
-    } else {
+  const name = (el('auth-name') || {}).value || '';
+
+  res = await sb.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: name } }
+  });
+
+  if (res.error) throw res.error;
+
+  const userId = res.data?.user?.id;
+
+  if (!userId) throw new Error("User ID missing");
+
+  // 🔥 CREATE PROFILE HERE
+  await sb.from('profiles').insert({
+    id: userId,
+    full_name: name || '',
+    email: email
+  });
+} else {
       res = await sb.auth.signInWithPassword({ email, password });
     }
 
