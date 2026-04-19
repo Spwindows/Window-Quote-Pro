@@ -407,11 +407,20 @@ async function _handleAuthInner() {
   if (!userId) throw new Error("User ID missing");
 
   // 🔥 CREATE PROFILE HERE
-  await sb.from('profiles').insert({
-    id: userId,
-    full_name: name || '',
-    email: email
-  });
+  const { error: profileError } = await sb.from('profiles').insert({
+  id: userId,
+  full_name: name || '',
+  email: email
+});
+
+if (profileError) {
+  console.error('Profile insert failed:', profileError);
+
+  // Prevent hard crash if profile already exists
+  if (profileError.code !== '23505') { // duplicate key
+    throw profileError;
+  }
+}
 } else {
       res = await sb.auth.signInWithPassword({ email, password });
     }
